@@ -6,25 +6,28 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import co.mindie.cindy.CindyAppCreator;
+import co.mindie.cindy.modelconverter.IResolver;
+import co.mindie.cindy.modelconverter.IResolverOutput;
+import co.mindie.cindy.modelconverter.ResolverManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import co.mindie.wsframework.WSApplication;
-import co.mindie.wsframework.WSApplicationCreator;
-import co.mindie.wsframework.component.ComponentContext;
+import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.component.ComponentContext;
 
 @RunWith(JUnit4.class)
 public class ResolverManagerTest {
 
 	private ResolverManager resolverManager;
-	private WSApplication application;
+	private CindyApp application;
 	private ComponentContext cc;
 
 	@Before
 	public void setUp() {
-		this.application = new WSApplicationCreator().createApplication();
+		this.application = new CindyAppCreator().createApplication();
 		this.resolverManager = this.application.getModelConverterManager();
 		this.cc = this.application.getComponentContext();
 	}
