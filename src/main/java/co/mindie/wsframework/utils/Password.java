@@ -8,13 +8,12 @@ package co.mindie.wsframework.utils;
 // File created on Mar 6, 2013 at 1:00:01 PM
 ////////
 
-import org.apache.commons.codec.binary.Base64;
-
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 
 public class Password {
 
@@ -43,7 +42,7 @@ public class Password {
 
 	public Password(String encoded, String salt) {
 		this.hash = encoded;
-		this.salt = Base64.decodeBase64(salt.getBytes());
+		this.salt = Base64.getDecoder().decode(salt.getBytes());
 	}
 
 	////////////////////////
@@ -64,7 +63,7 @@ public class Password {
 			factory = SecretKeyFactory.getInstance(ALGORITHM);
 			byte[] encoded = factory.generateSecret(spec).getEncoded();
 
-			return new String(Base64.encodeBase64(encoded));
+			return Base64.getEncoder().encodeToString(encoded);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -89,6 +88,6 @@ public class Password {
 	}
 
 	public String getSaltAsString() {
-		return new String(Base64.encodeBase64(this.salt));
+		return Base64.getEncoder().encodeToString(this.salt);
 	}
 }

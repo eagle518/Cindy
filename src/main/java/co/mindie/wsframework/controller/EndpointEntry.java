@@ -9,12 +9,12 @@
 
 package co.mindie.wsframework.controller;
 
-import co.mindie.api.exceptions.BadParameterException;
 import co.mindie.wsframework.automapping.Endpoint;
 import co.mindie.wsframework.automapping.Param;
 import co.mindie.wsframework.context.RequestContext;
 import co.mindie.wsframework.controllermanager.RequestParameter;
-import co.mindie.wsframework.misc.WSFrameworkException;
+import co.mindie.wsframework.exception.BadParameterException;
+import co.mindie.wsframework.exception.WSFrameworkException;
 import co.mindie.wsframework.modelconverter.IResolverOutput;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.string.Strings;

@@ -11,7 +11,7 @@ package co.mindie.wsframework.component;
 
 import co.mindie.wsframework.automapping.SearchScope;
 import co.mindie.wsframework.automapping.Wired;
-import co.mindie.wsframework.misc.WSFrameworkException;
+import co.mindie.wsframework.exception.WSFrameworkException;
 
 import java.lang.reflect.Field;
 import java.util.Collection;

@@ -13,6 +13,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration.Dynamic;
 
+import co.mindie.wsframework.exception.WSFrameworkException;
 import org.apache.log4j.Logger;
 
 import co.mindie.wsframework.WSApplication;
@@ -20,7 +21,6 @@ import co.mindie.wsframework.component.ComponentContext;
 import co.mindie.wsframework.component.ComponentInitializer;
 import co.mindie.wsframework.component.ComponentMetadataManager;
 import co.mindie.wsframework.controller.servlet.ServletAdapter;
-import co.mindie.wsframework.misc.WSFrameworkException;
 
 public abstract class WSApplicationLoader implements ServletContextListener {
 

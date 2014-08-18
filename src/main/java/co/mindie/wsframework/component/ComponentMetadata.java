@@ -18,7 +18,7 @@ import co.mindie.wsframework.automapping.Component;
 import co.mindie.wsframework.automapping.CreationScope;
 import co.mindie.wsframework.automapping.SearchScope;
 import co.mindie.wsframework.automapping.Wired;
-import co.mindie.wsframework.misc.WSFrameworkException;
+import co.mindie.wsframework.exception.WSFrameworkException;
 
 public class ComponentMetadata {
 

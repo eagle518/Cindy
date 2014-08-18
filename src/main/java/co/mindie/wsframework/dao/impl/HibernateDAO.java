@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 import co.mindie.wsframework.dao.utils.GroupByResultTransformer;
-import me.corsin.javatools.misc.SynchronizedPool;
 import me.corsin.javatools.reflect.ReflectionUtils;
 
 import org.hibernate.Criteria;
@@ -29,7 +28,6 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.joda.time.DateTime;
 
-import co.mindie.wsframework.context.ListProperties;
 import co.mindie.wsframework.database.HibernateDatabase;
 import co.mindie.wsframework.database.handle.HibernateDatabaseHandle;
 import co.mindie.wsframework.utils.FieldProperty;
@@ -210,7 +208,11 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	}
 
 	public long getTotalCountBetween(DateTime fromDate, DateTime toDate) {
-		return this.createCriteria().add(Restrictions.ge(this.getCreatedDatePropertyName(), fromDate)).add(Restrictions.le(this.getCreatedDatePropertyName(), toDate)).count();
+		return ((Number)this.createCriteria()
+				.add(Restrictions.ge(this.getCreatedDatePropertyName(), fromDate))
+				.add(Restrictions.le(this.getCreatedDatePropertyName(), toDate))
+				.setProjection(Projections.rowCount())
+				.uniqueResult()).longValue();
 	}
 
 	public PrimaryKey getKeyForElement(ElementType elementType) {

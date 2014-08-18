@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import co.mindie.wsframework.exception.WSFrameworkException;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.io.IOUtils;
 import me.corsin.javatools.misc.ValueHolder;
@@ -34,7 +35,6 @@ import co.mindie.wsframework.controller.EndpointEntry;
 import co.mindie.wsframework.controller.EndpointPathResult;
 import co.mindie.wsframework.controller.IRequestErrorHandler;
 import co.mindie.wsframework.controller.RequestHandler;
-import co.mindie.wsframework.misc.WSFrameworkException;
 import co.mindie.wsframework.modelconverter.IResolverOutput;
 import co.mindie.wsframework.responseserializer.IResponseWriter;
 import co.mindie.wsframework.responseserializer.StringResponseWriter;

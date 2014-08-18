@@ -17,9 +17,7 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 
-import co.mindie.api.model.LazyList;
 import co.mindie.wsframework.automapping.Wired;
-import co.mindie.wsframework.context.ListProperties;
 import co.mindie.wsframework.database.MongoDatabase;
 import co.mindie.wsframework.database.handle.MongoDatabaseHandle;
 import co.mindie.wsframework.mongo.MongoEntity;
