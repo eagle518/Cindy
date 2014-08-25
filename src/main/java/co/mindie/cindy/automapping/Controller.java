@@ -20,6 +20,4 @@ public @interface Controller {
 
 	String basePath();
 
-	boolean useReusePool() default false;
-
 }

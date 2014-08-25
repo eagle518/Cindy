@@ -82,7 +82,7 @@ public class ComponentScanner {
 
 		if (this.shouldScanControllers) {
 			this.scanClass(Controller.class, Object.class, (matchedType, service) -> {
-				application.addController(matchedType, service.basePath(), service.useReusePool());
+				application.addController(matchedType, service.basePath());
 			});
 		}
 

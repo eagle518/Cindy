@@ -54,6 +54,7 @@ public class ControllerManager extends CindyComponent {
 	final private Map<Class<?>, ControllerEntry> controllers;
 	private volatile boolean maintenanceModeEnabled;
 	private volatile boolean failOnResolverNotFound;
+	private boolean useReusePool;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -65,6 +66,7 @@ public class ControllerManager extends CindyComponent {
 		this.postMapping = new EndpointIndexer();
 		this.deleteMapping = new EndpointIndexer();
 		this.controllers = new HashMap<>();
+		this.useReusePool = true;
 	}
 
 	////////////////////////
@@ -82,12 +84,12 @@ public class ControllerManager extends CindyComponent {
 		}
 	}
 
-	public void addController(Class<?> controllerClass, String basePath, boolean poolEnabled) {
+	public void addController(Class<?> controllerClass, String basePath) {
 		if (!basePath.endsWith("/")) {
 			basePath = basePath + "/";
 		}
 
-		ControllerEntry controllerEntry = new ControllerEntry(controllerClass, basePath, poolEnabled, this.getApplication());
+		ControllerEntry controllerEntry = new ControllerEntry(controllerClass, basePath, this.getApplication());
 
 		Method[] methods = controllerClass.getMethods();
 
@@ -127,16 +129,6 @@ public class ControllerManager extends CindyComponent {
 		}
 	}
 
-	public RequestHandler createRequestHandler(Class<?> controllerClass) {
-		ControllerEntry entry = this.controllers.get(controllerClass);
-
-		if (entry == null) {
-			throw new CindyException("Controller " + controllerClass + " was not loaded");
-		}
-
-		return entry.createRequestHandler(this.getApplication());
-	}
-
 	private void createResponseWriter(EndpointEntry endpointEntry, RequestContext context) throws Exception {
 		Class<?> responseWriterCls = endpointEntry.getResponseWriterClass();
 
@@ -162,7 +154,7 @@ public class ControllerManager extends CindyComponent {
 	}
 
 	private RequestHandler createRequestHandler(HttpRequest httpRequest, HttpResponse httpResponse, EndpointEntry associatedMethod) {
-		RequestHandler requestHandler = associatedMethod.getControllerEntry().createRequestHandler(this.getApplication());
+		RequestHandler requestHandler = associatedMethod.createRequestHandler(this.getApplication(), this.useReusePool);
 		RequestContext context = requestHandler.getRequestContext();
 
 		context.setHttpResponse(httpResponse);
@@ -189,7 +181,7 @@ public class ControllerManager extends CindyComponent {
 		this.sendResponse(httpRequest, httpResponse, responseWriter, response);
 
 		if (requestHandler != null) {
-			requestHandler.release();
+			requestHandler.release(this.useReusePool);
 		}
 	}
 
@@ -464,5 +456,13 @@ public class ControllerManager extends CindyComponent {
 
 	public void setFailOnResolverNotFound(boolean failOnResolverNotFound) {
 		this.failOnResolverNotFound = failOnResolverNotFound;
+	}
+
+	public boolean isUseReusePool() {
+		return useReusePool;
+	}
+
+	public void setUseReusePool(boolean useReusePool) {
+		this.useReusePool = useReusePool;
 	}
 }

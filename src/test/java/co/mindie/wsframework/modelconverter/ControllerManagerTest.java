@@ -49,7 +49,8 @@ public class ControllerManagerTest {
 
 			@Override
 			protected void onLoad(CindyApp application) {
-				application.addController(ControllerTest.class, "", false);
+				application.getControllerManager().setUseReusePool(false);
+				application.addController(ControllerTest.class, "");
 			}
 
 

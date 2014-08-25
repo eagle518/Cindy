@@ -9,8 +9,10 @@
 
 package co.mindie.cindy.controller;
 
+import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.Param;
+import co.mindie.cindy.component.ComponentContext;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controllermanager.RequestParameter;
 import co.mindie.cindy.exception.BadParameterException;
@@ -27,9 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class EndpointEntry {
 
@@ -46,6 +46,7 @@ public class EndpointEntry {
 	final private List<String> pathIdentifierForIndex;
 	final private String path;
 	final private boolean shouldResolveOutput;
+	final private Deque<RequestHandler> pool;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -56,6 +57,7 @@ public class EndpointEntry {
 		this.method = method;
 		this.mapped = mapped;
 		this.path = path;
+		this.pool = new ArrayDeque<>();
 		this.shouldResolveOutput = method.getReturnType() == void.class ? false : mapped.resolveOutput();
 		this.parameterResolvers = new ArrayList<>();
 		this.pathIdentifierForIndex = new ArrayList<>();
@@ -71,6 +73,39 @@ public class EndpointEntry {
 		}
 
 		this.pathIdentifierForIndex.set(index, identifier);
+	}
+
+	public RequestHandler createRequestHandler(CindyApp application, boolean useReusePool) {
+		RequestHandler requestHandler = null;
+
+		if (useReusePool) {
+			synchronized (this.pool) {
+				if (!this.pool.isEmpty()) {
+					requestHandler = this.pool.poll();
+				}
+			}
+		}
+
+		if (requestHandler == null) {
+			requestHandler = new RequestHandler(this);
+
+			ComponentContext cc = new ComponentContext(application.getComponentContext());
+			requestHandler.setComponentContext(cc);
+			requestHandler.setController(application.createComponent(cc, this.controllerEntry.getControllerClass()));
+			requestHandler.setRequestContext(application.findOrCreateComponent(cc, RequestContext.class));
+		}
+
+		return requestHandler;
+	}
+
+	public void releaseRequestHandler(RequestHandler requestHandler, boolean useReusePool) {
+		requestHandler.reset();
+
+		if (useReusePool) {
+			synchronized (this.pool) {
+				this.pool.add(requestHandler);
+			}
+		}
 	}
 
 	private void throwParameterError(Parameter parameter, String error) {

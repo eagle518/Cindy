@@ -101,9 +101,9 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 		}
 	}
 
-	public void addController(Class<?> controllerClass, String basePath, boolean useReusePool) {
+	public void addController(Class<?> controllerClass, String basePath) {
 		this.componentMetadataManager.loadComponent(controllerClass);
-		this.controllerManager.addController(controllerClass, basePath, useReusePool);
+		this.controllerManager.addController(controllerClass, basePath);
 	}
 
 	public <T> T createComponent(Class<T> componentClass) {

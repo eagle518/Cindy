@@ -23,14 +23,14 @@ public class RequestHandler implements Closeable {
 	private Object controller;
 	private RequestContext requestContext;
 	private ComponentContext componentContext;
-	private ControllerEntry controllerEntry;
+	private EndpointEntry endpointEntry;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public RequestHandler(ControllerEntry controllerEntry) {
-		this.controllerEntry = controllerEntry;
+	public RequestHandler(EndpointEntry endpointEntry) {
+		this.endpointEntry = endpointEntry;
 	}
 
 	////////////////////////
@@ -49,10 +49,10 @@ public class RequestHandler implements Closeable {
 		this.requestContext.reset();
 	}
 
-	public void release() {
+	public void release(boolean useReusePool) {
 		this.close();
-		if (this.controllerEntry != null) {
-			this.controllerEntry.releaseRequestHandler(this);
+		if (this.endpointEntry != null) {
+			this.endpointEntry.releaseRequestHandler(this, useReusePool);
 		}
 	}
 

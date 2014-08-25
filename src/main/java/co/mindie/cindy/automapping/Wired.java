@@ -34,6 +34,10 @@ public @interface Wired {
 	 */
 	SearchScope searchScope() default SearchScope.UNDEFINED;
 
+	/**
+	 * On which scope the wiring should create the instance if it is not found.
+	 * @return
+	 */
 	CreationScope creationScope() default CreationScope.UNDEFINED;
 
 	/**
