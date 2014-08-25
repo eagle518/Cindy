@@ -64,6 +64,10 @@ public class Log4jSocketConsole extends AbstractAppender implements IConnectionL
 
 			Integer port = this.configuration.getInteger("wsframework.socket_console_port");
 
+			if (port == null) {
+				port = this.configuration.getInteger("cindy.socket_console_port");
+			}
+
 			if (port != null) {
 				try {
 					this.serverSocket = new ServerSocket(port);

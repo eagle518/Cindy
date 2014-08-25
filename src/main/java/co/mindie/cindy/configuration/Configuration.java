@@ -48,6 +48,10 @@ public class Configuration extends CindyComponent {
 			this.configurationFilePath = this.get("wsframework.configuration_file");
 		}
 
+		if (this.configurationFilePath == null) {
+			this.configurationFilePath = this.get("cindy.configuration_file");
+		}
+
 		this.reloadConfiguration();
 	}
 

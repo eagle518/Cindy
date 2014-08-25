@@ -84,7 +84,13 @@ public class HibernateDatabase extends Database implements Pausable {
 	public void init() {
 		super.init();
 
-		this.traceStartedSession = this.configuration.getBoolean("wsframework.hibernate_trace_sessions", false);
+		Boolean traceStartedSession = this.configuration.getBoolean("wsframework.hibernate_trace_sessions");
+
+		if (traceStartedSession == null) {
+			traceStartedSession = this.configuration.getBoolean("cindy.hibernate_trace_sessions", false);
+		}
+
+		this.traceStartedSession = traceStartedSession;
 	}
 
 	public long getTotalQueryCount() {
