@@ -7,7 +7,7 @@
 // File created on Jun 3, 2014 at 12:10:35 PM
 ////////
 
-package co.mindie.cindy.controller;
+package co.mindie.cindy.controller.servlet;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -22,7 +22,7 @@ import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.controller.servlet.ServletAdapter;
 
-public abstract class CindyApplicationLoader implements ServletContextListener {
+public abstract class CindyServletApplicationLoader implements ServletContextListener {
 
 	////////////////////////
 	// VARIABLES

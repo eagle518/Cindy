@@ -18,9 +18,9 @@ import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.console.Log4jSocketConsole;
 import co.mindie.cindy.context.RequestContext;
-import co.mindie.cindy.controller.IParameterNameResolver;
-import co.mindie.cindy.controller.IRequestErrorHandler;
-import co.mindie.cindy.controller.SnakeCaseToCamelCaseParameterNameResolver;
+import co.mindie.cindy.controller.manager.IParameterNameResolver;
+import co.mindie.cindy.controller.manager.IRequestErrorHandler;
+import co.mindie.cindy.controller.builtin.SnakeCaseToCamelCaseParameterNameResolver;
 import co.mindie.cindy.controller.builtin.DefaultRequestErrorHandler;
 import co.mindie.cindy.database.handle.builtin.SimpleHibernateDatabaseHandle;
 import co.mindie.cindy.filehandling.IFileHandler;
@@ -35,7 +35,7 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
 
 import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
-import co.mindie.cindy.controllermanager.ControllerManager;
+import co.mindie.cindy.controller.manager.ControllerManager;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 
 public class CindyApp extends CindyComponent implements Closeable, Pausable {

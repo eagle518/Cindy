@@ -12,7 +12,7 @@ package co.mindie.cindy.modelconverter.builtin;
 import java.io.InputStream;
 
 import co.mindie.cindy.automapping.Resolver;
-import co.mindie.cindy.controllermanager.RequestParameter;
+import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.modelconverter.IResolver;
 
 @Resolver(managedInputClasses = RequestParameter.class, managedOutputClasses = InputStream.class)

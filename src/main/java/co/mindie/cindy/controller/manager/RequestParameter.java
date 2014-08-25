@@ -7,7 +7,7 @@
 // File created on Aug 4, 2014 at 11:50:51 AM
 ////////
 
-package co.mindie.cindy.controllermanager;
+package co.mindie.cindy.controller.manager;
 
 import java.io.InputStream;
 

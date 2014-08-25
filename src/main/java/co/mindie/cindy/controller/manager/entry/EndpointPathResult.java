@@ -7,7 +7,9 @@
 // File created on Jul 24, 2014 at 12:48:51 PM
 ////////
 
-package co.mindie.cindy.controller;
+package co.mindie.cindy.controller.manager.entry;
+
+import co.mindie.cindy.controller.manager.entry.EndpointEntry;
 
 import java.util.ArrayList;
 import java.util.List;

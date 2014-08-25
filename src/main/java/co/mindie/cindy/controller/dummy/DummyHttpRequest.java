@@ -16,7 +16,7 @@ import java.util.Map;
 import co.mindie.cindy.automapping.HttpMethod;
 import org.apache.commons.fileupload.FileItem;
 
-import co.mindie.cindy.controllermanager.HttpRequest;
+import co.mindie.cindy.controller.manager.HttpRequest;
 
 public class DummyHttpRequest implements HttpRequest {
 

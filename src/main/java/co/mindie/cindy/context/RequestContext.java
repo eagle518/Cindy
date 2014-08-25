@@ -15,12 +15,12 @@ import java.util.Map;
 
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.CindyComponent;
-import co.mindie.cindy.controllermanager.HttpResponse;
+import co.mindie.cindy.controller.manager.HttpResponse;
 import co.mindie.cindy.utils.IFlushable;
 import co.mindie.cindy.automapping.Component;
 import co.mindie.cindy.automapping.CreationScope;
 import co.mindie.cindy.controller.CindyController;
-import co.mindie.cindy.controllermanager.HttpRequest;
+import co.mindie.cindy.controller.manager.HttpRequest;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 
 @Component

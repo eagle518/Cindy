@@ -7,14 +7,15 @@
 // File created on Jan 11, 2013 at 5:26:13 PM
 ////////
 
-package co.mindie.cindy.controller;
+package co.mindie.cindy.controller.manager.entry;
 
 import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.Param;
 import co.mindie.cindy.component.ComponentContext;
 import co.mindie.cindy.context.RequestContext;
-import co.mindie.cindy.controllermanager.RequestParameter;
+import co.mindie.cindy.controller.CindyController;
+import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.exception.BadParameterException;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.modelconverter.IResolverOutput;

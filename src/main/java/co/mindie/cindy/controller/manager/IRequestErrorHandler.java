@@ -7,13 +7,13 @@
 // File created on Jun 11, 2014 at 2:46:15 PM
 ////////
 
-package co.mindie.cindy.controller;
+package co.mindie.cindy.controller.manager;
 
 import java.io.IOException;
 
-import co.mindie.cindy.controllermanager.HttpResponse;
+import co.mindie.cindy.controller.manager.HttpResponse;
 import co.mindie.cindy.context.RequestContext;
-import co.mindie.cindy.controllermanager.HttpRequest;
+import co.mindie.cindy.controller.manager.HttpRequest;
 
 public interface IRequestErrorHandler {
 

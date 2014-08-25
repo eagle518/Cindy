@@ -12,7 +12,7 @@ package co.mindie.cindy.controller.dummy;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import co.mindie.cindy.controllermanager.HttpResponse;
+import co.mindie.cindy.controller.manager.HttpResponse;
 
 public class DummyHttpResponse implements HttpResponse {
 

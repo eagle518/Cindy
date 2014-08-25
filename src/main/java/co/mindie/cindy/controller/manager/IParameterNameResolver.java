@@ -7,7 +7,7 @@
 // File created on Jun 11, 2014 at 11:39:53 AM
 ////////
 
-package co.mindie.cindy.controller;
+package co.mindie.cindy.controller.manager;
 
 public interface IParameterNameResolver {
 

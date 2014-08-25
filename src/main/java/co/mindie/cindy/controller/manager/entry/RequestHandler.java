@@ -7,12 +7,14 @@
 // File created on Jun 23, 2014 at 7:22:39 PM
 ////////
 
-package co.mindie.cindy.controller;
+package co.mindie.cindy.controller.manager.entry;
 
 import java.io.Closeable;
 
 import co.mindie.cindy.component.ComponentContext;
 import co.mindie.cindy.context.RequestContext;
+import co.mindie.cindy.controller.CindyController;
+import co.mindie.cindy.controller.manager.entry.EndpointEntry;
 
 public class RequestHandler implements Closeable {
 

@@ -7,7 +7,7 @@
 // File created on Aug 1, 2014 at 4:35:33 PM
 ////////
 
-package co.mindie.cindy.controllermanager;
+package co.mindie.cindy.controller.manager;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,10 +21,9 @@ import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.HttpMethod;
 import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.context.RequestContext;
-import co.mindie.cindy.controller.ControllerEntry;
-import co.mindie.cindy.controller.EndpointPathResult;
-import co.mindie.cindy.controller.IRequestErrorHandler;
-import co.mindie.cindy.controller.RequestHandler;
+import co.mindie.cindy.controller.manager.entry.ControllerEntry;
+import co.mindie.cindy.controller.manager.entry.EndpointPathResult;
+import co.mindie.cindy.controller.manager.entry.RequestHandler;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.modelconverter.IResolverOutput;
 import co.mindie.cindy.responseserializer.IResponseWriter;
@@ -38,7 +37,7 @@ import org.apache.catalina.connector.ClientAbortException;
 import org.apache.log4j.Logger;
 
 import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
-import co.mindie.cindy.controller.EndpointEntry;
+import co.mindie.cindy.controller.manager.entry.EndpointEntry;
 
 public class ControllerManager extends CindyComponent {
 

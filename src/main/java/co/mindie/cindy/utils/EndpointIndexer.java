@@ -14,8 +14,8 @@ import java.util.Map;
 
 import co.mindie.cindy.exception.CindyException;
 import me.corsin.javatools.string.Strings;
-import co.mindie.cindy.controller.EndpointEntry;
-import co.mindie.cindy.controller.EndpointPathResult;
+import co.mindie.cindy.controller.manager.entry.EndpointEntry;
+import co.mindie.cindy.controller.manager.entry.EndpointPathResult;
 
 public class EndpointIndexer {
 

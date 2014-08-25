@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////
 // Project : WSFramework
 // Package : co.mindie.wsframework
-// CindyApplicationLoader.java
+// CindyServletApplicationLoader.java
 //
 // Author : Simon CORSIN <simoncorsin@gmail.com>
 // File created on Jul 29, 2014 at 6:31:22 PM

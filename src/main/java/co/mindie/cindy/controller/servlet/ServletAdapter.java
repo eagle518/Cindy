@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import co.mindie.cindy.automapping.HttpMethod;
-import co.mindie.cindy.controllermanager.ControllerManager;
+import co.mindie.cindy.controller.manager.ControllerManager;
 
 public class ServletAdapter extends HttpServlet {
 

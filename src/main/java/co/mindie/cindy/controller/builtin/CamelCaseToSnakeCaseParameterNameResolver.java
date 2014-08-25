@@ -7,14 +7,15 @@
 // File created on Jun 11, 2014 at 12:18:37 PM
 ////////
 
-package co.mindie.cindy.controller;
+package co.mindie.cindy.controller.builtin;
 
 import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.automapping.Component;
 import co.mindie.cindy.component.CindyComponent;
+import co.mindie.cindy.automapping.Component;
+import co.mindie.cindy.controller.manager.IParameterNameResolver;
 
 @Component(dependentClass = CindyApp.class)
-public class SnakeCaseToCamelCaseParameterNameResolver extends CindyComponent implements IParameterNameResolver {
+public class CamelCaseToSnakeCaseParameterNameResolver extends CindyComponent implements IParameterNameResolver {
 
 	////////////////////////
 	// VARIABLES
@@ -24,7 +25,7 @@ public class SnakeCaseToCamelCaseParameterNameResolver extends CindyComponent im
 	// CONSTRUCTORS
 	////////////////
 
-	public SnakeCaseToCamelCaseParameterNameResolver() {
+	public CamelCaseToSnakeCaseParameterNameResolver() {
 
 	}
 
@@ -36,17 +37,23 @@ public class SnakeCaseToCamelCaseParameterNameResolver extends CindyComponent im
 	public String javaParameterNameToApiName(String name) {
 		StringBuilder sb = new StringBuilder();
 
-		for (int i = 0, length = name.length(); i < length; i++) {
-			char c = name.charAt(i);
+		String[] names = name.split("_");
+		for (int i = 0; i < names.length; i++) {
+			String currentName = names[i];
 
-			if (Character.isUpperCase(c)) {
-				c = Character.toLowerCase(c);
-				if (i != 0) {
-					sb.append('_');
+			if (i == 0) {
+				sb.append(currentName);
+			} else {
+				for (int j = 0; j < currentName.length(); j++) {
+					char c = currentName.charAt(j);
+
+					if (j == 0) {
+						c = Character.toUpperCase(c);
+					}
+
+					sb.append(c);
 				}
 			}
-
-			sb.append(c);
 		}
 
 

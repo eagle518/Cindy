@@ -14,7 +14,7 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import co.mindie.cindy.controllermanager.HttpResponse;
+import co.mindie.cindy.controller.manager.HttpResponse;
 
 public class HttpResponseServletImpl implements HttpResponse {
 

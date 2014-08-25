@@ -7,7 +7,7 @@
 // File created on Aug 1, 2014 at 5:56:13 PM
 ////////
 
-package co.mindie.cindy.controllermanager;
+package co.mindie.cindy.controller.manager;
 
 public class EndpointParameter {
 
