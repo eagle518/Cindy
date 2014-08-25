@@ -31,6 +31,7 @@ import co.mindie.cindy.utils.Pausable;
 import me.corsin.javatools.task.MultiThreadedTaskQueue;
 import me.corsin.javatools.task.TaskQueue;
 
+import me.corsin.javatools.task.ThreadedConcurrentTaskQueue;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
 
@@ -82,7 +83,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 		this.controllerManager = new ControllerManager();
 		this.controllerManager.setApplication(this);
 
-		this.taskQueue = new MultiThreadedTaskQueue();
+		this.taskQueue = new ThreadedConcurrentTaskQueue();
 	}
 
 	// //////////////////////

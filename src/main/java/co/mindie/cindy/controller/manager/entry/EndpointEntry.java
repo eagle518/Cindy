@@ -76,6 +76,10 @@ public class EndpointEntry {
 		this.pathIdentifierForIndex.set(index, identifier);
 	}
 
+	public void preload(CindyApp app) {
+		this.createRequestHandler(app, true).release(true);
+	}
+
 	public RequestHandler createRequestHandler(CindyApp application, boolean useReusePool) {
 		RequestHandler requestHandler = null;
 

@@ -14,6 +14,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration.Dynamic;
 
 import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.CindyAppCreator;
 import co.mindie.cindy.component.ComponentContext;
 import co.mindie.cindy.exception.CindyException;
 import org.apache.log4j.Logger;
@@ -30,10 +31,15 @@ public abstract class CindyServletApplicationLoader implements ServletContextLis
 
 	private static final Logger LOGGER = Logger.getLogger(CindyApp.class);
 	private CindyApp application;
+	private boolean shouldPreloadEndpoints;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
+
+	public CindyServletApplicationLoader() {
+		this.shouldPreloadEndpoints = true;
+	}
 
 	////////////////////////
 	// METHODS
@@ -43,26 +49,26 @@ public abstract class CindyServletApplicationLoader implements ServletContextLis
 		return new CindyApp(componentMetadataManager);
 	}
 
-	abstract protected void configureApplication(ComponentInitializer initializer, CindyApp application);
+	abstract protected void configureApplication(CindyApp application);
 
 	abstract protected void onApplicationInitialized(CindyApp application);
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		ComponentMetadataManager metadataManager = new ComponentMetadataManager();
-		ComponentInitializer initializer = metadataManager.createInitializer();
+		this.application = new CindyAppCreator() {
 
-		this.application = this.createApplication(metadataManager);
+			@Override
+			protected void onLoad(CindyApp application) {
+				super.onLoad(application);
+				configureApplication(application);
+			}
 
-		if (this.application == null) {
-			throw new CindyException("ControllerLoader must create a CindyApp instance");
-		}
+			@Override
+			protected CindyApp onCreate(ComponentMetadataManager metadataManager) {
+				return CindyServletApplicationLoader.this.createApplication(metadataManager);
+			}
 
-		initializer.addCreatedComponent(this.application, new ComponentContext());
-
-		this.configureApplication(initializer, this.application);
-
-		initializer.init();
+		}.createApplication(this.shouldPreloadEndpoints);
 
 		Dynamic dynamic = sce.getServletContext().addServlet("WSServlet", new ServletAdapter(this.application.getControllerManager()));
 		dynamic.addMapping("/*");
@@ -82,4 +88,12 @@ public abstract class CindyServletApplicationLoader implements ServletContextLis
 	////////////////////////
 	// GETTERS/SETTERS
 	////////////////
+
+	public boolean isShouldPreloadEndpoints() {
+		return shouldPreloadEndpoints;
+	}
+
+	public void setShouldPreloadEndpoints(boolean shouldPreloadEndpoints) {
+		this.shouldPreloadEndpoints = shouldPreloadEndpoints;
+	}
 }

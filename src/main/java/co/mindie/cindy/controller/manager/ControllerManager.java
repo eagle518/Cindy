@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.HttpMethod;
 import co.mindie.cindy.component.CindyComponent;
@@ -79,6 +80,17 @@ public class ControllerManager extends CindyComponent {
 		for (ControllerEntry controller : this.controllers.values()) {
 			for (EndpointEntry endpoint : controller.getEndpoints()) {
 				endpoint.init();
+			}
+		}
+	}
+
+	public void preloadEndpoints() {
+		if (this.useReusePool) {
+			CindyApp app = this.getApplication();
+			for (ControllerEntry controllerEntry : this.getControllers()) {
+				for (EndpointEntry endpointEntry : controllerEntry.getEndpoints()) {
+					endpointEntry.preload(app);
+				}
 			}
 		}
 	}

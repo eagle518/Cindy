@@ -40,6 +40,10 @@ public class CindyAppCreator {
 	}
 
 	public CindyApp createApplication() {
+		return this.createApplication(false);
+	}
+
+	public CindyApp createApplication(boolean preloadEndpoints) {
 		ComponentMetadataManager metadataManager = new ComponentMetadataManager();
 		ComponentInitializer initializer = metadataManager.createInitializer();
 
@@ -50,6 +54,10 @@ public class CindyAppCreator {
 		initializer.addCreatedComponent(application, new ComponentContext());
 
 		initializer.init();
+
+		if (preloadEndpoints) {
+			application.getControllerManager().preloadEndpoints();
+		}
 
 		return application;
 	}
