@@ -24,6 +24,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.joda.time.DateTime;
 
+import java.io.Closeable;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -33,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
-public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType, PrimaryKey, HibernateDatabase> {
+public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType, PrimaryKey, HibernateDatabase> implements Closeable {
 	public static final String DEFAULT_ID_PROPERTY_NAME = "id";
 
 	// //////////////////////

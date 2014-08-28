@@ -9,11 +9,11 @@
 
 package co.mindie.cindy.dao.impl;
 
+import co.mindie.cindy.component.CindyComponent;
+
 import java.io.Serializable;
 
-import co.mindie.cindy.service.Service;
-
-public abstract class AbstractDAO<ElementType, PrimaryKey extends Serializable, DatabaseType> extends Service {
+public abstract class AbstractDAO<ElementType, PrimaryKey extends Serializable, DatabaseType> extends CindyComponent {
 
 	// //////////////////////
 	// VARIABLES
@@ -39,11 +39,6 @@ public abstract class AbstractDAO<ElementType, PrimaryKey extends Serializable, 
 	// METHODS
 	// //////////////
 
-	@Override
-	public void close() {
-
-	}
-
 	// //////////////////////
 	// GETTERS/SETTERS
 	// //////////////
@@ -51,7 +46,7 @@ public abstract class AbstractDAO<ElementType, PrimaryKey extends Serializable, 
 	/**
 	 * Returns the name of the property that hold the primary key value.
 	 *
-	 * @return
+	 * @return the primary key property name
 	 */
 	public String getPrimaryKeyPropertyName() {
 		return this.primaryKeyPropertyName;
