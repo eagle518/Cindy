@@ -7,9 +7,9 @@
 // File created on Feb 13, 2014 at 1:22:04 PM
 ////////
 
-package co.mindie.cindy.modelconverter;
+package co.mindie.cindy.exception;
 
-public class ModelConverterException extends RuntimeException {
+public class ModelConverterException extends CindyException {
 
 	////////////////////////
 	// VARIABLES
