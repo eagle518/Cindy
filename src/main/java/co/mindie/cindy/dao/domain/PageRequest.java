@@ -1,6 +1,7 @@
 package co.mindie.cindy.dao.domain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -20,7 +21,11 @@ public class PageRequest {
 	// //////////////
 
 	public PageRequest(int offset, int limit) {
-		this(offset, limit, null);
+		this(offset, limit, new ArrayList<>());
+	}
+
+	public PageRequest(int offset, int limit, Sort... sorts) {
+		this(offset, limit, Arrays.asList(sorts));
 	}
 
 	public PageRequest(int offset, int limit, List<Sort> sorts) {

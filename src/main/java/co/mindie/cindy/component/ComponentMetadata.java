@@ -9,16 +9,16 @@
 
 package co.mindie.cindy.component;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-
 import co.mindie.cindy.automapping.Component;
 import co.mindie.cindy.automapping.CreationScope;
 import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.exception.CindyException;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ComponentMetadata {
 

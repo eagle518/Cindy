@@ -9,6 +9,21 @@
 
 package co.mindie.cindy.dao.impl;
 
+import co.mindie.cindy.dao.domain.Page;
+import co.mindie.cindy.dao.domain.PageRequest;
+import co.mindie.cindy.dao.utils.CriteriaBuilder;
+import co.mindie.cindy.dao.utils.GroupByResultTransformer;
+import co.mindie.cindy.database.HibernateDatabase;
+import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
+import co.mindie.cindy.utils.FieldProperty;
+import me.corsin.javatools.misc.SynchronizedPool;
+import me.corsin.javatools.reflect.ReflectionUtils;
+import org.hibernate.Query;
+import org.hibernate.SQLQuery;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -17,21 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import co.mindie.cindy.dao.utils.GroupByResultTransformer;
-import me.corsin.javatools.reflect.ReflectionUtils;
-
-import org.hibernate.Criteria;
-import org.hibernate.Query;
-import org.hibernate.SQLQuery;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.joda.time.DateTime;
-
-import co.mindie.cindy.database.HibernateDatabase;
-import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
-import co.mindie.cindy.utils.FieldProperty;
-
 @SuppressWarnings("unchecked")
 public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType, PrimaryKey, HibernateDatabase> {
 	public static final String DEFAULT_ID_PROPERTY_NAME = "id";
@@ -39,12 +39,15 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	// //////////////////////
 	// VARIABLES
 	// //////////////
+
 	public static final String DEFAULT_CREATED_DATE_PROPERTY_NAME = "createdDate";
 	public static final String DEFAULT_UPDATED_DATE_PROPERTY_NAME = "updatedDate";
 	private HibernateDatabaseHandle databaseHandle;
+	private final CriteriaPool criteriaPool;
 
 	public HibernateDAO(Class<ElementType> managedClass) {
 		super(managedClass, DEFAULT_ID_PROPERTY_NAME, DEFAULT_CREATED_DATE_PROPERTY_NAME, DEFAULT_UPDATED_DATE_PROPERTY_NAME);
+		this.criteriaPool = new CriteriaPool();
 	}
 
 	// //////////////////////
@@ -93,6 +96,14 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 		return (ElementType) this.getDatabaseHandle().getSession().get(this.getManagedClass(), key);
 	}
 
+	public List<Serializable> saveAll(Iterable<ElementType> elements) {
+		List<Serializable> keys = new ArrayList<>();
+		elements.forEach(e -> {
+			keys.add(this.save(e));
+		});
+		return keys;
+	}
+
 	public Serializable save(ElementType element) {
 		this.limit(element);
 
@@ -131,12 +142,17 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 		return number.intValue();
 	}
 
-	final protected Criteria createCriteria() {
+	final protected CriteriaBuilder createCriteria() {
 		return this.createCriteria(this.getManagedClass());
 	}
 
-	final protected Criteria createCriteria(Class<?> managedClass) {
-		return this.getDatabaseHandle().getSession().createCriteria(managedClass);
+	final protected CriteriaBuilder createCriteria(Class<?> managedClass) {
+		return this.criteriaPool.obtain()
+				.configure(
+						this.getDatabaseHandle().getSession(),
+						this.getCreatedDatePropertyName(),
+						this.getManagedClass()
+				);
 	}
 
 	final protected Query createQuery(String query) {
@@ -152,7 +168,7 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	}
 
 	final protected ElementType getSingleForValue(String fieldName, Object fieldValue) {
-		return (ElementType) this.createCriteria().add(Restrictions.eq(fieldName, fieldValue)).uniqueResult();
+		return (ElementType) this.createCriteria().add(Restrictions.eq(fieldName, fieldValue)).single();
 	}
 
 	final protected ElementType[] transformResult(List<Object[]> result) {
@@ -183,36 +199,26 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 		}
 	}
 
-	public List<ElementType> findAllOrderByIdAsc() {
-		return this.createCriteria().addOrder(Order.asc(this.getPrimaryKeyPropertyName())).list();
+	public List<ElementType> findAll() {
+		return this.createCriteria()
+				.list();
 	}
 
-	public List<ElementType> findAllOrderAsc() {
-		return this.createCriteria().addOrder(Order.asc(this.getCreatedDatePropertyName())).list();
+	public Page<ElementType> findAll(PageRequest pageRequest) {
+		return this.createCriteria()
+				.page(pageRequest);
 	}
-
-	public List<ElementType> findAllOrderDesc() {
-		return this.createCriteria().addOrder(Order.desc(this.getCreatedDatePropertyName())).list();
-	}
-
-//	public LazyList<ElementType> findAllOrderAsc(ListProperties listProperties) {
-//		return this.createCriteria().addOrder(Order.asc(this.getCreatedDatePropertyName())).lazyList(listProperties);
-//	}
-//
-//	public LazyList<ElementType> findAllOrderDesc(ListProperties listProperties) {
-//		return this.createCriteria().addOrder(Order.desc(this.getCreatedDatePropertyName())).lazyList(listProperties);
-//	}
 
 	public boolean exists(PrimaryKey key) {
 		return this.findForKey(key) != null;
 	}
 
 	public long getTotalCountBetween(DateTime fromDate, DateTime toDate) {
-		return ((Number)this.createCriteria()
+		return ((Number) this.createCriteria()
 				.add(Restrictions.ge(this.getCreatedDatePropertyName(), fromDate))
 				.add(Restrictions.le(this.getCreatedDatePropertyName(), toDate))
 				.setProjection(Projections.rowCount())
-				.uniqueResult()).longValue();
+				.single()).longValue();
 	}
 
 	public PrimaryKey getKeyForElement(ElementType elementType) {
@@ -220,9 +226,15 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	}
 
 	public List<ElementType> findAllSince(DateTime date) {
-		return this.createCriteria() //
-				.add(Restrictions.gt(this.getCreatedDatePropertyName(), date)) //
-				.list(); //
+		return this.createCriteria()
+				.add(Restrictions.gt(this.getCreatedDatePropertyName(), date))
+				.list();
+	}
+
+	public Page<ElementType> findSince(DateTime date, PageRequest pageRequest) {
+		return this.createCriteria()
+				.add(Restrictions.gt(this.getCreatedDatePropertyName(), date))
+				.page(pageRequest);
 	}
 
 	/**
@@ -286,5 +298,16 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	// //////////////////////
 	// GETTERS/SETTERS
 	// //////////////
+
+	// //////////////////////
+	// INNER CLASSES
+	// //////////////
+
+	public static class CriteriaPool extends SynchronizedPool<CriteriaBuilder> {
+		@Override
+		protected CriteriaBuilder instantiate() {
+			return new CriteriaBuilder(this);
+		}
+	}
 
 }

@@ -9,14 +9,9 @@
 
 package co.mindie.cindy.database;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.configuration.Configuration;
+import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.database.tools.TracedHibernateDatabaseHandle;
 import co.mindie.cindy.exception.ConfigurationException;
 import co.mindie.cindy.utils.Pausable;
@@ -30,7 +25,11 @@ import org.hibernate.service.ServiceRegistryBuilder;
 import org.hibernate.stat.Statistics;
 import org.joda.time.DateTime;
 
-import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class HibernateDatabase extends Database implements Pausable {
 
@@ -45,14 +44,14 @@ public class HibernateDatabase extends Database implements Pausable {
 	private String jdbcConnectionString;
 	private boolean showDebug;
 	private boolean traceStartedSession;
-	private Map<HibernateDatabaseHandle, TracedHibernateDatabaseHandle> tracedHandles;
+	private final Map<HibernateDatabaseHandle, TracedHibernateDatabaseHandle> tracedHandles;
 
 	// //////////////////////
 	// CONSTRUCTORS
 	// //////////////
 
 	public HibernateDatabase() {
-		this.tracedHandles = new HashMap<HibernateDatabaseHandle, TracedHibernateDatabaseHandle>();
+		this.tracedHandles = new HashMap<>();
 	}
 
 	// //////////////////////
@@ -61,7 +60,7 @@ public class HibernateDatabase extends Database implements Pausable {
 
 	public void onOpenedSession(HibernateDatabaseHandle handle) {
 		if (this.traceStartedSession) {
-			StackTraceElement[] stackTrace =  new Throwable().getStackTrace();
+			StackTraceElement[] stackTrace = new Throwable().getStackTrace();
 			stackTrace = ArrayUtils.subarray(stackTrace, 1, stackTrace.length);
 			TracedHibernateDatabaseHandle tracedHibernateDatabaseHandle = new TracedHibernateDatabaseHandle(handle, stackTrace);
 			synchronized (this.tracedHandles) {
@@ -105,31 +104,7 @@ public class HibernateDatabase extends Database implements Pausable {
 		if (sessionFactory == null) {
 			synchronized (this) {
 				if (this.sessionFactory == null) {
-					final org.hibernate.cfg.Configuration configuration = new org.hibernate.cfg.Configuration();
-
-					LOGGER.trace("Starting HibernateDatabase with JDBC_CONNECTION_STRING=" + this.jdbcConnectionString);
-					if (this.jdbcConnectionString != null) {
-						configuration.getProperties().setProperty("hibernate.connection.url", this.jdbcConnectionString);
-						if (this.jdbcConnectionString.startsWith("jdbc:mysql:")) {
-							configuration.getProperties().setProperty("hibernate.show_sql", "false");
-							configuration.getProperties().setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-							configuration.getProperties().setProperty("hibernate.dialect", "CindyMySQLDialect");
-							LOGGER.trace("Setting up a MySQL database");
-						} else if (this.jdbcConnectionString.startsWith("jdbc:h2:")) {
-							configuration.getProperties().setProperty("hibernate.show_sql", this.showDebug ? "true" : "false");
-							configuration.getProperties().setProperty("hibernate.connection.driver_class", "org.h2.Driver");
-							configuration.getProperties().setProperty("hibernate.dialect", "CindyH2Dialect");
-							configuration.getProperties().setProperty("hibernate.hbm2ddl.auto", "update");
-							LOGGER.trace("Setting up a H2 database");
-						} else {
-							throw new ConfigurationException("Unknown JDBC database type: " + this.jdbcConnectionString);
-						}
-					} else {
-						throw new ConfigurationException("Null JDBC connection string");
-					}
-
-					configuration.configure();
-
+					final org.hibernate.cfg.Configuration configuration = this.getHibernateConfiguration();
 					ServiceRegistryBuilder builder = new ServiceRegistryBuilder();
 					builder.applySettings(configuration.getProperties());
 
@@ -142,6 +117,33 @@ public class HibernateDatabase extends Database implements Pausable {
 		}
 
 		return sessionFactory;
+	}
+
+	protected org.hibernate.cfg.Configuration getHibernateConfiguration() {
+		org.hibernate.cfg.Configuration configuration = new org.hibernate.cfg.Configuration();
+
+		LOGGER.trace("Starting HibernateDatabase with JDBC_CONNECTION_STRING=" + this.jdbcConnectionString);
+		if (this.jdbcConnectionString != null) {
+			configuration.getProperties().setProperty("hibernate.connection.url", this.jdbcConnectionString);
+			if (this.jdbcConnectionString.startsWith("jdbc:mysql:")) {
+				configuration.getProperties().setProperty("hibernate.show_sql", "false");
+				configuration.getProperties().setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
+				configuration.getProperties().setProperty("hibernate.dialect", "CindyMySQLDialect");
+				LOGGER.trace("Setting up a MySQL database");
+			} else if (this.jdbcConnectionString.startsWith("jdbc:h2:")) {
+				configuration.getProperties().setProperty("hibernate.show_sql", this.showDebug ? "true" : "false");
+				configuration.getProperties().setProperty("hibernate.connection.driver_class", "org.h2.Driver");
+				configuration.getProperties().setProperty("hibernate.dialect", "CindyH2Dialect");
+				configuration.getProperties().setProperty("hibernate.hbm2ddl.auto", "update");
+				LOGGER.trace("Setting up a H2 database");
+			} else {
+				throw new ConfigurationException("Unknown JDBC database type: " + this.jdbcConnectionString);
+			}
+		} else {
+			throw new ConfigurationException("Null JDBC connection string");
+		}
+		configuration.configure();
+		return configuration;
 	}
 
 	public List<String> getTablesNames() {
@@ -179,22 +181,6 @@ public class HibernateDatabase extends Database implements Pausable {
 	// //////////////////////
 	// GETTERS/SETTERS
 	// //////////////
-
-	public boolean isShowDebug() {
-		return this.showDebug;
-	}
-
-	public void setShowDebug(boolean showDebug) {
-		this.showDebug = showDebug;
-	}
-
-	public String getJdbcConnectionString() {
-		return this.jdbcConnectionString;
-	}
-
-	public void setJdbcConnectionString(String jdbcConnectionString) {
-		this.jdbcConnectionString = jdbcConnectionString;
-	}
 
 	public List<TracedHibernateDatabaseHandle> getHandlesWithActiveSessions() {
 		List<TracedHibernateDatabaseHandle> handles = new ArrayList<>();
