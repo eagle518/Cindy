@@ -37,6 +37,8 @@ public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration
 			this.configureForMySQL();
 		} else if (jdbcUrl.startsWith("jdbc:h2:")) {
 			this.configureForH2();
+		} else {
+			LOGGER.warn("The database type is unknown. You may review the configuration yourself.");
 		}
 	}
 
@@ -46,6 +48,7 @@ public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration
 
 	public void configureCommon(String jdbcUrl) {
 		this.getProperties().setProperty("hibernate.connection.url", jdbcUrl);
+		this.getProperties().setProperty("hibernate.show_sql", Boolean.toString(DEFAULT_SHOW_SQL));
 
 		// TODO move that in Mindie?
 		this.getProperties().setProperty("hibernate.current_session_context_class", "thread");
@@ -62,14 +65,12 @@ public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration
 	}
 
 	public void configureForMySQL() {
-		this.getProperties().setProperty("hibernate.show_sql", Boolean.toString(DEFAULT_SHOW_SQL));
 		this.getProperties().setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
 		this.getProperties().setProperty("hibernate.dialect", "co.mindie.cindy.database.dialect.CindyMySQLDialect");
 		LOGGER.trace("Setting up a MySQL database");
 	}
 
 	public void configureForH2() {
-		this.getProperties().setProperty("hibernate.show_sql", Boolean.toString(DEFAULT_SHOW_SQL));
 		this.getProperties().setProperty("hibernate.connection.driver_class", "org.h2.Driver");
 		this.getProperties().setProperty("hibernate.dialect", "co.mindie.cindy.database.dialect.CindyH2Dialect");
 		this.getProperties().setProperty("hibernate.hbm2ddl.auto", "update");
