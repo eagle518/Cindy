@@ -53,19 +53,6 @@ public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration
 	private void configureCommon(String jdbcUrl, boolean showSQL) {
 		this.getProperties().setProperty("hibernate.connection.url", jdbcUrl);
 		this.getProperties().setProperty("hibernate.show_sql", Boolean.toString(showSQL));
-
-		// TODO move that in Mindie?
-		this.getProperties().setProperty("hibernate.current_session_context_class", "thread");
-		this.getProperties().setProperty("hibernate.jdbc.batch_size", "40");
-		this.getProperties().setProperty("hibernate.generate_statistics", "false");
-
-		// TODO move that in Mindie and move the c3p0 dependency in Mindie?
-		this.getProperties().setProperty("hibernate.c3p0.min_size", "10");
-		this.getProperties().setProperty("hibernate.c3p0.max_size", "50");
-		this.getProperties().setProperty("hibernate.c3p0.timeout", "300");
-		this.getProperties().setProperty("hibernate.c3p0.max_statements", "0");
-		this.getProperties().setProperty("hibernate.c3p0.idle_test_period", "100");
-		this.getProperties().setProperty("hibernate.c3p0.num_helper_threads", "10");
 	}
 
 	private void configureForMySQL() {
