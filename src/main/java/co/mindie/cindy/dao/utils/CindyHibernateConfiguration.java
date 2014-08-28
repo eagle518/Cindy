@@ -27,11 +27,15 @@ public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration
 	// //////////////
 
 	public CindyHibernateConfiguration(String jdbcUrl) {
+		this(jdbcUrl, DEFAULT_SHOW_SQL);
+	}
+
+	public CindyHibernateConfiguration(String jdbcUrl, boolean showSQL) {
 		if (jdbcUrl == null) {
 			throw new ConfigurationException("The JDBCUrl is null.");
 		}
 
-		this.configureCommon(jdbcUrl);
+		this.configureCommon(jdbcUrl, showSQL);
 
 		if (jdbcUrl.startsWith("jdbc:mysql:")) {
 			this.configureForMySQL();
@@ -46,9 +50,9 @@ public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration
 	// METHODS
 	// //////////////
 
-	public void configureCommon(String jdbcUrl) {
+	private void configureCommon(String jdbcUrl, boolean showSQL) {
 		this.getProperties().setProperty("hibernate.connection.url", jdbcUrl);
-		this.getProperties().setProperty("hibernate.show_sql", Boolean.toString(DEFAULT_SHOW_SQL));
+		this.getProperties().setProperty("hibernate.show_sql", Boolean.toString(showSQL));
 
 		// TODO move that in Mindie?
 		this.getProperties().setProperty("hibernate.current_session_context_class", "thread");
@@ -64,13 +68,13 @@ public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration
 		this.getProperties().setProperty("hibernate.c3p0.num_helper_threads", "10");
 	}
 
-	public void configureForMySQL() {
+	private void configureForMySQL() {
 		this.getProperties().setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
 		this.getProperties().setProperty("hibernate.dialect", "co.mindie.cindy.database.dialect.CindyMySQLDialect");
 		LOGGER.trace("Setting up a MySQL database");
 	}
 
-	public void configureForH2() {
+	private void configureForH2() {
 		this.getProperties().setProperty("hibernate.connection.driver_class", "org.h2.Driver");
 		this.getProperties().setProperty("hibernate.dialect", "co.mindie.cindy.database.dialect.CindyH2Dialect");
 		this.getProperties().setProperty("hibernate.hbm2ddl.auto", "update");
