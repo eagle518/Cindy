@@ -7,9 +7,9 @@
 // File created on Jan 29, 2014 at 7:11:35 PM
 ////////
 
-package co.mindie.cindy.context;
+package co.mindie.cindy.exception;
 
-public class DbUnregisteredException extends RuntimeException {
+public class DbUnregisteredException extends CindyException {
 
 	////////////////////////
 	// VARIABLES
