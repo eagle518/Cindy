@@ -143,11 +143,11 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 		return number.intValue();
 	}
 
-	final protected CriteriaBuilder createCriteria() {
+	protected CriteriaBuilder createCriteria() {
 		return this.createCriteria(this.getManagedClass());
 	}
 
-	final protected CriteriaBuilder createCriteria(Class<?> managedClass) {
+	protected CriteriaBuilder createCriteria(Class<?> managedClass) {
 		return this.criteriaPool.obtain()
 				.configure(
 						this.getDatabaseHandle().getSession(),
