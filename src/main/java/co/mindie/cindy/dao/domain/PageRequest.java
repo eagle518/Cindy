@@ -29,6 +29,10 @@ public class PageRequest {
 		this(offset, limit, new ArrayList<>());
 	}
 
+	public PageRequest(int offset, int limit, Direction direction, String propertyName) {
+		this(offset, limit, new Sort(direction, propertyName));
+	}
+
 	public PageRequest(int offset, int limit, Sort... sorts) {
 		this(offset, limit, Arrays.asList(sorts));
 	}
