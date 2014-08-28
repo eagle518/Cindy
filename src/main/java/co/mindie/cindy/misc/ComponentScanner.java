@@ -19,7 +19,7 @@ import me.corsin.javatools.misc.Action2;
 
 import org.reflections.Reflections;
 
-import co.mindie.cindy.modelconverter.IResolver;
+import co.mindie.cindy.resolver.IResolver;
 
 public class ComponentScanner {
 

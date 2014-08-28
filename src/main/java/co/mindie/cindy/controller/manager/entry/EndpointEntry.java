@@ -18,7 +18,7 @@ import co.mindie.cindy.controller.CindyController;
 import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.exception.BadParameterException;
 import co.mindie.cindy.exception.CindyException;
-import co.mindie.cindy.modelconverter.IResolverOutput;
+import co.mindie.cindy.resolver.IResolverOutput;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.string.Strings;
 import org.apache.commons.fileupload.FileItem;

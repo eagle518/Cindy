@@ -25,10 +25,9 @@ import co.mindie.cindy.controller.builtin.DefaultRequestErrorHandler;
 import co.mindie.cindy.database.handle.builtin.SimpleHibernateDatabaseHandle;
 import co.mindie.cindy.filehandling.IFileHandler;
 import co.mindie.cindy.misc.ComponentScanner;
-import co.mindie.cindy.modelconverter.ResolverManager;
+import co.mindie.cindy.resolver.ResolverManager;
 import co.mindie.cindy.responseserializer.JsonResponseWriter;
 import co.mindie.cindy.utils.Pausable;
-import me.corsin.javatools.task.MultiThreadedTaskQueue;
 import me.corsin.javatools.task.TaskQueue;
 
 import me.corsin.javatools.task.ThreadedConcurrentTaskQueue;

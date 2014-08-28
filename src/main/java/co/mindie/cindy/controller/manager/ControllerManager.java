@@ -26,7 +26,7 @@ import co.mindie.cindy.controller.manager.entry.ControllerEntry;
 import co.mindie.cindy.controller.manager.entry.EndpointPathResult;
 import co.mindie.cindy.controller.manager.entry.RequestHandler;
 import co.mindie.cindy.exception.CindyException;
-import co.mindie.cindy.modelconverter.IResolverOutput;
+import co.mindie.cindy.resolver.IResolverOutput;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 import co.mindie.cindy.responseserializer.StringResponseWriter;
 import co.mindie.cindy.utils.EndpointIndexer;
