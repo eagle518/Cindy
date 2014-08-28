@@ -1,22 +1,18 @@
 package co.mindie.cindy.resolver;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.List;
-
+import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.CindyAppCreator;
-import co.mindie.cindy.resolver.IResolver;
-import co.mindie.cindy.resolver.IResolverOutput;
-import co.mindie.cindy.resolver.ResolverManager;
+import co.mindie.cindy.component.ComponentContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.component.ComponentContext;
+import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class ResolverManagerTest {
@@ -35,7 +31,7 @@ public class ResolverManagerTest {
 	@Test
 	public void resolve_string_to_int() {
 		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, int.class);
-		int nb = (int)output.createResolversAndResolve(this.cc.createSubComponentContext(), "42", 0);
+		int nb = (int) output.createResolversAndResolve(this.cc.createSubComponentContext(), "42", 0);
 
 		assertTrue(nb == 42);
 	}
@@ -59,7 +55,7 @@ public class ResolverManagerTest {
 	public void resolve_nullstring_to_integer() {
 		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, Integer.class);
 
-		Integer it = (Integer)output.createResolversAndResolve(this.cc.createSubComponentContext(), null, 0);
+		Integer it = (Integer) output.createResolversAndResolve(this.cc.createSubComponentContext(), null, 0);
 
 		assertNull(it);
 	}
@@ -68,7 +64,7 @@ public class ResolverManagerTest {
 	public void resolve_string_to_longarray() {
 		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, long[].class);
 
-		long[] array = (long[])output.createResolversAndResolve(this.cc.createSubComponentContext(), "1;2;3;4;5;6;7;8", 0);
+		long[] array = (long[]) output.createResolversAndResolve(this.cc.createSubComponentContext(), "1;2;3;4;5;6;7;8", 0);
 
 		assertNotNull(array);
 		assertTrue(array.length == 8);
@@ -78,7 +74,7 @@ public class ResolverManagerTest {
 	public void resolve_string_to_longarray_with_commas() {
 		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, long[].class);
 
-		long[] array = (long[])output.createResolversAndResolve(this.cc.createSubComponentContext(), "1,2,3,4,5,6", 0);
+		long[] array = (long[]) output.createResolversAndResolve(this.cc.createSubComponentContext(), "1,2,3,4,5,6", 0);
 
 		assertNotNull(array);
 		assertTrue(array.length == 6);
@@ -97,12 +93,13 @@ public class ResolverManagerTest {
 
 		assertNotNull(output);
 
-		MyObject obj = (MyObject)output.createResolversAndResolve(this.cc.createSubComponentContext(), "1337", 0);
+		MyObject obj = (MyObject) output.createResolversAndResolve(this.cc.createSubComponentContext(), "1337", 0);
 
 		assertTrue(obj.value == 1337);
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void resolve_chained() {
 		IResolverOutput output = this.resolverManager.getResolverOutput(Boolean.class, List.class);
 
@@ -115,7 +112,7 @@ public class ResolverManagerTest {
 
 		assertNotNull(output);
 
-		List<Object> list = (List<Object>)output.createResolversAndResolve(this.cc.createSubComponentContext(), true, 0);
+		List<Object> list = (List<Object>) output.createResolversAndResolve(this.cc.createSubComponentContext(), true, 0);
 
 		assertTrue(list.size() == 1);
 	}
@@ -129,7 +126,7 @@ public class ResolverManagerTest {
 	public static class WeirdResolver implements IResolver<Boolean, Object[]> {
 		@Override
 		public Object[] resolve(Boolean input, Class<?> expectedOutputType, int options) {
-			return new Object[] { new MyObject() };
+			return new Object[]{new MyObject()};
 		}
 	}
 
@@ -137,7 +134,7 @@ public class ResolverManagerTest {
 
 		@Override
 		public MyObject resolve(Integer input, Class<?> expectedOutputType,
-				int options) {
+		                        int options) {
 			MyObject obj = new MyObject();
 			obj.value = input;
 
