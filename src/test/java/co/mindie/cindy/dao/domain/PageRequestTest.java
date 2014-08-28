@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(JUnit4.class)
 public class PageRequestTest {
 	@Test
-	public void addSort_appends_a_sort_to_the_list() {
+	public void appendSort_appends_the_sort_a_the_end_of_the_list() {
 		// GIVEN
 		Sort sort1 = new Sort(Direction.ASC, "created_date");
 		Sort sort2 = new Sort(Direction.DESC, "updated_date");
@@ -22,7 +22,7 @@ public class PageRequestTest {
 
 		// WHEN
 		Sort sort = new Sort(Direction.ASC, "test");
-		pageRequest.addSort(sort);
+		pageRequest.appendSort(sort);
 
 		// THEN
 		assertEquals(3, pageRequest.getSorts().size());

@@ -72,9 +72,17 @@ public class Page<T> implements Iterable<T> {
 		return null;
 	}
 
+	// //////////////////////
+	// DATA ENCAPSULATION
+	// //////////////
+
 	@Override
 	public Iterator<T> iterator() {
 		return this.data.iterator();
+	}
+
+	public T get(int index) {
+		return this.data.get(index);
 	}
 
 	// //////////////////////
