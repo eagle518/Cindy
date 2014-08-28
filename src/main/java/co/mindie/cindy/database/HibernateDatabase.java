@@ -11,9 +11,9 @@ package co.mindie.cindy.database;
 
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.configuration.Configuration;
+import co.mindie.cindy.dao.utils.CindyHibernateConfiguration;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.database.tools.TracedHibernateDatabaseHandle;
-import co.mindie.cindy.exception.ConfigurationException;
 import co.mindie.cindy.utils.Pausable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -41,8 +41,7 @@ public class HibernateDatabase extends Database implements Pausable {
 	@Wired
 	private Configuration configuration;
 	private SessionFactory sessionFactory;
-	private String jdbcConnectionString;
-	private boolean showDebug;
+	private String jdbcUrl;
 	private boolean traceStartedSession;
 	private final Map<HibernateDatabaseHandle, TracedHibernateDatabaseHandle> tracedHandles;
 
@@ -120,30 +119,7 @@ public class HibernateDatabase extends Database implements Pausable {
 	}
 
 	protected org.hibernate.cfg.Configuration getHibernateConfiguration() {
-		org.hibernate.cfg.Configuration configuration = new org.hibernate.cfg.Configuration();
-
-		LOGGER.trace("Starting HibernateDatabase with JDBC_CONNECTION_STRING=" + this.jdbcConnectionString);
-		if (this.jdbcConnectionString != null) {
-			configuration.getProperties().setProperty("hibernate.connection.url", this.jdbcConnectionString);
-			if (this.jdbcConnectionString.startsWith("jdbc:mysql:")) {
-				configuration.getProperties().setProperty("hibernate.show_sql", "false");
-				configuration.getProperties().setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-				configuration.getProperties().setProperty("hibernate.dialect", "CindyMySQLDialect");
-				LOGGER.trace("Setting up a MySQL database");
-			} else if (this.jdbcConnectionString.startsWith("jdbc:h2:")) {
-				configuration.getProperties().setProperty("hibernate.show_sql", this.showDebug ? "true" : "false");
-				configuration.getProperties().setProperty("hibernate.connection.driver_class", "org.h2.Driver");
-				configuration.getProperties().setProperty("hibernate.dialect", "CindyH2Dialect");
-				configuration.getProperties().setProperty("hibernate.hbm2ddl.auto", "update");
-				LOGGER.trace("Setting up a H2 database");
-			} else {
-				throw new ConfigurationException("Unknown JDBC database type: " + this.jdbcConnectionString);
-			}
-		} else {
-			throw new ConfigurationException("Null JDBC connection string");
-		}
-		configuration.configure();
-		return configuration;
+		return new CindyHibernateConfiguration(this.jdbcUrl);
 	}
 
 	public List<String> getTablesNames() {
@@ -209,5 +185,13 @@ public class HibernateDatabase extends Database implements Pausable {
 
 	public boolean isTracingStartedSession() {
 		return this.traceStartedSession;
+	}
+
+	public String getJdbcUrl() {
+		return jdbcUrl;
+	}
+
+	public void setJdbcUrl(String jdbcUrl) {
+		this.jdbcUrl = jdbcUrl;
 	}
 }

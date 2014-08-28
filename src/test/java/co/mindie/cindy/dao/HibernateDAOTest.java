@@ -7,12 +7,12 @@ import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.ComponentContext;
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadataManager;
-import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.dao.domain.Direction;
 import co.mindie.cindy.dao.domain.Page;
 import co.mindie.cindy.dao.domain.PageRequest;
 import co.mindie.cindy.dao.domain.Sort;
 import co.mindie.cindy.dao.impl.HibernateDAO;
+import co.mindie.cindy.dao.utils.CindyHibernateConfiguration;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 import com.google.common.collect.Lists;
@@ -238,18 +238,15 @@ public class HibernateDAOTest extends AbstractCindyTest {
 
 	@Component
 	public static class FakeDatabase extends HibernateDatabase {
-		@Wired private Configuration configuration;
-
 		@Override
 		protected org.hibernate.cfg.Configuration getHibernateConfiguration() {
-			org.hibernate.cfg.Configuration configuration = new org.hibernate.cfg.Configuration();
-			configuration.getProperties().setProperty("hibernate.connection.url", "jdbc:h2:" + DATABASE_PATH + DATABASE_PREFIX + ";MODE=MYSQL");
-			configuration.getProperties().setProperty("hibernate.show_sql", "true");
-			configuration.getProperties().setProperty("hibernate.connection.driver_class", "org.h2.Driver");
-			configuration.getProperties().setProperty("hibernate.dialect", "co.mindie.cindy.database.dialect.CindyH2Dialect");
-			configuration.getProperties().setProperty("hibernate.hbm2ddl.auto", "update");
-			configuration.addAnnotatedClass(FakeObject.class);
-			return configuration;
+			String dbPath = System.getProperty("cindy.test.db.path");
+			if (dbPath == null) {
+				dbPath = DATABASE_PATH + DATABASE_PREFIX;
+			}
+			String jdbcUrl = "jdbc:h2:" + dbPath + ";MODE=MYSQL";
+			return new CindyHibernateConfiguration(jdbcUrl)
+					.scanPackageForAnnotatedClasses("co.mindie.cindy.dao");
 		}
 	}
 }
