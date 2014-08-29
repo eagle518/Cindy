@@ -216,4 +216,22 @@ public class PageRequest {
 	public boolean hasSort() {
 		return this.sorts.size() > 0;
 	}
+
+	/**
+	 * Determine if the PageRequest has a sort for the given property
+	 *
+	 * @param propertyName the name of the property
+	 * @return true if the PageRequest has a sort for the given property, else false
+	 */
+	public boolean hasSort(String propertyName) {
+		Iterator<Sort> ite = this.sorts.iterator();
+		boolean hasSort = false;
+		while (ite.hasNext() && !hasSort) {
+			Sort current = ite.next();
+			if (current.getProperty().equals(propertyName)) {
+				hasSort = true;
+			}
+		}
+		return hasSort;
+	}
 }
