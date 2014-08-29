@@ -18,6 +18,7 @@ import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.utils.FieldProperty;
 import me.corsin.javatools.misc.SynchronizedPool;
 import me.corsin.javatools.reflect.ReflectionUtils;
+import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.criterion.Projections;
@@ -141,6 +142,11 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 		Number number = (Number) this.getDatabaseHandle().getSession().createCriteria(this.getManagedClass()).setProjection(Projections.rowCount()).add(Restrictions.ge(this.getCreatedDatePropertyName(), date)).uniqueResult();
 
 		return number.intValue();
+	}
+
+	protected Criteria createHibernateCriteria() {
+		// TODO maybe remove this method and include the missing Criteria methods in the CriteriaBuilder (eg: setFetchMode)
+		return this.getDatabaseHandle().getSession().createCriteria(this.getManagedClass());
 	}
 
 	protected CriteriaBuilder createCriteria() {
