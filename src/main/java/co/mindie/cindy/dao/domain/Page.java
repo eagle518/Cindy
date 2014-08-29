@@ -93,11 +93,27 @@ public class Page<T> implements Iterable<T> {
 		return this.data;
 	}
 
+	public void setData(List<T> data) {
+		this.data = data;
+	}
+
+	public PageRequest getPageRequest() {
+		return pageRequest;
+	}
+
+	public void setPageRequest(PageRequest pageRequest) {
+		this.pageRequest = pageRequest;
+	}
+
 	public int getSize() {
 		return this.data.size();
 	}
 
 	public long getTotalElements() {
 		return this.totalElements;
+	}
+
+	public void setTotalElements(long totalElements) {
+		this.totalElements = totalElements;
 	}
 }
