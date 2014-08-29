@@ -9,26 +9,26 @@
 
 package co.mindie.cindy.dao.impl;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import co.mindie.cindy.automapping.Wired;
+import co.mindie.cindy.dao.domain.Direction;
+import co.mindie.cindy.dao.domain.PageRequest;
 import co.mindie.cindy.database.MongoDatabase;
-import co.mindie.cindy.mongo.MongoIterator;
-import org.bson.types.ObjectId;
-import org.joda.time.DateTime;
-
 import co.mindie.cindy.database.handle.MongoDatabaseHandle;
 import co.mindie.cindy.mongo.MongoEntity;
+import co.mindie.cindy.mongo.MongoIterator;
 import co.mindie.cindy.mongo.MongoQuery;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
+import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public abstract class MongoDAO<ElementType extends MongoEntity> extends AbstractDAO<ElementType, ObjectId, MongoDatabase> {
 
@@ -117,7 +117,7 @@ public abstract class MongoDAO<ElementType extends MongoEntity> extends Abstract
 		return this.cursorToList(cursor);
 	}
 
-	private DBCursor findAll(DBObject orderBy, Integer limit, Integer offset) {
+	protected DBCursor findAll(DBObject orderBy, Integer limit, Integer offset) {
 		DBCursor cursor = this.getCollection().find();
 		if (offset != null && limit != null) {
 			cursor.skip(offset / limit);
@@ -183,20 +183,26 @@ public abstract class MongoDAO<ElementType extends MongoEntity> extends Abstract
 		return new MongoIterator<ElementType>(cursor, this);
 	}
 
-//	protected LazyList<ElementType> cursorToLazyList(DBCursor cursor, long serverSize, ListProperties listProperties) {
-//		List<ElementType> elements = new ArrayList<ElementType>();
-//		while (cursor.hasNext() && elements.size() <= listProperties.limit) {
-//			DBObject dbObject = cursor.next();
-//			elements.add(this.dbObjectToElement(dbObject));
-//		}
-//		return new LazyList<ElementType>(elements, listProperties.offset, (int) serverSize);
-//	}
-
 	protected long getServerSize(DBObject query) {
 		if (query == null)
 			return this.getCollection().count();
 		else
 			return this.getCollection().count(query);
+	}
+
+	private DBObject buildSort(PageRequest pageRequest) {
+		MongoQuery query = new MongoQuery();
+		pageRequest.getSorts()
+				.forEach(s -> query.with(s.getProperty(), s.getDirection() == Direction.ASC ? 1 : -1));
+		return query.build();
+	}
+
+	protected void applyPageRequest(DBCursor cursor, PageRequest pageRequest) {
+		if (pageRequest != null) {
+			cursor.sort(this.buildSort(pageRequest));
+			cursor.skip(pageRequest.getOffset());
+			cursor.limit(pageRequest.getLimit());
+		}
 	}
 
 	// //////////////////////
