@@ -190,7 +190,7 @@ public abstract class MongoDAO<ElementType extends MongoEntity> extends Abstract
 			return this.getCollection().count(query);
 	}
 
-	private DBObject buildSort(PageRequest pageRequest) {
+	protected DBObject buildSort(PageRequest pageRequest) {
 		MongoQuery query = new MongoQuery();
 		pageRequest.getSorts()
 				.forEach(s -> query.with(s.getProperty(), s.getDirection() == Direction.ASC ? 1 : -1));

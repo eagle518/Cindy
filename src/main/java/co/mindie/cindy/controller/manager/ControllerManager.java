@@ -9,20 +9,14 @@
 
 package co.mindie.cindy.controller.manager;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.HttpMethod;
 import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.manager.entry.ControllerEntry;
+import co.mindie.cindy.controller.manager.entry.EndpointEntry;
 import co.mindie.cindy.controller.manager.entry.EndpointPathResult;
 import co.mindie.cindy.controller.manager.entry.RequestHandler;
 import co.mindie.cindy.exception.CindyException;
@@ -33,12 +27,16 @@ import co.mindie.cindy.utils.EndpointIndexer;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.io.IOUtils;
 import me.corsin.javatools.misc.ValueHolder;
-
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.log4j.Logger;
 
-import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
-import co.mindie.cindy.controller.manager.entry.EndpointEntry;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ControllerManager extends CindyComponent {
 
@@ -298,16 +296,16 @@ public class ControllerManager extends CindyComponent {
 
 	private EndpointIndexer getEndpointIndexerForMethod(HttpMethod method) {
 		switch (method) {
-		case DELETE:
-			return this.deleteMapping;
-		case GET:
-			return this.getMapping;
-		case POST:
-			return this.postMapping;
-		case PUT:
-			return this.putMapping;
-		default:
-			throw new CindyException("Unrecognized httpMethod: " + method);
+			case DELETE:
+				return this.deleteMapping;
+			case GET:
+				return this.getMapping;
+			case POST:
+				return this.postMapping;
+			case PUT:
+				return this.putMapping;
+			default:
+				throw new CindyException("Unrecognized httpMethod: " + method);
 		}
 	}
 
