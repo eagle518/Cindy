@@ -56,12 +56,25 @@ public class PageRequest {
 	 * Adds a @{link Sort} to the @{link PageRequest} after the existing orders
 	 * If a sort for this property already exists, it will be replaced by the new one
 	 *
+	 * @param sort the sort to add
 	 * @return the modified @{link PageRequest}
 	 */
 	public PageRequest appendSort(Sort sort) {
 		this.removeSortForProperty(sort.getProperty());
 		this.sorts.add(sort);
 		return this;
+	}
+
+	/**
+	 * Adds a @{link Sort} to the @{link PageRequest} after the existing orders
+	 * If a sort for this property already exists, it will be replaced by the new one
+	 *
+	 * @param direction    the direction of the sort
+	 * @param propertyName the property name of the sort
+	 * @return the modified @{link PageRequest}
+	 */
+	public PageRequest appendSort(Direction direction, String propertyName) {
+		return this.appendSort(new Sort(direction, propertyName));
 	}
 
 	/**
@@ -85,12 +98,25 @@ public class PageRequest {
 	 * Adds a @{link Sort} to the @{link PageRequest} before the existing orders
 	 * If a sort for this property already exists, it will be replaced by the new one
 	 *
+	 * @param sort the sort to add
 	 * @return the modified @{link PageRequest}
 	 */
 	public PageRequest prependSort(Sort sort) {
 		this.removeSortForProperty(sort.getProperty());
 		this.sorts.set(0, sort);
 		return this;
+	}
+
+	/**
+	 * Adds a @{link Sort} to the @{link PageRequest} before the existing orders
+	 * If a sort for this property already exists, it will be replaced by the new one
+	 *
+	 * @param direction    the direction of the sort
+	 * @param propertyName the property name of the sort
+	 * @return the modified @{link PageRequest}
+	 */
+	public PageRequest prependSort(Direction direction, String propertyName) {
+		return this.prependSort(new Sort(direction, propertyName));
 	}
 
 	/**
@@ -156,6 +182,10 @@ public class PageRequest {
 		return this.offset;
 	}
 
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+
 	/**
 	 * The number of items for each the page
 	 *
@@ -165,6 +195,9 @@ public class PageRequest {
 		return this.limit;
 	}
 
+	public void setLimit(int limit) {
+		this.limit = limit;
+	}
 
 	/**
 	 * Returns the sorting parameters
@@ -173,5 +206,14 @@ public class PageRequest {
 	 */
 	public List<Sort> getSorts() {
 		return this.sorts;
+	}
+
+	/**
+	 * Determine if the PageRequest has sorts or not
+	 *
+	 * @return true if the PageRequest has sorts, else false
+	 */
+	public boolean hasSort() {
+		return this.sorts.size() > 0;
 	}
 }
