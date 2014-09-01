@@ -26,11 +26,10 @@ public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration
 	// CONSTRUCTORS
 	// //////////////
 
-	public CindyHibernateConfiguration(String jdbcUrl) {
-		this(jdbcUrl, DEFAULT_SHOW_SQL);
-	}
-
-	public CindyHibernateConfiguration(String jdbcUrl, boolean showSQL) {
+	public CindyHibernateConfiguration(String jdbcUrl, Boolean showSQL) {
+		if (showSQL == null) {
+			showSQL = DEFAULT_SHOW_SQL;
+		}
 		if (jdbcUrl == null) {
 			throw new ConfigurationException("The JDBCUrl is null.");
 		}

@@ -11,12 +11,10 @@ package co.mindie.cindy.database;
 
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.configuration.Configuration;
-import co.mindie.cindy.dao.utils.CindyHibernateConfiguration;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.database.tools.TracedHibernateDatabaseHandle;
 import co.mindie.cindy.utils.Pausable;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.metadata.ClassMetadata;
@@ -31,17 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class HibernateDatabase extends Database implements Pausable {
+public abstract class HibernateDatabase extends Database implements Pausable {
 
 	// //////////////////////
 	// VARIABLES
 	// //////////////
 
-	private static final Logger LOGGER = Logger.getLogger(HibernateDatabase.class);
-	@Wired
-	private Configuration configuration;
+	@Wired private Configuration configuration;
 	private SessionFactory sessionFactory;
-	private String jdbcUrl;
 	private boolean traceStartedSession;
 	private final Map<HibernateDatabaseHandle, TracedHibernateDatabaseHandle> tracedHandles;
 
@@ -118,9 +113,7 @@ public class HibernateDatabase extends Database implements Pausable {
 		return sessionFactory;
 	}
 
-	protected org.hibernate.cfg.Configuration getHibernateConfiguration() {
-		return new CindyHibernateConfiguration(this.jdbcUrl);
-	}
+	protected abstract org.hibernate.cfg.Configuration getHibernateConfiguration();
 
 	public List<String> getTablesNames() {
 		SessionFactory factory = this.getSessionFactory();
@@ -173,11 +166,9 @@ public class HibernateDatabase extends Database implements Pausable {
 		DateTime threshold = DateTime.now().minusMinutes(minutes);
 
 		synchronized (this.tracedHandles) {
-			for (TracedHibernateDatabaseHandle handle : this.tracedHandles.values()) {
-				if (handle.getCreatedDate().isBefore(threshold)) {
-					handles.add(handle);
-				}
-			}
+			handles.addAll(this.tracedHandles.values().stream()
+					.filter(handle -> handle.getCreatedDate().isBefore(threshold))
+					.collect(Collectors.toList()));
 		}
 
 		return handles;
@@ -185,13 +176,5 @@ public class HibernateDatabase extends Database implements Pausable {
 
 	public boolean isTracingStartedSession() {
 		return this.traceStartedSession;
-	}
-
-	public String getJdbcUrl() {
-		return jdbcUrl;
-	}
-
-	public void setJdbcUrl(String jdbcUrl) {
-		this.jdbcUrl = jdbcUrl;
 	}
 }

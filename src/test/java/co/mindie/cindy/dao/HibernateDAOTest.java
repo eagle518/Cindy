@@ -245,7 +245,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 				dbPath = DATABASE_PATH + DATABASE_PREFIX;
 			}
 			String jdbcUrl = "jdbc:h2:" + dbPath + ";MODE=MYSQL";
-			return new CindyHibernateConfiguration(jdbcUrl)
+			return new CindyHibernateConfiguration(jdbcUrl, true)
 					.scanPackageForAnnotatedClasses("co.mindie.cindy.dao");
 		}
 	}
