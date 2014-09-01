@@ -25,6 +25,7 @@ public class CriteriaBuilder {
 	////////////////////////
 	// VARIABLES
 	////////////////
+
 	final private List<Alias> alias;
 	private String groupByProperty;
 	private Projection projection;

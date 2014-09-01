@@ -70,6 +70,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 
 		this.application.getComponentMetadataManager().loadComponent(FakeDatabase.class);
 		this.application.getComponentMetadataManager().loadComponent(FakeDatabaseHandle.class);
+		// TODO we should provide a default implementation weakly loaded
 		this.application.getComponentMetadataManager().loadComponent(FakeCriteriaBuilderFactory.class);
 		this.application.getComponentMetadataManager().loadComponent(this.getClass());
 
@@ -99,7 +100,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		// Put the constraints back.
 		session.createSQLQuery("SET foreign_key_checks = 1;").executeUpdate();
 
-		this.dao.getDatabaseHandle().flush();
+		this.dao.getDatabaseHandle().flushAndClear();
 	}
 
 	@BeforeClass

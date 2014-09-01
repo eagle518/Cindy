@@ -239,7 +239,7 @@ public abstract class HibernateDatabaseHandle extends CindyComponent implements 
 		return this.openedSession != null;
 	}
 
-	abstract public HibernateDatabase getHibernateDatabase();
+	public abstract HibernateDatabase getHibernateDatabase();
 
 	@Override
 	public Database getDatabase() {

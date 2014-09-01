@@ -64,13 +64,12 @@ public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration
 		this.getProperties().setProperty("hibernate.connection.driver_class", "org.h2.Driver");
 		this.getProperties().setProperty("hibernate.dialect", "co.mindie.cindy.database.dialect.CindyH2Dialect");
 		this.getProperties().setProperty("hibernate.hbm2ddl.auto", "update");
-		this.scanPackageForAnnotatedClasses(""); // Scan the world
 		LOGGER.trace("Setting up a H2 database");
 	}
 
-	public CindyHibernateConfiguration scanPackageForAnnotatedClasses(String packagePath) {
-		LOGGER.trace("Scanning package " + packagePath + " for entities.");
-		new Reflections(packagePath)
+	public CindyHibernateConfiguration scanPackageForAnnotatedClasses(String packageName) {
+		LOGGER.trace("Scanning package " + packageName + " for entities.");
+		new Reflections(packageName)
 				.getTypesAnnotatedWith(Entity.class)
 				.forEach(cls -> {
 					LOGGER.trace("\tFound entity class: " + cls);
