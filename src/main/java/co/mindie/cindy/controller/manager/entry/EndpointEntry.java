@@ -262,7 +262,7 @@ public class EndpointEntry {
 						if (items != null && items.size() > 0) {
 							FileItem item = items.get(0);
 							if (item.isFormField()) {
-								stringValue = item.getString();
+								stringValue = item.getString("UTF-8");
 							} else {
 								inputStreamValue = item.getInputStream();
 							}
