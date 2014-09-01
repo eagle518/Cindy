@@ -161,7 +161,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 
 		// THEN
 		assertEquals(6, page.getTotalElements());
-		assertEquals(3, page.getSize());
+		assertEquals(3, page.size());
 
 		List<FakeObject> data = page.getData();
 		assertEquals(fake4.getId(), data.get(0).getId());

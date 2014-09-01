@@ -105,7 +105,7 @@ public class Page<T> implements Iterable<T> {
 		this.pageRequest = pageRequest;
 	}
 
-	public int getSize() {
+	public int size() {
 		return this.data.size();
 	}
 
