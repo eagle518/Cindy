@@ -26,7 +26,6 @@ public class CriteriaBuilder {
 	// VARIABLES
 	////////////////
 	final private List<Alias> alias;
-	private String createdDatePropertyName;
 	private String groupByProperty;
 	private Projection projection;
 	private ResultTransformer resultTransformer;
@@ -39,7 +38,6 @@ public class CriteriaBuilder {
 	}
 
 	public CriteriaBuilder(Pool<CriteriaBuilder> criteriaBuilderPool) {
-		this.createdDatePropertyName = "";
 		this.orders = new ArrayList<>();
 		this.criterions = new ArrayList<>();
 		this.alias = new ArrayList<>();
@@ -51,10 +49,9 @@ public class CriteriaBuilder {
 	// CONSTRUCTORS
 	////////////////
 
-	public CriteriaBuilder configure(Session session, String createdDatePropertyName, Class<?> returnedClass) {
+	public CriteriaBuilder configure(Session session, Class<?> returnedClass) {
 		this.session = session;
 		this.returnedClass = returnedClass;
-		this.createdDatePropertyName = createdDatePropertyName;
 
 		return this;
 	}
@@ -86,7 +83,6 @@ public class CriteriaBuilder {
 		this.criterions.clear();
 		this.orders.clear();
 
-		this.createdDatePropertyName = null;
 		this.groupByProperty = null;
 		this.projection = null;
 		this.resultTransformer = null;
@@ -104,7 +100,7 @@ public class CriteriaBuilder {
 		}
 	}
 
-	private Criteria getCountCriteria() {
+	protected Criteria getCountCriteria() {
 		Criteria criteria = this.session.createCriteria(this.returnedClass).setProjection(Projections.rowCount());
 		for (Alias alias : this.alias) {
 			criteria.createAlias(alias.propertyName, alias.alias);
@@ -115,7 +111,7 @@ public class CriteriaBuilder {
 		return criteria;
 	}
 
-	private int getCount() {
+	protected long getCount() {
 		this.ensureConfigure();
 
 		if (this.groupByProperty != null) {
@@ -124,7 +120,7 @@ public class CriteriaBuilder {
 		} else {
 			Criteria criteria = this.getCountCriteria();
 			Number number = (Number) criteria.uniqueResult();
-			return number.intValue();
+			return number.longValue();
 		}
 	}
 
@@ -162,7 +158,7 @@ public class CriteriaBuilder {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> List<T> getResults(PageRequest pageRequest) {
+	protected <T> List<T> getResults(PageRequest pageRequest) {
 		Criteria criteria = this.getResultCriteria();
 		pageRequest.getSorts().forEach(sort -> {
 			switch (sort.getDirection()) {
@@ -188,7 +184,7 @@ public class CriteriaBuilder {
 	public <T> Page<T> page(PageRequest pageRequest) {
 		List<T> results = this.getResults(pageRequest);
 
-		int count = this.getCount();
+		long count = this.getCount();
 
 		Page<T> page = new Page<T>(results, pageRequest, count);
 
@@ -213,8 +209,8 @@ public class CriteriaBuilder {
 		return element;
 	}
 
-	public int count() {
-		int size = this.getCount();
+	public long count() {
+		long size = this.getCount();
 
 		this.release();
 
@@ -280,14 +276,6 @@ public class CriteriaBuilder {
 		}
 
 		return this;
-	}
-
-	public String getCreatedDatePropertyName() {
-		return createdDatePropertyName;
-	}
-
-	public void setCreatedDatePropertyName(String createdDatePropertyName) {
-		this.createdDatePropertyName = createdDatePropertyName;
 	}
 
 	private static class Alias {

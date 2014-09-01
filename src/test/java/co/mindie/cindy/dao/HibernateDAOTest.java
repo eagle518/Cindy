@@ -3,6 +3,7 @@ package co.mindie.cindy.dao;
 import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Component;
+import co.mindie.cindy.automapping.Singleton;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.ComponentContext;
 import co.mindie.cindy.component.ComponentInitializer;
@@ -13,9 +14,12 @@ import co.mindie.cindy.dao.domain.PageRequest;
 import co.mindie.cindy.dao.domain.Sort;
 import co.mindie.cindy.dao.impl.HibernateDAO;
 import co.mindie.cindy.dao.utils.CindyHibernateConfiguration;
+import co.mindie.cindy.dao.utils.CriteriaBuilder;
+import co.mindie.cindy.dao.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 import com.google.common.collect.Lists;
+import me.corsin.javatools.misc.SynchronizedPool;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.annotations.Type;
@@ -66,6 +70,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 
 		this.application.getComponentMetadataManager().loadComponent(FakeDatabase.class);
 		this.application.getComponentMetadataManager().loadComponent(FakeDatabaseHandle.class);
+		this.application.getComponentMetadataManager().loadComponent(FakeCriteriaBuilderFactory.class);
 		this.application.getComponentMetadataManager().loadComponent(this.getClass());
 
 		initializer.addCreatedComponent(this, this.application.getComponentContext().createSubComponentContext());
@@ -247,6 +252,22 @@ public class HibernateDAOTest extends AbstractCindyTest {
 			String jdbcUrl = "jdbc:h2:" + dbPath + ";MODE=MYSQL";
 			return new CindyHibernateConfiguration(jdbcUrl, true)
 					.scanPackageForAnnotatedClasses("co.mindie.cindy.dao");
+		}
+	}
+
+	@Singleton
+	public static class FakeCriteriaBuilderFactory extends SynchronizedPool<CriteriaBuilder> implements CriteriaBuilderFactory {
+		@Override
+		public CriteriaBuilder createCriteria(Session session, Class<?> managedClass) {
+			return this.obtain().configure(
+					session,
+					managedClass
+			);
+		}
+
+		@Override
+		protected CriteriaBuilder instantiate() {
+			return new CriteriaBuilder(this);
 		}
 	}
 }

@@ -103,7 +103,11 @@ public class PageRequest {
 	 */
 	public PageRequest prependSort(Sort sort) {
 		this.removeSortForProperty(sort.getProperty());
-		this.sorts.set(0, sort);
+		if (this.sorts.size() > 0) {
+			this.sorts.set(0, sort);
+		} else {
+			this.sorts.add(sort);
+		}
 		return this;
 	}
 

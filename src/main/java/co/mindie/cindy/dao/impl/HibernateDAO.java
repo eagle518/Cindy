@@ -9,14 +9,15 @@
 
 package co.mindie.cindy.dao.impl;
 
+import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.dao.domain.Page;
 import co.mindie.cindy.dao.domain.PageRequest;
 import co.mindie.cindy.dao.utils.CriteriaBuilder;
+import co.mindie.cindy.dao.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.dao.utils.GroupByResultTransformer;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.utils.FieldProperty;
-import me.corsin.javatools.misc.SynchronizedPool;
 import me.corsin.javatools.reflect.ReflectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -45,11 +46,10 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	public static final String DEFAULT_CREATED_DATE_PROPERTY_NAME = "createdDate";
 	public static final String DEFAULT_UPDATED_DATE_PROPERTY_NAME = "updatedDate";
 	private HibernateDatabaseHandle databaseHandle;
-	private final CriteriaPool criteriaPool;
+	@Wired private CriteriaBuilderFactory criteriaBuilderFactory;
 
 	public HibernateDAO(Class<ElementType> managedClass) {
 		super(managedClass, DEFAULT_ID_PROPERTY_NAME, DEFAULT_CREATED_DATE_PROPERTY_NAME, DEFAULT_UPDATED_DATE_PROPERTY_NAME);
-		this.criteriaPool = new CriteriaPool();
 	}
 
 	// //////////////////////
@@ -154,12 +154,10 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	}
 
 	protected CriteriaBuilder createCriteria(Class<?> managedClass) {
-		return this.criteriaPool.obtain()
-				.configure(
-						this.getDatabaseHandle().getSession(),
-						this.getCreatedDatePropertyName(),
-						this.getManagedClass()
-				);
+		return this.criteriaBuilderFactory.createCriteria(
+				this.getDatabaseHandle().getSession(),
+				managedClass
+		);
 	}
 
 	final protected Query createQuery(String query) {
@@ -305,16 +303,4 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	// //////////////////////
 	// GETTERS/SETTERS
 	// //////////////
-
-	// //////////////////////
-	// INNER CLASSES
-	// //////////////
-
-	public static class CriteriaPool extends SynchronizedPool<CriteriaBuilder> {
-		@Override
-		protected CriteriaBuilder instantiate() {
-			return new CriteriaBuilder(this);
-		}
-	}
-
 }
