@@ -9,35 +9,37 @@
 
 package co.mindie.cindy;
 
-import java.io.Closeable;
-import java.util.List;
-
+import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
 import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.component.*;
 import co.mindie.cindy.component.CindyComponent;
+import co.mindie.cindy.component.ComponentContext;
+import co.mindie.cindy.component.ComponentInitializer;
+import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.component.ITempComponentContextHandler;
+import co.mindie.cindy.component.ITempComponentsContextHandler;
 import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.console.Log4jSocketConsole;
 import co.mindie.cindy.context.RequestContext;
+import co.mindie.cindy.controller.builtin.DefaultRequestErrorHandler;
+import co.mindie.cindy.controller.builtin.SnakeCaseToCamelCaseParameterNameResolver;
+import co.mindie.cindy.controller.manager.ControllerManager;
 import co.mindie.cindy.controller.manager.IParameterNameResolver;
 import co.mindie.cindy.controller.manager.IRequestErrorHandler;
-import co.mindie.cindy.controller.builtin.SnakeCaseToCamelCaseParameterNameResolver;
-import co.mindie.cindy.controller.builtin.DefaultRequestErrorHandler;
 import co.mindie.cindy.dao.utils.builtin.PooledCriteriaBuilderFactory;
 import co.mindie.cindy.database.handle.builtin.SimpleHibernateDatabaseHandle;
 import co.mindie.cindy.filehandling.IFileHandler;
 import co.mindie.cindy.misc.ComponentScanner;
 import co.mindie.cindy.resolver.ResolverManager;
+import co.mindie.cindy.responseserializer.IResponseWriter;
 import co.mindie.cindy.responseserializer.JsonResponseWriter;
 import co.mindie.cindy.utils.Pausable;
 import me.corsin.javatools.task.TaskQueue;
-
 import me.corsin.javatools.task.ThreadedConcurrentTaskQueue;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
 
-import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
-import co.mindie.cindy.controller.manager.ControllerManager;
-import co.mindie.cindy.responseserializer.IResponseWriter;
+import java.io.Closeable;
+import java.util.List;
 
 public class CindyApp extends CindyComponent implements Closeable, Pausable {
 
@@ -138,7 +140,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 		}
 
 		ComponentInitializer initializer = this.componentMetadataManager.createInitializer();
-		T instance = (T)initializer.createComponent(componentContext, componentClass);
+		T instance = (T) initializer.createComponent(componentContext, componentClass);
 		initializer.init();
 
 		return instance;
@@ -180,7 +182,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 		if (components != null) {
 			for (Object obj : components) {
 				if (obj != this) {
-					((Pausable)obj).pause();
+					((Pausable) obj).pause();
 				}
 			}
 		}
@@ -194,7 +196,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 		if (components != null) {
 			for (Object obj : components) {
 				if (obj != this) {
-					((Pausable)obj).resume();
+					((Pausable) obj).resume();
 				}
 			}
 		}
