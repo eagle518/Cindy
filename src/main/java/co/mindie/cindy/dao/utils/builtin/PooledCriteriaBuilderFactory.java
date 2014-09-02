@@ -8,7 +8,7 @@ import org.hibernate.Session;
 /**
  * Default implementation of the criteria builder factory
  */
-public class CriteriaBuilderFactoryImpl extends SynchronizedPool<CriteriaBuilder> implements CriteriaBuilderFactory {
+public class PooledCriteriaBuilderFactory extends SynchronizedPool<CriteriaBuilder> implements CriteriaBuilderFactory {
 	@Override
 	public CriteriaBuilder createCriteria(Session session, Class<?> managedClass) {
 		return this.obtain().configure(

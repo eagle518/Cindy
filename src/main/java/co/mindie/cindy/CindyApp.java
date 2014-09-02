@@ -22,7 +22,7 @@ import co.mindie.cindy.controller.manager.IParameterNameResolver;
 import co.mindie.cindy.controller.manager.IRequestErrorHandler;
 import co.mindie.cindy.controller.builtin.SnakeCaseToCamelCaseParameterNameResolver;
 import co.mindie.cindy.controller.builtin.DefaultRequestErrorHandler;
-import co.mindie.cindy.dao.utils.builtin.CriteriaBuilderFactoryImpl;
+import co.mindie.cindy.dao.utils.builtin.PooledCriteriaBuilderFactory;
 import co.mindie.cindy.database.handle.builtin.SimpleHibernateDatabaseHandle;
 import co.mindie.cindy.filehandling.IFileHandler;
 import co.mindie.cindy.misc.ComponentScanner;
@@ -74,7 +74,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 		this.modelConverterManager = new ResolverManager(this);
 
 		this.componentMetadataManager.loadComponent(Log4jSocketConsole.class, true);
-		this.componentMetadataManager.loadComponent(CriteriaBuilderFactoryImpl.class, true);
+		this.componentMetadataManager.loadComponent(PooledCriteriaBuilderFactory.class, true);
 		this.componentMetadataManager.loadComponent(this.getClass());
 		this.componentMetadataManager.loadComponent(RequestContext.class, true);
 		this.componentMetadataManager.loadComponent(DefaultRequestErrorHandler.class, true);
