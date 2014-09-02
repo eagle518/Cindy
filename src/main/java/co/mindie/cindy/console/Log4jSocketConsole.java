@@ -62,6 +62,7 @@ public class Log4jSocketConsole extends AbstractAppender implements IConnectionL
 		if (!this.isInitialized()) {
 			this.initialized = true;
 
+			// TODO remove this reference to WSFramework
 			Integer port = this.configuration.getInteger("wsframework.socket_console_port");
 
 			if (port == null) {
@@ -91,7 +92,7 @@ public class Log4jSocketConsole extends AbstractAppender implements IConnectionL
 				connection.setListener(this);
 				connection.setProtocol(this.createProtocol(connection));
 
-				System.out.println(socket.getRemoteSocketAddress() + " is now listening to console");
+				System.out.println(socket.getRemoteSocketAddress() + " is now listening to console"); // TODO sysou
 
 				this.addConnection(connection);
 			} catch (IOException ignored) {
