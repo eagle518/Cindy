@@ -46,6 +46,7 @@ public abstract class HibernateDatabaseMonitor extends CindyComponent implements
 	public void init() {
 		super.init();
 
+		// TODO remove this reference to WSFramework
 		Integer leakDetectThredshold = this.configuration.getInteger("wsframework.hibernate_session_leak_detect_threshold");
 
 		if (leakDetectThredshold == null) {
@@ -54,6 +55,7 @@ public abstract class HibernateDatabaseMonitor extends CindyComponent implements
 
 		this.leakDetectThredshold = leakDetectThredshold;
 
+		// TODO remove this reference to WSFramework
 		Boolean traceSession = this.configuration.getBoolean("wsframework.hibernate_trace_sessions");
 
 		if (traceSession == null) {
