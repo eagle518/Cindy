@@ -1,17 +1,14 @@
-package co.mindie.cindy.dao.utils;
+package co.mindie.cindy.database.tools;
 
 import co.mindie.cindy.exception.ConfigurationException;
 import org.apache.log4j.Logger;
-import org.reflections.Reflections;
-
-import javax.persistence.Entity;
 
 /**
  * Utility class that extends @{link org.hibernate.cfg.Configuration} to add:
  * - default configuration for H2 databases
  * - default configuration for MySQL databases
  * - a method to scan a package, looking for annotated classes with @{link javax.persistence.Entity}
- * <p/,
+ * <p/>
  * The value of the property "hibernate.show_sql" is defined by the static variable DEFAULT_SHOW_SQL
  */
 public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration {
@@ -68,13 +65,7 @@ public class CindyHibernateConfiguration extends org.hibernate.cfg.Configuration
 	}
 
 	public CindyHibernateConfiguration scanPackageForAnnotatedClasses(String packageName) {
-		LOGGER.trace("Scanning package " + packageName + " for entities.");
-		new Reflections(packageName)
-				.getTypesAnnotatedWith(Entity.class)
-				.forEach(cls -> {
-					LOGGER.trace("\tFound entity class: " + cls);
-					this.addAnnotatedClass(cls);
-				});
+		HibernateModelScanner.scanAnnotatedModel(this, packageName);
 		return this;
 	}
 }

@@ -13,7 +13,7 @@ import co.mindie.cindy.dao.domain.Page;
 import co.mindie.cindy.dao.domain.PageRequest;
 import co.mindie.cindy.dao.domain.Sort;
 import co.mindie.cindy.dao.impl.HibernateDAO;
-import co.mindie.cindy.dao.utils.CindyHibernateConfiguration;
+import co.mindie.cindy.database.tools.CindyHibernateConfiguration;
 import co.mindie.cindy.dao.utils.CriteriaBuilder;
 import co.mindie.cindy.dao.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.database.HibernateDatabase;
