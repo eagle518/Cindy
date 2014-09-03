@@ -26,5 +26,8 @@ public @interface Component {
 
 	CreationScope dependenciesCreationScope() default CreationScope.LOCAL;
 
+	CreationResolveMode creationResolveMode() default CreationResolveMode.DEFAULT;
+
 	boolean asyncInit() default false;
+
 }

@@ -3,6 +3,7 @@ package co.mindie.cindy.dao;
 import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Component;
+import co.mindie.cindy.automapping.CreationResolveMode;
 import co.mindie.cindy.automapping.Singleton;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.ComponentContext;
@@ -257,6 +258,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 	}
 
 	@Singleton
+	@Component(creationResolveMode = CreationResolveMode.DEFAULT)
 	public static class FakeCriteriaBuilderFactory extends SynchronizedPool<CriteriaBuilder> implements CriteriaBuilderFactory {
 		@Override
 		public CriteriaBuilder createCriteria(Session session, Class<?> managedClass) {

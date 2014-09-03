@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.automapping.CreationResolveMode;
 import co.mindie.cindy.automapping.CreationScope;
 import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.exception.CindyException;
@@ -60,11 +61,18 @@ public class ComponentMetadataManager {
 		return this.componentIndexer.find(objectClass);
 	}
 
-	public ComponentMetadata loadComponent(Class<?> cls) {
-		return this.loadComponent(cls, false);
+	@Deprecated
+	public ComponentMetadata loadComponent(Class<?> cls, boolean isWeak) {
+		 ComponentMetadata metadata = this.loadComponent(cls);
+
+		if (!isWeak && metadata.getCreationResolveMode() != CreationResolveMode.DEFAULT) {
+			metadata.setCreationResolveMode(CreationResolveMode.DEFAULT);
+		}
+
+		return metadata;
 	}
 
-	public ComponentMetadata loadComponent(Class<?> cls, boolean isWeak) {
+	public ComponentMetadata loadComponent(Class<?> cls) {
 		if (!ComponentMetadata.isLoadable(cls)) {
 			throw new CindyException("The " + cls + " is not loadable (is abstract or an interface)");
 		}
@@ -72,15 +80,13 @@ public class ComponentMetadataManager {
 		this.currentRecursionCallCount++;
 		try {
 			ComponentMetadata componentMetadata = this.getComponentMetadata(cls);
-			boolean created = false;
 
 			if (componentMetadata == null) {
 				componentMetadata = new ComponentMetadata(cls);
 				this.metadatas.put(cls, componentMetadata);
 				this.componentIndexer.add(componentMetadata, cls);
 
-				created = true;
-				this.log("Loaded {#0} component {#1}", isWeak ? "weak" : "strong", cls.getSimpleName());
+				this.log("Loaded component {#0}", cls.getSimpleName());
 				for (ComponentDependency e : componentMetadata.getDependencies()) {
 					if (ComponentMetadata.isLoadable(e.getComponentClass())) {
 						this.loadComponent(e.getComponentClass(), true);
@@ -88,20 +94,12 @@ public class ComponentMetadataManager {
 				}
 			}
 
-			if (!isWeak && componentMetadata.getDependentClass() != null) {
-				ComponentMetadata dependentClassMetadata = this.loadComponent(componentMetadata.getDependentClass(), true);
+			if (componentMetadata.getDependentClass() != null) {
+				ComponentMetadata dependentClassMetadata = this.loadComponent(componentMetadata.getDependentClass());
 				this.log("Added {#0} to dependency of {#1}", cls, dependentClassMetadata.getComponentClass());
 
 				if (!dependentClassMetadata.hasDependency(cls)) {
 					dependentClassMetadata.addDependency(cls, true, false, SearchScope.UNDEFINED, CreationScope.UNDEFINED);
-				}
-			}
-
-			if (!isWeak && componentMetadata.isWeak()) {
-				componentMetadata.setWeak(false);
-
-				if (!created) {
-					this.log("{#0} became strong component", cls.getSimpleName());
 				}
 			}
 
@@ -126,17 +124,19 @@ public class ComponentMetadataManager {
 	}
 
 	private void throwUnableToFindCandidate(List<ComponentMetadata> components, Class<?> objectClass) {
-		List<ComponentMetadata> weakCandidates = components.stream().filter(e -> e.isWeak()).collect(Collectors.toList());
-		List<ComponentMetadata> strongCandidates = components.stream().filter(e -> !e.isWeak()).collect(Collectors.toList());
+		List<ComponentMetadata> weakCandidates = components.stream().filter(e -> e.getCreationResolveMode() == CreationResolveMode.FALLBACK)
+				.collect(Collectors.toList());
+		List<ComponentMetadata> strongCandidates = components.stream().filter(e -> e.getCreationResolveMode() == CreationResolveMode.DEFAULT)
+				.collect(Collectors.toList());
 
 		DynamicText dt = new DynamicText(
 				""
 						+ "Too many component candidates found for {objectClass}\n"
-						+ "Strong candidates:\n"
+						+ "Default candidates:\n"
 						+ "[strongCandidates-> candidate:"
 						+ "{candidate.componentClass}\n"
 						+ "]\n"
-						+ "Weak candidates:\n"
+						+ "Fallback candidates:\n"
 						+ "[weakCandidates-> candidate:"
 						+ "{candidate.componentClass}\n"
 						+ "]"
@@ -157,16 +157,16 @@ public class ComponentMetadataManager {
 		}
 
 		int weakCandidateCount = 0;
-		ComponentMetadata weakCandidate = null;
-		ComponentMetadata strongCandidate = null;
+		ComponentMetadata fallbackCandidate = null;
+		ComponentMetadata defaultCandidate = null;
 
 		for (ComponentMetadata metadata : compatibleComponents) {
-			if (metadata.isWeak()) {
-				weakCandidate = metadata;
+			if (metadata.getCreationResolveMode() == CreationResolveMode.FALLBACK) {
+				fallbackCandidate = metadata;
 				weakCandidateCount++;
 			} else {
-				if (strongCandidate == null) {
-					strongCandidate = metadata;
+				if (defaultCandidate == null) {
+					defaultCandidate = metadata;
 				} else {
 					this.throwUnableToFindCandidate(compatibleComponents, objectClass);
 				}
@@ -174,13 +174,13 @@ public class ComponentMetadataManager {
 		}
 
 		ComponentMetadata metadata = null;
-		if (strongCandidate == null) {
+		if (defaultCandidate == null) {
 			if (weakCandidateCount != 1) {
 				this.throwUnableToFindCandidate(compatibleComponents, objectClass);
 			}
-			metadata = weakCandidate;
+			metadata = fallbackCandidate;
 		} else {
-			metadata = strongCandidate;
+			metadata = defaultCandidate;
 		}
 
 		return metadata;

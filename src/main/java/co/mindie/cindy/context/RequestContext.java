@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import co.mindie.cindy.automapping.CreationResolveMode;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.controller.manager.HttpResponse;
@@ -23,7 +24,7 @@ import co.mindie.cindy.controller.CindyController;
 import co.mindie.cindy.controller.manager.HttpRequest;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 
-@Component
+@Component(creationResolveMode = CreationResolveMode.FALLBACK)
 public class RequestContext extends CindyComponent {
 
 	// //////////////////////

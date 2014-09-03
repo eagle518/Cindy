@@ -11,14 +11,15 @@ package co.mindie.cindy.controller.builtin;
 
 import java.io.IOException;
 
+import co.mindie.cindy.automapping.CreationResolveMode;
+import co.mindie.cindy.automapping.Singleton;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.manager.IRequestErrorHandler;
 import co.mindie.cindy.controller.manager.HttpResponse;
-import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Component;
 import co.mindie.cindy.controller.manager.HttpRequest;
 
-@Component(dependentClass = CindyApp.class)
+@Component(creationResolveMode = CreationResolveMode.FALLBACK)
 public class DefaultRequestErrorHandler implements IRequestErrorHandler {
 
 	////////////////////////

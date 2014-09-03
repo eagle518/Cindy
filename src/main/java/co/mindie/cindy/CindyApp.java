@@ -10,6 +10,8 @@
 package co.mindie.cindy;
 
 import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
+import co.mindie.cindy.automapping.Component;
+import co.mindie.cindy.automapping.CreationResolveMode;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.component.ComponentContext;
@@ -41,6 +43,7 @@ import org.apache.log4j.Logger;
 import java.io.Closeable;
 import java.util.List;
 
+@Component(creationResolveMode = CreationResolveMode.FALLBACK)
 public class CindyApp extends CindyComponent implements Closeable, Pausable {
 
 	// //////////////////////

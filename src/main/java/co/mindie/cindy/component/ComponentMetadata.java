@@ -9,10 +9,7 @@
 
 package co.mindie.cindy.component;
 
-import co.mindie.cindy.automapping.Component;
-import co.mindie.cindy.automapping.CreationScope;
-import co.mindie.cindy.automapping.SearchScope;
-import co.mindie.cindy.automapping.Wired;
+import co.mindie.cindy.automapping.*;
 import co.mindie.cindy.exception.CindyException;
 
 import java.lang.reflect.Field;
@@ -32,6 +29,7 @@ public class ComponentMetadata {
 	private Component componentAnnotation;
 	private Factory<Object> factory;
 	private boolean isWeak;
+	private CreationResolveMode creationResolveMode;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -240,11 +238,19 @@ public class ComponentMetadata {
 		this.factory = (Factory<Object>) factory;
 	}
 
-	public boolean isWeak() {
-		return this.isWeak;
+	public CreationResolveMode getCreationResolveMode() {
+		if (this.creationResolveMode != null) {
+			return this.creationResolveMode;
+		}
+
+		if (this.componentAnnotation != null) {
+			return this.componentAnnotation.creationResolveMode();
+		}
+
+		return CreationResolveMode.FALLBACK;
 	}
 
-	public void setWeak(boolean isWeak) {
-		this.isWeak = isWeak;
+	public void setCreationResolveMode(CreationResolveMode creationResolveMode) {
+		this.creationResolveMode = creationResolveMode;
 	}
 }
