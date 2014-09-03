@@ -19,12 +19,14 @@ public class CindyAppCreator {
 	// VARIABLES
 	////////////////
 
+	private boolean shouldLoadBuiltinComponents;
+
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
 	public CindyAppCreator() {
-
+		this.shouldLoadBuiltinComponents = true;
 	}
 
 	////////////////////////
@@ -51,6 +53,10 @@ public class CindyAppCreator {
 
 		this.onLoad(application);
 
+		if (this.shouldLoadBuiltinComponents) {
+			application.scanForComponents("co.mindie.cindy");
+		}
+
 		initializer.addCreatedComponent(application, new ComponentContext());
 
 		initializer.init();
@@ -65,4 +71,12 @@ public class CindyAppCreator {
 	////////////////////////
 	// GETTERS/SETTERS
 	////////////////
+
+	public boolean shouldLoadBuiltinComponents() {
+		return shouldLoadBuiltinComponents;
+	}
+
+	public void setShouldLoadBuiltinComponents(boolean shouldLoadBuiltinComponents) {
+		this.shouldLoadBuiltinComponents = shouldLoadBuiltinComponents;
+	}
 }

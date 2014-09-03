@@ -43,7 +43,6 @@ import org.apache.log4j.Logger;
 import java.io.Closeable;
 import java.util.List;
 
-@Component(creationResolveMode = CreationResolveMode.FALLBACK)
 public class CindyApp extends CindyComponent implements Closeable, Pausable {
 
 	// //////////////////////
@@ -78,13 +77,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 
 		this.modelConverterManager = new ResolverManager(this);
 
-		this.componentMetadataManager.loadComponent(Log4jSocketConsole.class, true);
-		this.componentMetadataManager.loadComponent(PooledCriteriaBuilderFactory.class, true);
 		this.componentMetadataManager.loadComponent(this.getClass());
-		this.componentMetadataManager.loadComponent(RequestContext.class, true);
-		this.componentMetadataManager.loadComponent(DefaultRequestErrorHandler.class, true);
-		this.componentMetadataManager.loadComponent(SnakeCaseToCamelCaseParameterNameResolver.class, true);
-		this.componentMetadataManager.loadComponent(SimpleHibernateDatabaseHandle.class, true);
 
 		this.controllerManager = new ControllerManager();
 		this.controllerManager.setApplication(this);
