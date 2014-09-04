@@ -74,18 +74,30 @@ public abstract class HibernateDatabaseHandle extends CindyComponent implements 
 		LOGGER.trace("Closing HibernateDatabaseHandle in " + printComponentContextTree(this.getComponentContext(), true));
 		this.autoFlushEnabled = false;
 
+		RuntimeException thrownException = null;
+
 		try {
 			this.flush();
+		} catch (RuntimeException e) {
+			thrownException = e;
 		} finally {
 			this.sessionThread = null;
 			if (this.openedSession != null) {
 				try {
 					this.openedSession.close();
+				} catch (RuntimeException e) {
+					if (thrownException == null) {
+						thrownException = e;
+					}
 				} finally {
 					this.openedSession = null;
 					this.getHibernateDatabase().onClosedSession(this);
 				}
 			}
+		}
+
+		if (thrownException != null) {
+			throw thrownException;
 		}
 	}
 
@@ -184,7 +196,7 @@ public abstract class HibernateDatabaseHandle extends CindyComponent implements 
 		if (this.startedTransaction != null) {
 			try {
 				this.startedTransaction.rollback();
-			} catch (HibernateException e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 			this.startedTransaction = null;
@@ -197,9 +209,19 @@ public abstract class HibernateDatabaseHandle extends CindyComponent implements 
 	}
 
 	private void ensureValidSessionUsage() {
-		if (this.sessionThread != Thread.currentThread()) {
+		if (this.sessionThread != null && this.sessionThread != Thread.currentThread()) {
 			throw new InvalidSessionUsageException(this.sessionThreadStackTrace);
 		}
+	}
+
+	public void acquireOwnership() {
+		this.sessionThread = Thread.currentThread();
+		this.sessionThreadStackTrace = StackTraceUtils.stackTraceToString(new Throwable());
+	}
+
+	public void releaseOwnership() {
+		this.sessionThread = null;
+		this.sessionThreadStackTrace = null;
 	}
 
 	// //////////////////////
@@ -213,8 +235,7 @@ public abstract class HibernateDatabaseHandle extends CindyComponent implements 
 			if (this.openedSession == null) {
 				throw new RuntimeException("The session creator must return an hibernate session");
 			}
-			this.sessionThread = Thread.currentThread();
-			this.sessionThreadStackTrace = StackTraceUtils.stackTraceToString(new Throwable());
+			this.acquireOwnership();
 			this.getHibernateDatabase().onOpenedSession(this);
 		} else {
 			this.ensureValidSessionUsage();

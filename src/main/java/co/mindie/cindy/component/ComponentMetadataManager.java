@@ -39,6 +39,8 @@ public class ComponentMetadataManager {
 	private ClassIndexer<ComponentMetadata> componentIndexer;
 	private int currentRecursionCallCount;
 	private CindyApp application;
+	private boolean onlyChainLoadIfRequired;
+	private boolean selfInjectionDisabledOnAutoLoad;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -47,6 +49,7 @@ public class ComponentMetadataManager {
 	public ComponentMetadataManager() {
 		this.metadatas = new HashMap<>();
 		this.componentIndexer = new ClassIndexer<>();
+		this.selfInjectionDisabledOnAutoLoad = true;
 	}
 
 	////////////////////////
@@ -73,6 +76,10 @@ public class ComponentMetadataManager {
 	}
 
 	public ComponentMetadata loadComponent(Class<?> cls) {
+		return this.loadComponentInternal(cls, false);
+	}
+
+	private ComponentMetadata loadComponentInternal(Class<?> cls, boolean disableSelfInjection) {
 		if (!ComponentMetadata.isLoadable(cls)) {
 			throw new CindyException("The " + cls + " is not loadable (is abstract or an interface)");
 		}
@@ -89,13 +96,16 @@ public class ComponentMetadataManager {
 				this.log("Loaded component {#0}", cls.getSimpleName());
 				for (ComponentDependency e : componentMetadata.getDependencies()) {
 					if (ComponentMetadata.isLoadable(e.getComponentClass())) {
-						this.loadComponent(e.getComponentClass(), true);
+						if (e.isRequired() || !this.onlyChainLoadIfRequired) {
+							this.loadComponentInternal(e.getComponentClass(), this.selfInjectionDisabledOnAutoLoad);
+						}
 					}
 				}
 			}
 
-			if (componentMetadata.getDependentClass() != null) {
-				ComponentMetadata dependentClassMetadata = this.loadComponent(componentMetadata.getDependentClass());
+			if (componentMetadata.getDependentClass() != null && !disableSelfInjection) {
+				ComponentMetadata dependentClassMetadata = this.loadComponentInternal(componentMetadata.getDependentClass(),
+						this.selfInjectionDisabledOnAutoLoad);
 				this.log("Added {#0} to dependency of {#1}", cls, dependentClassMetadata.getComponentClass());
 
 				if (!dependentClassMetadata.hasDependency(cls)) {
@@ -237,5 +247,26 @@ public class ComponentMetadataManager {
 
 	public void setApplication(CindyApp application) {
 		this.application = application;
+	}
+
+	/**
+	 * Defines whether the ComponentMetadataManager should auto load a dependency only when required or everytime
+	 * a dependency is detected
+	 * @return
+	 */
+	public boolean isOnlyChainLoadIfRequired() {
+		return onlyChainLoadIfRequired;
+	}
+
+	public void setOnlyChainLoadIfRequired(boolean onlyChainLoadIfRequired) {
+		this.onlyChainLoadIfRequired = onlyChainLoadIfRequired;
+	}
+
+	public boolean isSelfInjectionDisabledOnAutoLoad() {
+		return selfInjectionDisabledOnAutoLoad;
+	}
+
+	public void setSelfInjectionDisabledOnAutoLoad(boolean selfInjectionDisabledOnAutoLoad) {
+		this.selfInjectionDisabledOnAutoLoad = selfInjectionDisabledOnAutoLoad;
 	}
 }

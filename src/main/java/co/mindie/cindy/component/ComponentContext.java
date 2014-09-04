@@ -10,10 +10,7 @@
 package co.mindie.cindy.component;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import co.mindie.cindy.exception.CindyException;
 import me.corsin.javatools.misc.Pair;
