@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
 
 public class JsonResponseWriter implements IResponseWriter {
 
@@ -39,6 +40,7 @@ public class JsonResponseWriter implements IResponseWriter {
 
 		this.mapper.registerModule(new ObjectIdJsonModule());
 		this.mapper.registerModule(new JodaModule());
+		this.mapper.registerModule(new JsonOrgModule());
 
 		this.mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
