@@ -9,14 +9,17 @@
 
 package co.mindie.cindy.component;
 
-import java.io.Closeable;
-import java.util.*;
-
+import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.exception.CindyException;
 import me.corsin.javatools.misc.Pair;
 import me.corsin.javatools.misc.ValueHolder;
 import me.corsin.javatools.reflect.ClassIndexer;
-import co.mindie.cindy.automapping.SearchScope;
+
+import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ComponentContext implements Closeable {
 
@@ -24,11 +27,10 @@ public class ComponentContext implements Closeable {
 	// VARIABLES
 	////////////////
 
-//	private static final Logger LOGGER = Logger.getLogger(ComponentContext.class);
 	private ComponentContext parentContext;
 	private ClassIndexer<Object> indexer;
 	private Set<Object> components;
-	private Set<Closeable> closeables;
+	private List<Closeable> closeables;
 	private Object owner;
 
 	////////////////////////
@@ -42,7 +44,7 @@ public class ComponentContext implements Closeable {
 	public ComponentContext(ComponentContext parentContext) {
 		this.indexer = new ClassIndexer<>();
 		this.components = new HashSet<>();
-		this.closeables = new HashSet<>();
+		this.closeables = new ArrayList<>();
 		this.parentContext = parentContext;
 	}
 
@@ -60,7 +62,7 @@ public class ComponentContext implements Closeable {
 			cindyComponent.setComponentContext(this);
 		}
 
-		if (component instanceof Closeable) {
+		if (component instanceof Closeable && !this.closeables.contains(component)) {
 			this.closeables.add((Closeable) component);
 		}
 
@@ -79,7 +81,7 @@ public class ComponentContext implements Closeable {
 		}
 
 		if (component instanceof Closeable) {
-			this.removeCloseable((Closeable)component);
+			this.removeCloseable((Closeable) component);
 		}
 
 		this.indexer.remove(component, component.getClass());
@@ -123,6 +125,7 @@ public class ComponentContext implements Closeable {
 	public Object findComponent(Class<?> accessibleClass) {
 		return this.findComponent(accessibleClass, SearchScope.GLOBAL);
 	}
+
 	public Object findComponent(Class<?> accessibleClass, SearchScope searchScope) {
 		return this.findComponent(accessibleClass, searchScope, null);
 	}
@@ -156,13 +159,13 @@ public class ComponentContext implements Closeable {
 	public void close() {
 		List<Pair<Object, Exception>> exceptions = new ArrayList<>();
 
-		this.closeables.forEach((closeable) -> {
+		for (Closeable closeable : this.closeables) {
 			try {
 				closeable.close();
 			} catch (Exception e) {
 				exceptions.add(new Pair<>(closeable, e));
 			}
-		});
+		}
 
 		if (!exceptions.isEmpty()) {
 			throw new CindyException("Failed to close component context.", exceptions.get(0).getSecond());
