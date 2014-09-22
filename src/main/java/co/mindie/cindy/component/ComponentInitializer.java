@@ -9,18 +9,17 @@
 
 package co.mindie.cindy.component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import co.mindie.cindy.automapping.CreationScope;
 import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.utils.Initializable;
 import me.corsin.javatools.string.Strings;
-
 import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ComponentInitializer implements Initializable {
 
@@ -110,13 +109,13 @@ public class ComponentInitializer implements Initializable {
 		Object objectInstance = createdComponent.getInstance();
 		ComponentContext subContext = null;
 
-		this.log("/ Injecting all dependencies of " + objectInstance.getClass().getSimpleName());
+		this.log("/ Injecting all dependencies of " + objectInstance.getClass().getSimpleName() + " in context " + componentContext);
 		this.currentRecursionCallCount++;
 
 		for (ComponentDependency dependency : componentMetadata.getDependencies()) {
 			Class<?> dependencyClass = dependency.getComponentClass();
 
-			this.log("- Injecting dependency " + dependencyClass.getSimpleName());
+			this.log("- Injecting dependency " + dependencyClass.getSimpleName() + " in creationScope " + dependency.getCreationScope() + " with searchScope " + dependency.getSearchScope());
 
 			Object dependencyInstance = null;
 
@@ -163,7 +162,7 @@ public class ComponentInitializer implements Initializable {
 						throw new Exception("Unable to find candidate");
 					}
 				} catch (Exception e) {
-					throw new CindyException("Failed to create dependency " + dependencyClass + " for " + objectClass, e);
+					throw new CindyException("Failed to create dependency " + dependencyClass + " for " + objectClass + " using creationScope " + dependency.getCreationScope(), e);
 				}
 			}
 
@@ -189,7 +188,7 @@ public class ComponentInitializer implements Initializable {
 
 			Object objectInstance = metadata.createInstance();
 
-			this.log("+ Created instance of " + objectClass.getSimpleName() + " resolved to " + metadata.getComponentClass().getSimpleName());
+			this.log("+ Created instance of " + objectClass.getSimpleName() + " resolved to " + metadata.getComponentClass().getSimpleName() + " in context " + componentContext);
 
 			this.addCreatedComponent(objectInstance, metadata, componentContext, objectClass);
 			this.metadataManager.signalComponentCreated(objectInstance);

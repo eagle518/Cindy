@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ComponentContext implements Closeable {
 
@@ -27,11 +28,13 @@ public class ComponentContext implements Closeable {
 	// VARIABLES
 	////////////////
 
+	private static AtomicLong ID_SEQUENCE = new AtomicLong();
 	private ComponentContext parentContext;
 	private ClassIndexer<Object> indexer;
 	private Set<Object> components;
 	private List<Closeable> closeables;
 	private Object owner;
+	private long id;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -46,6 +49,7 @@ public class ComponentContext implements Closeable {
 		this.components = new HashSet<>();
 		this.closeables = new ArrayList<>();
 		this.parentContext = parentContext;
+		this.id = ID_SEQUENCE.getAndIncrement();
 	}
 
 	////////////////////////
@@ -143,6 +147,7 @@ public class ComponentContext implements Closeable {
 			StringBuilder sb = new StringBuilder();
 			sb.append("Found too many components for ");
 			sb.append(accessibleClass);
+			sb.append(" using searchScope " + searchScope);
 			sb.append(" in ").append(this);
 			sb.append("\nOthers are:\n");
 			for (Object component : components) {
@@ -178,9 +183,9 @@ public class ComponentContext implements Closeable {
 
 	@Override
 	public String toString() {
-		return "ComponentContext{" +
-				"owner=" + this.owner +
-				'}';
+		return "(id=" + this.id +
+				", owner=" + this.owner +
+				")";
 	}
 
 	public void addCloseable(Closeable closeable) {
@@ -213,5 +218,9 @@ public class ComponentContext implements Closeable {
 
 	public void setOwner(Object owner) {
 		this.owner = owner;
+	}
+
+	public long getId() {
+		return id;
 	}
 }
