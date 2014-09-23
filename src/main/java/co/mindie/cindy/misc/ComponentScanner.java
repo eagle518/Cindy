@@ -9,17 +9,21 @@
 
 package co.mindie.cindy.misc;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
-
 import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.automapping.*;
+import co.mindie.cindy.automapping.Component;
+import co.mindie.cindy.automapping.Controller;
+import co.mindie.cindy.automapping.CreationScope;
+import co.mindie.cindy.automapping.Resolver;
+import co.mindie.cindy.automapping.SearchScope;
+import co.mindie.cindy.automapping.Singleton;
+import co.mindie.cindy.automapping.Worker;
 import co.mindie.cindy.component.ComponentMetadata;
+import co.mindie.cindy.resolver.IResolver;
 import me.corsin.javatools.misc.Action2;
-
 import org.reflections.Reflections;
 
-import co.mindie.cindy.resolver.IResolver;
+import java.lang.annotation.Annotation;
+import java.util.Set;
 
 public class ComponentScanner {
 
@@ -59,9 +63,9 @@ public class ComponentScanner {
 		if (this.shouldScanSingletons) {
 			this.scanClass(Singleton.class, Object.class, (matchedType, service) -> {
 				application.getComponentMetadataManager().loadComponent(matchedType);
-				if (!applicationMetadata.hasDependency(matchedType)) {
-					applicationMetadata.addDependency(matchedType, true, false, SearchScope.NO_SEARCH, CreationScope.LOCAL);
-				}
+//				if (!applicationMetadata.hasDependency(matchedType)) {
+//					applicationMetadata.addDependency(matchedType, true, false, SearchScope.NO_SEARCH, CreationScope.LOCAL);
+//				}
 			});
 		}
 

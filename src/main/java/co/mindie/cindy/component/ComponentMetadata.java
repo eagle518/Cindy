@@ -9,7 +9,12 @@
 
 package co.mindie.cindy.component;
 
-import co.mindie.cindy.automapping.*;
+import co.mindie.cindy.automapping.Component;
+import co.mindie.cindy.automapping.CreationResolveMode;
+import co.mindie.cindy.automapping.CreationScope;
+import co.mindie.cindy.automapping.SearchScope;
+import co.mindie.cindy.automapping.Singleton;
+import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.exception.CindyException;
 
 import java.lang.reflect.Field;
@@ -27,6 +32,7 @@ public class ComponentMetadata {
 	private List<Wire> wires;
 	private List<ComponentDependency> dependencies;
 	private Component componentAnnotation;
+	private Singleton singletonAnnotation;
 	private Factory<Object> factory;
 	private boolean isWeak;
 	private CreationResolveMode creationResolveMode;
@@ -41,6 +47,7 @@ public class ComponentMetadata {
 		this.wires = new ArrayList<>();
 		this.componentClass = objectClass;
 		this.componentAnnotation = objectClass.getAnnotation(Component.class);
+		this.singletonAnnotation = objectClass.getAnnotation(Singleton.class);
 
 		this.factory = () -> {
 			try {
@@ -56,6 +63,10 @@ public class ComponentMetadata {
 						SearchScope.UNDEFINED,
 						CreationScope.UNDEFINED);
 			}
+		}
+
+		if (this.singletonAnnotation != null && this.componentAnnotation == null) {
+			this.creationResolveMode = CreationResolveMode.DEFAULT;
 		}
 
 		this.load();
@@ -252,5 +263,9 @@ public class ComponentMetadata {
 
 	public void setCreationResolveMode(CreationResolveMode creationResolveMode) {
 		this.creationResolveMode = creationResolveMode;
+	}
+
+	public boolean isSingleton() {
+		return this.singletonAnnotation != null;
 	}
 }

@@ -9,12 +9,6 @@
 
 package co.mindie.cindy.component;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.CreationResolveMode;
 import co.mindie.cindy.automapping.CreationScope;
@@ -23,8 +17,13 @@ import co.mindie.cindy.exception.CindyException;
 import me.corsin.javatools.dynamictext.DynamicText;
 import me.corsin.javatools.reflect.ClassIndexer;
 import me.corsin.javatools.string.Strings;
-
 import org.apache.log4j.Logger;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ComponentMetadataManager {
 
@@ -66,7 +65,7 @@ public class ComponentMetadataManager {
 
 	@Deprecated
 	public ComponentMetadata loadComponent(Class<?> cls, boolean isWeak) {
-		 ComponentMetadata metadata = this.loadComponent(cls);
+		ComponentMetadata metadata = this.loadComponent(cls);
 
 		if (!isWeak && metadata.getCreationResolveMode() != CreationResolveMode.DEFAULT) {
 			metadata.setCreationResolveMode(CreationResolveMode.DEFAULT);
@@ -103,8 +102,15 @@ public class ComponentMetadataManager {
 				}
 			}
 
-			if (componentMetadata.getDependentClass() != null && !disableSelfInjection) {
-				ComponentMetadata dependentClassMetadata = this.loadComponentInternal(componentMetadata.getDependentClass(),
+			Class<?> dependentClass = componentMetadata.getDependentClass();
+			if (componentMetadata.isSingleton()) {
+				if (this.application == null) {
+					throw new CindyException("Unable to find application metadata.");
+				}
+				dependentClass = this.application.getClass();
+			}
+			if (dependentClass != null && !disableSelfInjection) {
+				ComponentMetadata dependentClassMetadata = this.loadComponentInternal(dependentClass,
 						this.selfInjectionDisabledOnAutoLoad);
 				this.log("Added {#0} to dependency of {#1}", cls, dependentClassMetadata.getComponentClass());
 
@@ -252,6 +258,7 @@ public class ComponentMetadataManager {
 	/**
 	 * Defines whether the ComponentMetadataManager should auto load a dependency only when required or everytime
 	 * a dependency is detected
+	 *
 	 * @return
 	 */
 	public boolean isOnlyChainLoadIfRequired() {
