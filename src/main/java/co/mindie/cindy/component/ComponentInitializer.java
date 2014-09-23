@@ -142,7 +142,7 @@ public class ComponentInitializer implements Initializable {
 							if (subContext == null) {
 								subContext = componentContext.createSubComponentContext();
 								subContext.setOwner(objectInstance);
-								componentContext.addCloseable(subContext);
+								componentContext.addChildComponentContext(subContext);
 							}
 
 							dependencyContext = subContext;
@@ -150,7 +150,7 @@ public class ComponentInitializer implements Initializable {
 						case ISOLATED:
 							dependencyContext = componentContext.createSubComponentContext();
 							dependencyContext.setOwner(objectInstance);
-							componentContext.addCloseable(dependencyContext);
+							componentContext.addChildComponentContext(dependencyContext);
 							break;
 						default:
 							break;

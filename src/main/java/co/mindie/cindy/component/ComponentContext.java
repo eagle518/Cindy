@@ -33,6 +33,7 @@ public class ComponentContext implements Closeable {
 	private ClassIndexer<Object> indexer;
 	private Set<Object> components;
 	private List<Closeable> closeables;
+	private List<ComponentContext> childComponentContexts;
 	private Object owner;
 	private long id;
 
@@ -48,6 +49,7 @@ public class ComponentContext implements Closeable {
 		this.indexer = new ClassIndexer<>();
 		this.components = new HashSet<>();
 		this.closeables = new ArrayList<>();
+		this.childComponentContexts = new ArrayList<>();
 		this.parentContext = parentContext;
 		this.id = ID_SEQUENCE.getAndIncrement();
 	}
@@ -188,11 +190,21 @@ public class ComponentContext implements Closeable {
 				")";
 	}
 
-	public void addCloseable(Closeable closeable) {
+	public void addChildComponentContext(ComponentContext componentContext) {
+		this.childComponentContexts.add(componentContext);
+		this.addCloseable(componentContext);
+	}
+
+	public void removeChildComponentContext(ComponentContext componentContext) {
+		this.childComponentContexts.remove(componentContext);
+		this.removeCloseable(componentContext);
+	}
+
+	private void addCloseable(Closeable closeable) {
 		this.closeables.add(closeable);
 	}
 
-	public void removeCloseable(Closeable closeable) {
+	private void removeCloseable(Closeable closeable) {
 		this.closeables.remove(closeable);
 	}
 
@@ -212,6 +224,10 @@ public class ComponentContext implements Closeable {
 		return this.components;
 	}
 
+	public List<Closeable> getCloseables() {
+		return this.closeables;
+	}
+
 	public Object getOwner() {
 		return this.owner;
 	}
@@ -222,5 +238,9 @@ public class ComponentContext implements Closeable {
 
 	public long getId() {
 		return id;
+	}
+
+	public List<ComponentContext> getChildComponentContexts() {
+		return childComponentContexts;
 	}
 }
