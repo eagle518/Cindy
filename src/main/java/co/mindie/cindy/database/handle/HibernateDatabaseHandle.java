@@ -9,20 +9,19 @@
 
 package co.mindie.cindy.database.handle;
 
-import java.io.Serializable;
-
 import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.component.ComponentContext;
 import co.mindie.cindy.database.Database;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.utils.IFlushable;
 import me.corsin.javatools.exception.StackTraceUtils;
-
 import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.exception.LockAcquisitionException;
+
+import java.io.Serializable;
 
 public abstract class HibernateDatabaseHandle extends CindyComponent implements IDatabaseHandle, IFlushable {
 
@@ -71,7 +70,7 @@ public abstract class HibernateDatabaseHandle extends CindyComponent implements 
 
 	@Override
 	public void close() {
-		LOGGER.trace("Closing HibernateDatabaseHandle in " + printComponentContextTree(this.getComponentContext(), true));
+		LOGGER.trace("Closing HibernateDatabaseHandle#" + this.hashCode() + " with session#" + (this.openedSession != null ? this.openedSession.hashCode() : null) + " in " + printComponentContextTree(this.getComponentContext(), true));
 		this.autoFlushEnabled = false;
 
 		RuntimeException thrownException = null;
@@ -204,8 +203,9 @@ public abstract class HibernateDatabaseHandle extends CindyComponent implements 
 	}
 
 	public Session createSession() {
-		LOGGER.trace("HibernateDatabaseHandle opens a session in " + printComponentContextTree(this.getComponentContext(), true));
-		return this.getHibernateDatabase().openSession();
+		Session session = this.getHibernateDatabase().openSession();
+		LOGGER.trace("HibernateDatabaseHandle opens a session#" + session.hashCode() + " in " + printComponentContextTree(this.getComponentContext(), true));
+		return session;
 	}
 
 	private void ensureValidSessionUsage() {
