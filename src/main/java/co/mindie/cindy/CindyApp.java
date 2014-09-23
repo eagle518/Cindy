@@ -10,8 +10,6 @@
 package co.mindie.cindy;
 
 import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
-import co.mindie.cindy.automapping.Component;
-import co.mindie.cindy.automapping.CreationResolveMode;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.component.ComponentContext;
@@ -20,15 +18,9 @@ import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.component.ITempComponentContextHandler;
 import co.mindie.cindy.component.ITempComponentsContextHandler;
 import co.mindie.cindy.configuration.Configuration;
-import co.mindie.cindy.console.Log4jSocketConsole;
-import co.mindie.cindy.context.RequestContext;
-import co.mindie.cindy.controller.builtin.DefaultRequestErrorHandler;
-import co.mindie.cindy.controller.builtin.SnakeCaseToCamelCaseParameterNameResolver;
 import co.mindie.cindy.controller.manager.ControllerManager;
 import co.mindie.cindy.controller.manager.IParameterNameResolver;
 import co.mindie.cindy.controller.manager.IRequestErrorHandler;
-import co.mindie.cindy.dao.utils.builtin.PooledCriteriaBuilderFactory;
-import co.mindie.cindy.database.handle.builtin.SimpleHibernateDatabaseHandle;
 import co.mindie.cindy.filehandling.IFileHandler;
 import co.mindie.cindy.misc.ComponentScanner;
 import co.mindie.cindy.resolver.ResolverManager;
@@ -39,6 +31,7 @@ import me.corsin.javatools.task.TaskQueue;
 import me.corsin.javatools.task.ThreadedConcurrentTaskQueue;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTimeZone;
 
 import java.io.Closeable;
 import java.util.List;
@@ -71,6 +64,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 
 	public CindyApp(ComponentMetadataManager componentMetadataManager) {
 		super();
+		DateTimeZone.setDefault(DateTimeZone.UTC);
 
 		this.componentMetadataManager = componentMetadataManager;
 		componentMetadataManager.setApplication(this);

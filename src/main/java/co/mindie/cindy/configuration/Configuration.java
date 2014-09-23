@@ -9,14 +9,14 @@
 
 package co.mindie.cindy.configuration;
 
+import co.mindie.cindy.component.CindyComponent;
+import org.apache.log4j.Logger;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.Set;
-
-import co.mindie.cindy.component.CindyComponent;
-import org.apache.log4j.Logger;
 
 public class Configuration extends CindyComponent {
 
@@ -34,6 +34,13 @@ public class Configuration extends CindyComponent {
 
 	public Configuration() {
 		this.configuration = new Properties();
+	}
+
+	public Configuration(Configuration original) {
+		this();
+		for (String key : original.getKeys()) {
+			this.put(key, original.get(key));
+		}
 	}
 
 	// //////////////////////
