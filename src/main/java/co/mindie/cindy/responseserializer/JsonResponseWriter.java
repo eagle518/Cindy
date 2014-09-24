@@ -44,10 +44,6 @@ public class JsonResponseWriter implements IResponseWriter {
 
 		this.mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-		if (this.indentEnabled) {
-			this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
-		}
 		this.mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
 
 		this.mapper.setSerializationInclusion(Include.NON_NULL);
@@ -82,6 +78,11 @@ public class JsonResponseWriter implements IResponseWriter {
 
 	public void setIndentEnabled(boolean indentEnabled) {
 		this.indentEnabled = indentEnabled;
+		if (indentEnabled) {
+			this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
+		} else {
+			this.mapper.disable(SerializationFeature.INDENT_OUTPUT);
+		}
 	}
 
 	@Override

@@ -12,6 +12,8 @@ package co.mindie.cindy;
 import co.mindie.cindy.component.ComponentContext;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.component.ComponentInitializer;
+import co.mindie.cindy.component.debugger.DebuggerJsonGenerator;
+import org.apache.log4j.Logger;
 
 public class CindyAppCreator {
 
@@ -19,6 +21,7 @@ public class CindyAppCreator {
 	// VARIABLES
 	////////////////
 
+	private static final Logger LOGGER = Logger.getLogger(CindyAppCreator.class);
 	private boolean shouldLoadBuiltinComponents;
 
 	////////////////////////
