@@ -27,7 +27,6 @@ import co.mindie.cindy.utils.EndpointIndexer;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.io.IOUtils;
 import me.corsin.javatools.misc.ValueHolder;
-import org.apache.catalina.connector.ClientAbortException;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -387,7 +386,7 @@ public class ControllerManager extends CindyComponent {
 		OutputStream outputStream = null;
 
 		try {
-			try {
+//			try {
 				httpResponse.setHeader("Content-Type", responseWriter.getContentType());
 
 				Long contentLength = responseWriter.getContentLength(response);
@@ -398,11 +397,11 @@ public class ControllerManager extends CindyComponent {
 					outputStream = httpResponse.getOutputStream();
 
 					responseWriter.writeResponse(response, outputStream);
-				} catch (ClientAbortException ignored) {
+				} catch (IOException ignored) {
 				}
-			} catch (IOException e) {
-				this.handleResponseWritingException(httpRequest, e);
-			}
+//			} catch (IOException e) {
+//				this.handleResponseWritingException(httpRequest, e);
+//			}
 		} catch (Exception ignored) {
 
 		} finally {
