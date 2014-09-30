@@ -41,9 +41,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>me.corsin</groupId>
+			<groupId>me.corsin.javatools</groupId>
 			<artifactId>SCJavaTools</artifactId>
-			<version>1.0</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- Let's assume we need some logging and we chose this one -->
