@@ -9,6 +9,7 @@ import me.corsin.javatools.timer.TimeSpan;
 import org.apache.log4j.Logger;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by simoncorsin on 29/09/14.
@@ -20,13 +21,16 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	////////////////
 
 	public static final int DEFAULT_MAX_NUMBER_OF_THREADS = 2;
+	public static final int DEFAULT_PENDING_TASKS_TO_THREAD_RATIO = 4;
 
 	private static final Logger LOGGER = Logger.getLogger(WorkDispatcher.class);
 
 	private ComponentPool<WorkContextType> componentPool;
 	private Class<WorkContextType> workContextTypeClass;
 	private int maxNumberOfThreads;
-	private TaskQueue workTaskQueue;
+	private int maxPendingTasks;
+	private ThreadedConcurrentTaskQueue workTaskQueue;
+	private AtomicInteger pendingTasks;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -37,6 +41,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 
 		this.maxNumberOfThreads = DEFAULT_MAX_NUMBER_OF_THREADS;
 		this.workContextTypeClass = workContextTypeClass;
+		this.pendingTasks = new AtomicInteger();
 	}
 
 	////////////////////////
@@ -47,6 +52,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	public void init() {
 		this.componentPool = new ComponentPool<>(this.getApplication(), this.workContextTypeClass, this.getComponentContext(), true);
 		this.workTaskQueue = new ThreadedConcurrentTaskQueue(this.maxNumberOfThreads);
+		this.maxPendingTasks = this.maxNumberOfThreads * DEFAULT_PENDING_TASKS_TO_THREAD_RATIO;
 
 		super.init();
 	}
@@ -55,24 +61,27 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	public void close() {
 		super.close();
 
-		this.workTaskQueue.close();;
+		this.workTaskQueue.close();
 	}
 
 	@Override
 	public void run() {
-		boolean hasItems = true;
+		boolean shouldWork = true;
 
-		while (hasItems) {
+		while (shouldWork && this.pendingTasks.get() < this.maxPendingTasks) {
 			PoolableComponent<WorkContextType> poolableWorkContext = this.componentPool.obtain();
 			boolean shouldReleaseContext = true;
+			shouldWork = false;
 
 			try {
 				WorkContextType workContext = poolableWorkContext.getComponent();
 				List<DataType> items = workContext.getQueue().dequeueItems();
 
-				if (items.size() > 0) {
+				if (items != null && items.size() > 0) {
+					shouldWork = true;
 					shouldReleaseContext = false;
 					workContext.prepareForProcessing();
+					this.pendingTasks.incrementAndGet();
 					this.workTaskQueue.executeAsync(() -> {
 						try {
 							boolean shouldDeleteItems = true;
@@ -102,14 +111,11 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 								}
 							}
 						} finally {
+							this.pendingTasks.decrementAndGet();
 							poolableWorkContext.release();
 						}
 					});
-
-				} else {
-					hasItems = false;
 				}
-
 			} catch (Exception e) {
 				try {
 					this.onQueueError(e);
