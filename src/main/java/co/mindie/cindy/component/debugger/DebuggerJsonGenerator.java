@@ -3,11 +3,16 @@ package co.mindie.cindy.component.debugger;
 import co.mindie.cindy.component.ComponentContext;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.responseserializer.JsonResponseWriter;
-import me.corsin.javatools.string.Strings;
 import org.apache.log4j.Logger;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by simoncorsin on 23/09/14.
@@ -62,6 +67,7 @@ public class DebuggerJsonGenerator {
 			ComponentModel componentModel = new ComponentModel();
 			componentModel.setId(this.getId(component));
 			componentModel.setType(component.getClass().getName());
+			componentModel.setHashCode(component.hashCode());
 
 			components.add(componentModel);
 		}
@@ -76,17 +82,17 @@ public class DebuggerJsonGenerator {
 				Object[] ownerModels = components.stream().filter(e -> e.getId() == ownerId).toArray();
 
 				if (ownerModels != null && ownerModels.length == 1) {
-					ownerModel = (ComponentModel)ownerModels[0];
+					ownerModel = (ComponentModel) ownerModels[0];
 				}
 			}
 
 			if (ownerModel == null) {
 				if (contextModel.getIsolatedChildComponentContexts() == null) {
-					contextModel.setIsolatedChildComponentContexts(new ArrayList<>());;
+					contextModel.setIsolatedChildComponentContexts(new ArrayList<>());
 				}
 				contextModel.getIsolatedChildComponentContexts().add(childContextModel);
 			} else {
-				if (ownerModel.getSubComponentContexts() == null){
+				if (ownerModel.getSubComponentContexts() == null) {
 					ownerModel.setSubComponentContexts(new ArrayList<>());
 				}
 				ownerModel.getSubComponentContexts().add(childContextModel);
@@ -108,7 +114,7 @@ public class DebuggerJsonGenerator {
 
 		try (OutputStream outputStream = new FileOutputStream(this.outputFile)) {
 			ComponentContextModel model = this.createComponentContextModel(this.componentContext);
-			JsonResponseWriter writer =  new JsonResponseWriter();
+			JsonResponseWriter writer = new JsonResponseWriter();
 			writer.setIndentEnabled(true);
 			writer.writeResponse(model, outputStream);
 		}

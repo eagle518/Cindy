@@ -1,7 +1,5 @@
 package co.mindie.cindy.component.debugger;
 
-import co.mindie.cindy.component.ComponentContext;
-
 import java.util.List;
 
 /**
@@ -15,6 +13,7 @@ public class ComponentModel {
 
 	private int id;
 	private String type;
+	private int hashCode;
 	private List<ComponentContextModel> subComponentContexts;
 
 	////////////////////////
@@ -46,6 +45,14 @@ public class ComponentModel {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public int getHashCode() {
+		return hashCode;
+	}
+
+	public void setHashCode(int hashCode) {
+		this.hashCode = hashCode;
 	}
 
 	public List<ComponentContextModel> getSubComponentContexts() {

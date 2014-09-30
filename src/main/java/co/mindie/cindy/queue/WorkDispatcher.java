@@ -3,7 +3,6 @@ package co.mindie.cindy.queue;
 import co.mindie.cindy.component.AbstractWorker;
 import co.mindie.cindy.component.ComponentPool;
 import co.mindie.cindy.component.PoolableComponent;
-import me.corsin.javatools.task.TaskQueue;
 import me.corsin.javatools.task.ThreadedConcurrentTaskQueue;
 import me.corsin.javatools.timer.TimeSpan;
 import org.apache.log4j.Logger;
@@ -141,6 +140,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	/**
 	 * Called when an exception was thrown while trying to dequeue the items
 	 * from the queue.
+	 *
 	 * @param e
 	 */
 	protected void onQueueError(Exception e) {
@@ -150,11 +150,16 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	/**
 	 * Whether the WorkDispatcher should delete the item or not.
 	 * The default implementation always deletes it.
+	 *
 	 * @param item
 	 * @return
 	 */
 	public boolean shouldDeleteItem(DataType item) {
 		return true;
+	}
+
+	public void waitWorkCompletion() {
+		this.workTaskQueue.waitAllTasks();
 	}
 
 	////////////////////////
