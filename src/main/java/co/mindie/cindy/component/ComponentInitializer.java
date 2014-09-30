@@ -152,6 +152,9 @@ public class ComponentInitializer implements Initializable {
 								subContext = componentContext.createSubComponentContext();
 								subContext.setOwner(objectInstance);
 								componentContext.addChildComponentContext(subContext);
+								if (objectInstance instanceof CindyComponent) {
+									((CindyComponent) objectInstance).setSubComponentContext(subContext);
+								}
 							}
 
 							dependencyContext = subContext;
