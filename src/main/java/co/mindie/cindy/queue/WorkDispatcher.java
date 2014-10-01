@@ -3,6 +3,7 @@ package co.mindie.cindy.queue;
 import co.mindie.cindy.component.AbstractWorker;
 import co.mindie.cindy.component.ComponentPool;
 import co.mindie.cindy.component.PoolableComponent;
+import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.task.ThreadedConcurrentTaskQueue;
 import me.corsin.javatools.timer.TimeSpan;
 import org.apache.log4j.Logger;
@@ -30,6 +31,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	private int maxPendingTasks;
 	private ThreadedConcurrentTaskQueue workTaskQueue;
 	private AtomicInteger pendingTasks;
+	private final String workerName;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -38,6 +40,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	public WorkDispatcher(Class<WorkContextType> workContextTypeClass, String workerName, TimeSpan waitDuration) {
 		super(workerName, waitDuration);
 
+		this.workerName = workerName;
 		this.maxNumberOfThreads = DEFAULT_MAX_NUMBER_OF_THREADS;
 		this.workContextTypeClass = workContextTypeClass;
 		this.pendingTasks = new AtomicInteger();
@@ -130,11 +133,11 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	}
 
 	protected void onProcessError(Exception e) {
-		LOGGER.error("An error was thrown while trying to process the items", e);
+		LOGGER.error("An error was thrown while trying to process the items in " + this.workerName + "\n" + StackTraceUtils.stackTraceToString(e));
 	}
 
 	protected void onDeleteError(Exception e) {
-		LOGGER.error("An error was thrown while trying to delete the items", e);
+		LOGGER.error("An error was thrown while trying to delete the items in " + this.workerName + "\n" + StackTraceUtils.stackTraceToString(e));
 	}
 
 	/**
@@ -144,7 +147,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	 * @param e
 	 */
 	protected void onQueueError(Exception e) {
-		LOGGER.error("An error was thrown while trying to dequeue the items", e);
+		LOGGER.error("An error was thrown while trying to dequeue the items in " + this.workerName + "\n" + StackTraceUtils.stackTraceToString(e));
 	}
 
 	/**
