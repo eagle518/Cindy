@@ -9,13 +9,6 @@
 
 package co.mindie.cindy.notifier.ios;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import co.mindie.cindy.notifier.MobileNotification;
 import co.mindie.cindy.notifier.Notifier;
 import javapns.Push;
@@ -25,9 +18,17 @@ import javapns.notification.PayloadPerDevice;
 import javapns.notification.PushNotificationPayload;
 import javapns.notification.PushedNotification;
 import javapns.notification.PushedNotifications;
-
+import me.corsin.javatools.exception.StackTraceUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import org.json.JSONException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class IOSNotifier extends Notifier {
 
@@ -35,6 +36,7 @@ public class IOSNotifier extends Notifier {
 	// VARIABLES
 	////////////////
 
+	private static final Logger LOGGER = Logger.getLogger(IOSNotifier.class);
 	public static final int DEFAULT_MAX_BATCH_SIZE = 500;
 
 	private byte[] key;
@@ -98,7 +100,7 @@ public class IOSNotifier extends Notifier {
 		List<PayloadPerDevice> payloadPerDevices = new ArrayList<>();
 
 		for (int i = 0; i < notifications.size(); i++) {
-			final IOSNotification notification = (IOSNotification)notifications.get(i);
+			final IOSNotification notification = (IOSNotification) notifications.get(i);
 
 			try {
 				payloadPerDevices.add(this.generatePayloadPerDevice(notification));
@@ -134,11 +136,11 @@ public class IOSNotifier extends Notifier {
 				Object value = entry.getValue();
 
 				if (value instanceof String) {
-					payload.addCustomDictionary(key, (String)value);
+					payload.addCustomDictionary(key, (String) value);
 				} else if (value instanceof Integer) {
 					payload.addCustomDictionary(key, value);
 				} else if (value instanceof List<?>) {
-					payload.addCustomDictionary(key, (List<?>)value);
+					payload.addCustomDictionary(key, (List<?>) value);
 				} else {
 					payload.addCustomDictionary(key, value);
 				}

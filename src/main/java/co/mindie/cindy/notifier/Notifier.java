@@ -9,13 +9,14 @@
 
 package co.mindie.cindy.notifier;
 
-import java.io.Closeable;
-import java.util.List;
-
 import me.corsin.javatools.batch.BatchProcessor;
 import me.corsin.javatools.batch.BatchProcessorListener;
 import me.corsin.javatools.misc.Action;
 import me.corsin.javatools.task.TaskQueue;
+import org.apache.log4j.Logger;
+
+import java.io.Closeable;
+import java.util.List;
 
 public abstract class Notifier implements BatchProcessorListener<MobileNotification>, Closeable {
 
@@ -23,6 +24,7 @@ public abstract class Notifier implements BatchProcessorListener<MobileNotificat
 	// VARIABLES
 	////////////////
 
+	private static final Logger LOGGER = Logger.getLogger(Notifier.class);
 	public static final int DEFAULT_MAX_BATCH_SIZE = 500;
 
 	private NotifierListener listener;
@@ -58,6 +60,8 @@ public abstract class Notifier implements BatchProcessorListener<MobileNotificat
 			List<MobileNotification> batchedEntities) {
 		if (this.enabled) {
 			this.processNotifications(batchedEntities);
+		} else {
+			LOGGER.trace("Should be sending notifications=" + batchedEntities);
 		}
 	}
 

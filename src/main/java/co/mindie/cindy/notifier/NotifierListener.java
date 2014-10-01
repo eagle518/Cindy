@@ -13,11 +13,11 @@ import java.util.List;
 
 public interface NotifierListener {
 
-	void onNotificationSent(MobileNotification notification);
+	<T extends MobileNotification> void onNotificationSent(T notification);
 
-	void onNotificationSendFailed(MobileNotification notification, Exception e);
+	<T extends MobileNotification> void onNotificationSendFailed(T notification, Exception e);
 
-	void onNotificationGroupSendFailed(List<MobileNotification> allNotifications, List<MobileNotification> successfulNotifications,
-			List<MobileNotification> failedNotification, Exception e);
+	<T extends MobileNotification> void onNotificationGroupSendFailed(List<T> allNotifications, List<T> successfulNotifications,
+	                                                                  List<T> failedNotification, Exception e);
 
 }
