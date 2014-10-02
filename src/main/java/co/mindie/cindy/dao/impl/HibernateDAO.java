@@ -37,23 +37,32 @@ import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType, PrimaryKey, HibernateDatabase> implements Closeable {
-	public static final String DEFAULT_ID_PROPERTY_NAME = "id";
 
 	// //////////////////////
 	// VARIABLES
 	// //////////////
 
+	public static final String DEFAULT_ID_PROPERTY_NAME = "id";
 	public static final String DEFAULT_CREATED_DATE_PROPERTY_NAME = "createdDate";
 	public static final String DEFAULT_UPDATED_DATE_PROPERTY_NAME = "updatedDate";
 	private HibernateDatabaseHandle databaseHandle;
-	@Wired private CriteriaBuilderFactory criteriaBuilderFactory;
 
-	public HibernateDAO(Class<ElementType> managedClass) {
-		super(managedClass, DEFAULT_ID_PROPERTY_NAME, DEFAULT_CREATED_DATE_PROPERTY_NAME, DEFAULT_UPDATED_DATE_PROPERTY_NAME);
-	}
+	@Wired private CriteriaBuilderFactory criteriaBuilderFactory;
 
 	// //////////////////////
 	// CONSTRUCTORS
+	// //////////////
+
+	public HibernateDAO(Class<ElementType> managedClass) {
+		this(managedClass, DEFAULT_ID_PROPERTY_NAME, DEFAULT_CREATED_DATE_PROPERTY_NAME, DEFAULT_UPDATED_DATE_PROPERTY_NAME);
+	}
+
+	public HibernateDAO(Class<ElementType> managedClass, String primaryKeyPropertyName, String createdDatePropertyName, String updatedDatePropertyName) {
+		super(managedClass, primaryKeyPropertyName, createdDatePropertyName, updatedDatePropertyName);
+	}
+
+	// //////////////////////
+	// METHODS
 	// //////////////
 
 	protected static void limit(Object object, String fieldName, int size) {
@@ -63,10 +72,6 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 			ReflectionUtils.setField(object, fieldName, limit((String) value, size));
 		}
 	}
-
-	// //////////////////////
-	// METHODS
-	// //////////////
 
 	protected static String limit(String input, int size) {
 		String output = input;
