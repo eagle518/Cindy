@@ -22,7 +22,8 @@ public abstract class AbstractWorker extends CindyComponent implements Worker, C
 	private final Object LOCK;
 
 	private boolean startOnInit;
-	private boolean stopped = false;
+	private boolean stopped;
+	private boolean waitCompletionOnClose;
 	private Thread worker;
 	private TaskQueue taskQueue;
 
@@ -36,6 +37,7 @@ public abstract class AbstractWorker extends CindyComponent implements Worker, C
 		this.LOCK = new Object();
 		this.taskQueue = new TaskQueue();
 		this.startOnInit = true;
+		this.waitCompletionOnClose = true;
 	}
 
 	///////////////////
@@ -77,7 +79,9 @@ public abstract class AbstractWorker extends CindyComponent implements Worker, C
 
 			try {
 				synchronized (this.LOCK) {
-					this.LOCK.wait(this.WAIT_DURATION_MILLIS);
+					if (!this.stopped) {
+						this.LOCK.wait(this.WAIT_DURATION_MILLIS);
+					}
 				}
 			} catch (InterruptedException e) {
 				LOGGER.error("Error while waiting the worker " + this.WORKER_NAME, e);
@@ -88,7 +92,7 @@ public abstract class AbstractWorker extends CindyComponent implements Worker, C
 	@Override
 	public void wakeUp() {
 		synchronized (this.LOCK) {
-			this.LOCK.notify();
+			this.LOCK.notifyAll();
 		}
 	}
 
@@ -102,7 +106,14 @@ public abstract class AbstractWorker extends CindyComponent implements Worker, C
 	@Override
 	public void close() {
 		LOGGER.debug(this.WORKER_NAME + " closing.");
+		Thread workerThread = this.worker;
 		this.stop();
+
+		if (this.waitCompletionOnClose && workerThread != null) {
+			try {
+				workerThread.join();
+			} catch (InterruptedException e) { }
+		}
 	}
 
 	///////////////////
@@ -119,5 +130,13 @@ public abstract class AbstractWorker extends CindyComponent implements Worker, C
 
 	public TaskQueue getTaskQueue() {
 		return this.taskQueue;
+	}
+
+	public boolean isWaitCompletionOnClose() {
+		return waitCompletionOnClose;
+	}
+
+	public void setWaitCompletionOnClose(boolean waitCompletionOnClose) {
+		this.waitCompletionOnClose = waitCompletionOnClose;
 	}
 }

@@ -63,6 +63,10 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	public void close() {
 		super.close();
 
+		if (this.isWaitCompletionOnClose()) {
+			this.workTaskQueue.waitAllTasks();
+		}
+
 		this.workTaskQueue.close();
 	}
 
