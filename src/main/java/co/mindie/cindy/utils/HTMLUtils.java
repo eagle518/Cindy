@@ -11,40 +11,44 @@ package co.mindie.cindy.utils;
 
 public class HTMLUtils {
 
-	////////////////////////
-	// VARIABLES
-	////////////////
+    ////////////////////////
+    // VARIABLES
+    ////////////////
 
-	////////////////////////
-	// CONSTRUCTORS
-	////////////////
+    ////////////////////////
+    // CONSTRUCTORS
+    ////////////////
 
-	////////////////////////
-	// METHODS
-	////////////////
+    ////////////////////////
+    // METHODS
+    ////////////////
 
-	public static String italic(String text) {
-		return "<i>" + text + "</i>";
-	}
+    public static String italic(String text) {
+        return "<i>" + text + "</i>";
+    }
 
-	public static String strong(String text) {
-		return "<b>" + text + "</b>";
-	}
+    public static String strong(String text) {
+        return "<b>" + text + "</b>";
+    }
 
-	public static String nextLine() {
-		return "<br>";
-	}
+    public static String nextLine() {
+        return "<br>";
+    }
 
-	public static String url(String url) {
-		return url(url, url);
-	}
+    public static String url(String url) {
+        return url(url, url);
+    }
 
-	public static String url(String url, String name) {
-		return "<a href=\"" + url + "\">" + name + "</a>";
-	}
+    public static String url(String url, String name) {
+        return "<a href=\"" + url + "\">" + name + "</a>";
+    }
 
-	////////////////////////
-	// GETTERS/SETTERS
-	////////////////
+    public static String tab() {
+        return "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+    }
+
+    ////////////////////////
+    // GETTERS/SETTERS
+    ////////////////
 
 }
