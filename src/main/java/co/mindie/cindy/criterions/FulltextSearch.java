@@ -24,21 +24,30 @@ public class FulltextSearch implements Criterion {
 	private static final long serialVersionUID = -7841457214173304285L;
 	private String propertyName;
 	private String searchText;
+	private FulltextSearchMode searchMode;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
 	public FulltextSearch(String propertyName, String searchText) {
+		this(propertyName, searchText, FulltextSearchMode.NATURAL_LANGUAGE);
+	}
+
+	public FulltextSearch(String propertyName, String searchText, FulltextSearchMode searchMode) {
 		if (propertyName == null) {
 			throw new IllegalArgumentException("column");
 		}
 		if (searchText == null) {
 			throw new IllegalArgumentException("searchText");
 		}
+		if (searchMode == null) {
+			throw new IllegalArgumentException("searchMode");
+		}
 
 		this.propertyName = propertyName;
 		this.searchText = searchText;
+		this.searchMode = searchMode;
 	}
 
 	////////////////////////
@@ -52,7 +61,26 @@ public class FulltextSearch implements Criterion {
 			throw new HibernateException("FulltextSearch may only be used with single-column properties");
 		}
 
-		return "match (" + columns[0] + ") against (? IN NATURAL LANGUAGE MODE)";
+		String searchModeStr = null;
+
+		switch (this.searchMode) {
+			case BOOLEAN:
+				searchModeStr = "BOOLEAN";
+				break;
+			case NATURAL_LANGUAGE:
+				searchModeStr = "NATURAL_LANGUAGE";
+				break;
+			default:
+				throw new HibernateException("Null SearchMode set");
+		}
+
+		String columnsStr = columns[0];
+
+		for (int i = 1; i < columns.length; i++) {
+			columnsStr += ", " + columns[i];
+		}
+
+		return "match (" + columnsStr + ") against (? IN " + searchModeStr + " MODE)";
 	}
 
 	@Override
