@@ -242,7 +242,7 @@ public class EndpointEntry {
 			final boolean fRequired = required;
 			final boolean fShouldFetchFromResource = shouldFetchFromResource;
 			final IResolverOutput fConverter = this.getConverter(parameter, genericParameterType, name, required);
-			IParameterResolver resolver = null;
+			IParameterResolver resolver;
 
 			resolver = (e) -> {
 				String stringValue = null;
@@ -277,7 +277,7 @@ public class EndpointEntry {
 				Object output = fConverter.createResolversAndResolve(e.getComponentContext(), requestParameter, fResolverOptions);
 
 				if (fRequired && output == null) {
-					throw new BadParameterException(name);
+					throw new BadParameterException(name, this.mapped.httpMethod(), this.getPath());
 				}
 
 				return output;
