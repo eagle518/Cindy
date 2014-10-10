@@ -80,10 +80,11 @@ public abstract class HibernateDatabase extends Database implements Pausable {
 	}
 
 	public long getTotalQueryCount() {
-		Statistics stats = this.getHibernateStatistics();
-
-		return stats.getEntityDeleteCount() + stats.getEntityFetchCount() + stats.getEntityInsertCount() + stats.getEntityUpdateCount() +
-				stats.getQueryExecutionCount() + stats.getCollectionFetchCount();
+		return this.getHibernateStatistics().getPrepareStatementCount();
+//		Statistics stats = this.getHibernateStatistics();
+//
+//		return stats.getEntityDeleteCount() + stats.getEntityFetchCount() + stats.getEntityInsertCount() + stats.getEntityUpdateCount() +
+//				stats.getQueryExecutionCount() + stats.getCollectionFetchCount();
 	}
 
 	public SessionFactory getSessionFactory() {

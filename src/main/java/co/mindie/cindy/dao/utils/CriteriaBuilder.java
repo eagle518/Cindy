@@ -259,7 +259,7 @@ public class CriteriaBuilder {
 		return resultTransformer;
 	}
 
-	public final CriteriaBuilder setResultTransformer(ResultTransformer resultTransformer) {
+	public CriteriaBuilder setResultTransformer(ResultTransformer resultTransformer) {
 		this.resultTransformer = resultTransformer;
 
 		return this;
