@@ -12,13 +12,14 @@ package co.mindie.cindy.notifier;
 import me.corsin.javatools.batch.BatchProcessor;
 import me.corsin.javatools.batch.BatchProcessorListener;
 import me.corsin.javatools.misc.Action;
+import me.corsin.javatools.misc.Pair;
 import me.corsin.javatools.task.TaskQueue;
 import org.apache.log4j.Logger;
 
 import java.io.Closeable;
 import java.util.List;
 
-public abstract class Notifier implements BatchProcessorListener<MobileNotification>, Closeable {
+public abstract class Notifier<T extends MobileNotification> implements BatchProcessorListener<T>, Closeable {
 
 	////////////////////////
 	// VARIABLES
@@ -27,9 +28,9 @@ public abstract class Notifier implements BatchProcessorListener<MobileNotificat
 	private static final Logger LOGGER = Logger.getLogger(Notifier.class);
 	public static final int DEFAULT_MAX_BATCH_SIZE = 500;
 
-	private NotifierListener listener;
+	private NotifierListener<T> listener;
 	private boolean enabled;
-	private final BatchProcessor<MobileNotification> batchProcessor;
+	private final BatchProcessor<T> batchProcessor;
 	private TaskQueue listenerTaskQueue;
 
 	////////////////////////
@@ -52,12 +53,12 @@ public abstract class Notifier implements BatchProcessorListener<MobileNotificat
 		this.batchProcessor.close();
 	}
 
-	protected abstract void processNotifications(List<MobileNotification> notifications);
+	protected abstract void processNotifications(List<T> notifications);
 
 	@Override
 	public void handleBatchedEntities(
-			BatchProcessor<MobileNotification> batchProcessor,
-			List<MobileNotification> batchedEntities) {
+			BatchProcessor<T> batchProcessor,
+			List<T> batchedEntities) {
 		if (this.enabled) {
 			this.processNotifications(batchedEntities);
 		} else {
@@ -65,25 +66,21 @@ public abstract class Notifier implements BatchProcessorListener<MobileNotificat
 		}
 	}
 
-	public void sendNotification(MobileNotification notification) {
+	public void sendNotification(T notification) {
 		this.batchProcessor.addBatchEntity(notification);
 	}
 
-	protected void notifySendFailed(MobileNotification notification, Exception e) {
-		this.getListener(listener -> listener.onNotificationSendFailed(notification, e));
+	protected void notifySent(List<T> successfulNotifications, List<Pair<T, Exception>> failedNotifications) {
+		this.getListener(listener -> listener.onNotificationsSent(successfulNotifications, failedNotifications));
 	}
 
-	protected void notifySent(MobileNotification notification) {
-		this.getListener(listener -> listener.onNotificationSent(notification));
+	protected void notifySent(List<T> successfulNotifications, List<T> failedNotifications, Exception e) {
+		this.getListener(listener -> listener.onNotificationsSent(successfulNotifications, failedNotifications, e));
 	}
 
-	protected void notifySendFailed(List<MobileNotification> notifications, List<MobileNotification> success, List<MobileNotification> failures, Exception e) {
-		this.getListener(listener -> listener.onNotificationGroupSendFailed(notifications, success, failures, e));
-	}
-
-	private void getListener(Action<NotifierListener> callback) {
-		final NotifierListener listener = this.listener;
-		final TaskQueue listenerTaskQueue = this.listenerTaskQueue;
+	private void getListener(Action<NotifierListener<T>> callback) {
+		final NotifierListener<T> listener = this.getListener();
+		final TaskQueue listenerTaskQueue = this.getListenerTaskQueue();
 
 		if (listener != null) {
 			if (listenerTaskQueue == null) {
@@ -98,11 +95,11 @@ public abstract class Notifier implements BatchProcessorListener<MobileNotificat
 	// GETTERS/SETTERS
 	////////////////
 
-	public NotifierListener getListener() {
+	public NotifierListener<T> getListener() {
 		return this.listener;
 	}
 
-	public void setListener(NotifierListener listener) {
+	public void setListener(NotifierListener<T> listener) {
 		this.listener = listener;
 	}
 

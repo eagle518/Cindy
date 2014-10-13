@@ -9,6 +9,14 @@
 
 package co.mindie.cindy.notifier.android;
 
+import co.mindie.cindy.notifier.Notifier;
+import co.mindie.cindy.responseserializer.JsonResponseWriter;
+import me.corsin.javatools.http.CommunicatorResponse;
+import me.corsin.javatools.http.HttpMethod;
+import me.corsin.javatools.http.ServerRequest;
+import me.corsin.javatools.http.StringResponseTransformer;
+import me.corsin.javatools.misc.Pair;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,15 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import co.mindie.cindy.responseserializer.JsonResponseWriter;
-import me.corsin.javatools.http.CommunicatorResponse;
-import me.corsin.javatools.http.HttpMethod;
-import me.corsin.javatools.http.ServerRequest;
-import me.corsin.javatools.http.StringResponseTransformer;
-import co.mindie.cindy.notifier.MobileNotification;
-import co.mindie.cindy.notifier.Notifier;
-
-public class AndroidNotifier extends Notifier {
+public class AndroidNotifier extends Notifier<AndroidNotification> {
 
 	////////////////////////
 	// VARIABLES
@@ -46,23 +46,26 @@ public class AndroidNotifier extends Notifier {
 	////////////////
 
 	@Override
-	protected void processNotifications(List<MobileNotification> notifications) {
+	protected void processNotifications(List<AndroidNotification> notifications) {
 		if (this.authorizationKey != null) {
-			for (MobileNotification notification : notifications) {
+			List<Pair<AndroidNotification, Exception>> failedNotifications = new ArrayList<>();
+			List<AndroidNotification> successfulNotifications = new ArrayList<>();
+			for (AndroidNotification notification : notifications) {
 				try {
 					this.process(notification);
-					this.notifySent(notification);
+					successfulNotifications.add(notification);
 				} catch (Exception e) {
-					this.notifySendFailed(notification, e);
+					failedNotifications.add(new Pair<>(notification, e));
 				}
 			}
+			this.notifySent(successfulNotifications, failedNotifications);
 		} else {
-			this.notifySendFailed(notifications, new ArrayList<>(), notifications, new Exception("No authorization key set in the AndroidNotifier"));
+			this.notifySent(new ArrayList<>(), notifications, new Exception("No authorization key set in the AndroidNotifier"));
 		}
 	}
 
 	public void sendNotification(String recipientId, Map<String, Object> body, Object userInfo) {
-		MobileNotification notification = new MobileNotification();
+		AndroidNotification notification = new AndroidNotification();
 		notification.setBody(body);
 		notification.setRecipientId(recipientId);
 		notification.setUserInfo(userInfo);
@@ -70,14 +73,14 @@ public class AndroidNotifier extends Notifier {
 		this.sendNotification(notification);
 	}
 
-	private void process(MobileNotification mobileNotification) throws IOException {
+	private void process(AndroidNotification mobileNotification) throws IOException {
 		ServerRequest request = new ServerRequest();
 		request.setURL("https://android.googleapis.com/gcm/send");
 		request.setHttpMethod(HttpMethod.POST);
 
 		AndroidNotificationRequest notificationRequest = new AndroidNotificationRequest();
 		notificationRequest.setData(mobileNotification.getBody());
-		notificationRequest.setRegistrationIds(new String[] { mobileNotification.getRecipientId() });
+		notificationRequest.setRegistrationIds(new String[]{mobileNotification.getRecipientId()});
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		this.jsonWriter.writeResponse(notificationRequest, outputStream);

@@ -9,15 +9,12 @@
 
 package co.mindie.cindy.notifier;
 
+import me.corsin.javatools.misc.Pair;
+
 import java.util.List;
 
-public interface NotifierListener {
+public interface NotifierListener<T extends MobileNotification> {
+	void onNotificationsSent(List<T> successfulNotification, List<Pair<T, Exception>> failedNotifications);
 
-	<T extends MobileNotification> void onNotificationSent(T notification);
-
-	<T extends MobileNotification> void onNotificationSendFailed(T notification, Exception e);
-
-	<T extends MobileNotification> void onNotificationGroupSendFailed(List<T> allNotifications, List<T> successfulNotifications,
-	                                                                  List<T> failedNotification, Exception e);
-
+	void onNotificationsSent(List<T> successfulNotification, List<T> failedNotifications, Exception e);
 }

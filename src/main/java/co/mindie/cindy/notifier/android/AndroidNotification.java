@@ -9,16 +9,15 @@
 
 package co.mindie.cindy.notifier.android;
 
-import java.util.Map;
+import co.mindie.cindy.notifier.MobileNotification;
 
-public class AndroidNotification {
+public class AndroidNotification extends MobileNotification {
 
 	////////////////////////
 	// VARIABLES
 	////////////////
 
 	private String registrationId;
-	private Map<String, String> body;
 	private Object userInfo;
 
 	////////////////////////
@@ -37,27 +36,21 @@ public class AndroidNotification {
 	// GETTERS/SETTERS
 	////////////////
 
-	public String getRegistrationId() {
-		return this.registrationId;
-	}
-
-	public Map<String, String> getBody() {
-		return this.body;
-	}
 
 	public Object getUserInfo() {
 		return this.userInfo;
+	}
+
+	public void setUserInfo(Object userInfo) {
+		this.userInfo = userInfo;
+	}
+
+	public String getRegistrationId() {
+		return this.registrationId;
 	}
 
 	public void setRegistrationId(String registrationId) {
 		this.registrationId = registrationId;
 	}
 
-	public void setBody(Map<String, String> body) {
-		this.body = body;
-	}
-
-	public void setUserInfo(Object userInfo) {
-		this.userInfo = userInfo;
-	}
 }

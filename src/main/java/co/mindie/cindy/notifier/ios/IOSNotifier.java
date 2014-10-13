@@ -9,7 +9,6 @@
 
 package co.mindie.cindy.notifier.ios;
 
-import co.mindie.cindy.notifier.MobileNotification;
 import co.mindie.cindy.notifier.Notifier;
 import javapns.Push;
 import javapns.devices.exceptions.InvalidDeviceTokenFormatException;
@@ -18,7 +17,7 @@ import javapns.notification.PayloadPerDevice;
 import javapns.notification.PushNotificationPayload;
 import javapns.notification.PushedNotification;
 import javapns.notification.PushedNotifications;
-import me.corsin.javatools.exception.StackTraceUtils;
+import me.corsin.javatools.misc.Pair;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -29,8 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
-public class IOSNotifier extends Notifier {
+public class IOSNotifier extends Notifier<IOSNotification> {
 
 	////////////////////////
 	// VARIABLES
@@ -56,8 +56,7 @@ public class IOSNotifier extends Notifier {
 
 	public void loadKeyUsingResourceFile(String fileName) throws IOException {
 		InputStream stream = IOSNotifier.class.getClassLoader().getResourceAsStream(fileName);
-		byte[] bytes = IOUtils.toByteArray(stream);
-		this.key = bytes;
+		this.key = IOUtils.toByteArray(stream);
 	}
 
 	public void sendCombinedNotification(String iosToken, String message, String sound, Map<String, Object> body, int badge, Object userInfo) {
@@ -87,7 +86,7 @@ public class IOSNotifier extends Notifier {
 	}
 
 	@Override
-	public void sendNotification(MobileNotification notification) {
+	public void sendNotification(IOSNotification notification) {
 		super.sendNotification(notification);
 	}
 
@@ -96,11 +95,12 @@ public class IOSNotifier extends Notifier {
 	////////////////
 
 	@Override
-	protected void processNotifications(List<MobileNotification> notifications) {
+	protected void processNotifications(List<IOSNotification> notifications) {
 		List<PayloadPerDevice> payloadPerDevices = new ArrayList<>();
+		List<Pair<IOSNotification, Exception>> failures = new ArrayList<>();
 
 		for (int i = 0; i < notifications.size(); i++) {
-			final IOSNotification notification = (IOSNotification) notifications.get(i);
+			final IOSNotification notification = notifications.get(i);
 
 			try {
 				payloadPerDevices.add(this.generatePayloadPerDevice(notification));
@@ -108,11 +108,11 @@ public class IOSNotifier extends Notifier {
 				notifications.remove(i);
 				i--;
 
-				this.notifySendFailed(notification, e);
+				failures.add(new Pair<>(notification, e));
 			}
 		}
 
-		this.process(notifications, payloadPerDevices);
+		this.process(notifications, payloadPerDevices, failures);
 	}
 
 	private PayloadPerDevice generatePayloadPerDevice(IOSNotification notification) throws JSONException, InvalidDeviceTokenFormatException {
@@ -147,14 +147,11 @@ public class IOSNotifier extends Notifier {
 			}
 		}
 
-		PayloadPerDevice payloadPerDevice = new PayloadPerDevice(payload, notification.getRecipientId());
-
-		return payloadPerDevice;
+		return new PayloadPerDevice(payload, notification.getRecipientId());
 	}
 
-	private void process(List<MobileNotification> notifications, List<PayloadPerDevice> payloadPerDevices) {
-		List<MobileNotification> success = new ArrayList<>();
-		List<MobileNotification> failures = new ArrayList<>();
+	private void process(List<IOSNotification> notifications, List<PayloadPerDevice> payloadPerDevices, List<Pair<IOSNotification, Exception>> failures) {
+		List<IOSNotification> success = new ArrayList<>();
 
 		PushedNotifications ret;
 		try {
@@ -162,17 +159,19 @@ public class IOSNotifier extends Notifier {
 
 			for (int i = 0; i < ret.size(); i++) {
 				PushedNotification not = ret.get(i);
-				MobileNotification notification = notifications.get(i);
+				IOSNotification notification = notifications.get(i);
 				if (not.isSuccessful()) {
-					this.notifySent(notification);
 					success.add(notification);
 				} else {
-					this.notifySendFailed(notification, not.getException());
-					failures.add(notification);
+					failures.add(new Pair<>(notification, not.getException()));
 				}
 			}
+			this.notifySent(success, failures);
 		} catch (Exception e) {
-			this.notifySendFailed(notifications, success, failures, e);
+			List<IOSNotification> failedNotifications = failures.stream()
+					.map(Pair::getFirst)
+					.collect(Collectors.toList());
+			this.notifySent(success, failedNotifications, e);
 		}
 	}
 
