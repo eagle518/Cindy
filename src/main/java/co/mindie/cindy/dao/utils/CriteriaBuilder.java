@@ -1,7 +1,7 @@
 package co.mindie.cindy.dao.utils;
 
 import co.mindie.cindy.dao.domain.Page;
-import co.mindie.cindy.dao.domain.PageRequest;
+import co.mindie.cindy.dao.domain.AbstractListRequest;
 import me.corsin.javatools.misc.Pool;
 import me.corsin.javatools.reflect.ReflectionUtils;
 import org.hibernate.Criteria;
@@ -159,9 +159,9 @@ public class CriteriaBuilder {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <T> List<T> getResults(PageRequest pageRequest) {
+	protected <T> List<T> getResults(AbstractListRequest abstractListRequest) {
 		Criteria criteria = this.getResultCriteria();
-		pageRequest.getSorts().forEach(sort -> {
+		abstractListRequest.getSorts().forEach(sort -> {
 			switch (sort.getDirection()) {
 				case ASC:
 					criteria.addOrder(Order.asc(sort.getProperty()));
@@ -172,8 +172,8 @@ public class CriteriaBuilder {
 			}
 		});
 		return (List<T>) criteria
-				.setFirstResult(pageRequest.getOffset())
-				.setMaxResults(pageRequest.getLimit())
+				.setFirstResult(abstractListRequest.getOffset())
+				.setMaxResults(abstractListRequest.getLimit())
 				.list();
 	}
 
@@ -182,12 +182,12 @@ public class CriteriaBuilder {
 		return (T) this.getResultCriteria().uniqueResult();
 	}
 
-	public <T> Page<T> page(PageRequest pageRequest) {
-		List<T> results = this.getResults(pageRequest);
+	public <T> Page<T> page(AbstractListRequest abstractListRequest) {
+		List<T> results = this.getResults(abstractListRequest);
 
 		long count = this.getCount();
 
-		Page<T> page = new Page<T>(results, pageRequest, count);
+		Page<T> page = new Page<T>(results, abstractListRequest, count);
 
 		this.release();
 

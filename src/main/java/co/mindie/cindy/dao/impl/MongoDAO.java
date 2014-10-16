@@ -11,7 +11,7 @@ package co.mindie.cindy.dao.impl;
 
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.dao.domain.Direction;
-import co.mindie.cindy.dao.domain.PageRequest;
+import co.mindie.cindy.dao.domain.AbstractListRequest;
 import co.mindie.cindy.database.MongoDatabase;
 import co.mindie.cindy.database.handle.MongoDatabaseHandle;
 import co.mindie.cindy.mongo.MongoEntity;
@@ -190,18 +190,18 @@ public abstract class MongoDAO<ElementType extends MongoEntity> extends Abstract
 			return this.getCollection().count(query);
 	}
 
-	protected DBObject buildSort(PageRequest pageRequest) {
+	protected DBObject buildSort(AbstractListRequest abstractListRequest) {
 		MongoQuery query = new MongoQuery();
-		pageRequest.getSorts()
+		abstractListRequest.getSorts()
 				.forEach(s -> query.with(s.getProperty(), s.getDirection() == Direction.ASC ? 1 : -1));
 		return query.build();
 	}
 
-	protected void applyPageRequest(DBCursor cursor, PageRequest pageRequest) {
-		if (pageRequest != null) {
-			cursor.sort(this.buildSort(pageRequest));
-			cursor.skip(pageRequest.getOffset());
-			cursor.limit(pageRequest.getLimit());
+	protected void applyPageRequest(DBCursor cursor, AbstractListRequest abstractListRequest) {
+		if (abstractListRequest != null) {
+			cursor.sort(this.buildSort(abstractListRequest));
+			cursor.skip(abstractListRequest.getOffset());
+			cursor.limit(abstractListRequest.getLimit());
 		}
 	}
 

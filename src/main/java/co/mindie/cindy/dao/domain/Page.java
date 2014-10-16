@@ -16,7 +16,8 @@ public class Page<T> implements Iterable<T> {
 
 	private List<T> data;
 	private long totalElements;
-	private PageRequest pageRequest;
+	private long totalPages;
+	private AbstractListRequest listRequest;
 
 	// //////////////////////
 	// CONSTRUCTORS
@@ -26,13 +27,16 @@ public class Page<T> implements Iterable<T> {
 		this(data, null, data.size());
 	}
 
-	public Page(List<T> data, PageRequest pageRequest, long totalElements) {
+	public Page(List<T> data, AbstractListRequest listRequest, long totalElements) {
 		if (data == null) {
 			throw new CindyException("Null data");
 		}
 		this.data = data;
-		this.pageRequest = pageRequest;
+		this.listRequest = listRequest;
 		this.totalElements = totalElements;
+		if (listRequest instanceof PageRequest) {
+			this.totalPages = totalElements / listRequest.getLimit() + 1;
+		}
 	}
 
 	// //////////////////////
@@ -40,34 +44,26 @@ public class Page<T> implements Iterable<T> {
 	// //////////////
 
 	public boolean hasPrevious() {
-		return this.pageRequest != null
-				&& this.pageRequest.getOffset() != 0
+		return this.listRequest != null
+				&& this.listRequest.getOffset() != 0
 				&& this.totalElements != 0;
 	}
 
-	public PageRequest previousPageRequest() {
+	public AbstractListRequest previousPageRequest() {
 		if (this.hasPrevious()) {
-			return new PageRequest(
-					this.pageRequest.getOffset() - this.pageRequest.getLimit(),
-					this.pageRequest.getLimit(),
-					this.pageRequest.getSorts()
-			);
+			return this.listRequest.previous();
 		}
 		return null;
 	}
 
 	public boolean hasNext() {
-		return this.pageRequest != null
-				&& this.pageRequest.getOffset() + this.pageRequest.getLimit() < this.totalElements;
+		return this.listRequest != null
+				&& this.listRequest.getOffset() + this.listRequest.getLimit() < this.totalElements;
 	}
 
-	public PageRequest nextPageRequest() {
+	public AbstractListRequest nextPageRequest() {
 		if (this.hasNext()) {
-			return new PageRequest(
-					this.pageRequest.getOffset() + this.pageRequest.getLimit(),
-					this.pageRequest.getLimit(),
-					this.pageRequest.getSorts()
-			);
+			return this.listRequest.next();
 		}
 		return null;
 	}
@@ -97,12 +93,12 @@ public class Page<T> implements Iterable<T> {
 		this.data = data;
 	}
 
-	public PageRequest getPageRequest() {
-		return pageRequest;
+	public AbstractListRequest getListRequest() {
+		return listRequest;
 	}
 
-	public void setPageRequest(PageRequest pageRequest) {
-		this.pageRequest = pageRequest;
+	public void setListRequest(AbstractListRequest listRequest) {
+		this.listRequest = listRequest;
 	}
 
 	public int size() {
@@ -115,5 +111,13 @@ public class Page<T> implements Iterable<T> {
 
 	public void setTotalElements(long totalElements) {
 		this.totalElements = totalElements;
+	}
+
+	public long getTotalPages() {
+		return totalPages;
+	}
+
+	public void setTotalPages(long totalPages) {
+		this.totalPages = totalPages;
 	}
 }

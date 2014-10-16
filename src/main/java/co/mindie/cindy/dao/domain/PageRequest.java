@@ -2,240 +2,113 @@ package co.mindie.cindy.dao.domain;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
-/**
- * Request with pagination information.
- */
-public class PageRequest {
+public class PageRequest extends AbstractListRequest {
 	// //////////////////////
 	// VARIABLES
 	// //////////////
 
-	private int offset;
-	private int limit;
-	private List<Sort> sorts;
+	private int pageNumber;
+	private int pageSize;
 
 	// //////////////////////
 	// CONSTRUCTORS
 	// //////////////
 
 	public PageRequest(PageRequest original) {
-		this(original.getOffset(), original.getLimit(), new ArrayList<>(original.getSorts()));
+		super(original);
+		this.pageNumber = original.getPageNumber();
+		this.pageSize = original.getPageSize();
 	}
 
-	public PageRequest(int offset, int limit) {
-		this(offset, limit, new ArrayList<>());
+	public PageRequest(int pageNumber, int pageSize) {
+		this(pageNumber, pageSize, new ArrayList<>());
 	}
 
-	public PageRequest(int offset, int limit, Direction direction, String propertyName) {
-		this(offset, limit, new Sort(direction, propertyName));
+	public PageRequest(int pageNumber, int pageSize, Direction direction, String propertyName) {
+		this(pageNumber, pageSize, new Sort(direction, propertyName));
 	}
 
-	public PageRequest(int offset, int limit, Sort... sorts) {
-		this(offset, limit, Arrays.asList(sorts));
+	public PageRequest(int pageNumber, int pageSize, Sort... sorts) {
+		this(pageNumber, pageSize, Arrays.asList(sorts));
 	}
 
-	public PageRequest(int offset, int limit, List<Sort> sorts) {
-		this.offset = offset;
-		this.limit = limit;
-
-		if (sorts == null) {
-			this.sorts = new ArrayList<>();
-		} else {
-			this.sorts = sorts;
-		}
+	public PageRequest(int pageNumber, int pageSize, List<Sort> sorts) {
+		super(sorts);
+		this.pageNumber = pageNumber;
+		this.pageSize = pageSize;
 	}
 
 	// //////////////////////
 	// METHODS
 	// //////////////
 
-	/**
-	 * Adds a @{link Sort} to the @{link PageRequest} after the existing orders
-	 * If a sort for this property already exists, it will be replaced by the new one
-	 *
-	 * @param sort the sort to add
-	 * @return the modified @{link PageRequest}
-	 */
-	public PageRequest appendSort(Sort sort) {
-		this.removeSortForProperty(sort.getProperty());
-		this.sorts.add(sort);
-		return this;
-	}
-
-	/**
-	 * Adds a @{link Sort} to the @{link PageRequest} after the existing orders
-	 * If a sort for this property already exists, it will be replaced by the new one
-	 *
-	 * @param direction    the direction of the sort
-	 * @param propertyName the property name of the sort
-	 * @return the modified @{link PageRequest}
-	 */
-	public PageRequest appendSort(Direction direction, String propertyName) {
-		return this.appendSort(new Sort(direction, propertyName));
-	}
-
-	/**
-	 * Removes any @{link Sort} for the given property
-	 *
-	 * @param propertyName the property name
-	 * @return the modified @{link PageRequest}
-	 */
-	public PageRequest removeSortForProperty(String propertyName) {
-		Iterator<Sort> ite = this.sorts.iterator();
-		while (ite.hasNext()) {
-			Sort current = ite.next();
-			if (current.getProperty().equals(propertyName)) {
-				ite.remove();
-			}
-		}
-		return this;
-	}
-
-	/**
-	 * Adds a @{link Sort} to the @{link PageRequest} before the existing orders
-	 * If a sort for this property already exists, it will be replaced by the new one
-	 *
-	 * @param sort the sort to add
-	 * @return the modified @{link PageRequest}
-	 */
-	public PageRequest prependSort(Sort sort) {
-		this.removeSortForProperty(sort.getProperty());
-		if (this.sorts.size() > 0) {
-			this.sorts.set(0, sort);
-		} else {
-			this.sorts.add(sort);
-		}
-		return this;
-	}
-
-	/**
-	 * Adds a @{link Sort} to the @{link PageRequest} before the existing orders
-	 * If a sort for this property already exists, it will be replaced by the new one
-	 *
-	 * @param direction    the direction of the sort
-	 * @param propertyName the property name of the sort
-	 * @return the modified @{link PageRequest}
-	 */
-	public PageRequest prependSort(Direction direction, String propertyName) {
-		return this.prependSort(new Sort(direction, propertyName));
-	}
-
-	/**
-	 * Returns a new PageRequest which is a copy of the current one, plus the given sort
-	 * placed at the first place
-	 * If a sort for this property already exists, it will be replaced by the new one
-	 *
-	 * @param sort the sort to prepend
-	 * @return the modified @{link PageRequest}
-	 */
+	@Override
 	public PageRequest withPrependedSort(Sort sort) {
-		return new PageRequest(this).prependSort(sort);
+		PageRequest pageRequest = new PageRequest(this);
+		pageRequest.prependSort(sort);
+		return pageRequest;
 	}
 
-	/**
-	 * Returns a new PageRequest which is a copy of the current one, plus the given sort
-	 * placed at the first place
-	 * If a sort for this property already exists, it will be replaced by the new one
-	 *
-	 * @param direction    the direction of the sort
-	 * @param propertyName the property name of the sort
-	 * @return the modified @{link PageRequest}
-	 */
+	@Override
 	public PageRequest withPrependedSort(Direction direction, String propertyName) {
 		return this.withPrependedSort(new Sort(direction, propertyName));
 	}
 
-	/**
-	 * Returns a new PageRequest which is a copy of the current one, plus the given sort
-	 * placed at the last place
-	 * If a sort for this property already exists, it will be replaced by the new one
-	 *
-	 * @param sort the sort to append
-	 * @return the modified @{link PageRequest}
-	 */
+	@Override
 	public PageRequest withAppendedSort(Sort sort) {
-		return new PageRequest(this).appendSort(sort);
+		PageRequest pageRequest = new PageRequest(this);
+		pageRequest.appendSort(sort);
+		return pageRequest;
 	}
 
-	/**
-	 * Returns a new PageRequest which is a copy of the current one, plus the given sort
-	 * placed at the last place
-	 * If a sort for this property already exists, it will be replaced by the new one
-	 *
-	 * @param direction    the direction of the sort
-	 * @param propertyName the property name of the sort
-	 * @return the modified @{link PageRequest}
-	 */
+	@Override
 	public PageRequest withAppendedSort(Direction direction, String propertyName) {
 		return this.withAppendedSort(new Sort(direction, propertyName));
 	}
 
+	@Override
+	public PageRequest previous() {
+		int newPageNumber = this.pageNumber - 1;
+		if (newPageNumber < 0) {
+			newPageNumber = 1;
+		}
+		return new PageRequest(newPageNumber, this.pageSize, this.getSorts());
+	}
+
+	@Override
+	public PageRequest next() {
+		return new PageRequest(this.pageNumber + 1, this.pageSize, this.getSorts());
+	}
+
 	// //////////////////////
-	// GETTERS/SETTERS
+	// METHODS
 	// //////////////
 
-	/**
-	 * The offset to be taken (number of items)
-	 *
-	 * @return the offset
-	 */
+	@Override
 	public int getOffset() {
-		return this.offset;
+		return (this.pageNumber - 1) * this.pageSize;
 	}
 
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-
-	/**
-	 * The number of items for each the page
-	 *
-	 * @return the number of items for this page
-	 */
+	@Override
 	public int getLimit() {
-		return this.limit;
+		return this.pageSize;
 	}
 
-	public void setLimit(int limit) {
-		this.limit = limit;
+	public int getPageNumber() {
+		return pageNumber;
 	}
 
-	/**
-	 * Returns the sorting parameters
-	 *
-	 * @return the sorting parameters
-	 */
-	public List<Sort> getSorts() {
-		return this.sorts;
+	public void setPageNumber(int pageNumber) {
+		this.pageNumber = pageNumber;
 	}
 
-	/**
-	 * Determine if the PageRequest has sorts or not
-	 *
-	 * @return true if the PageRequest has sorts, else false
-	 */
-	public boolean hasSort() {
-		return this.sorts.size() > 0;
+	public int getPageSize() {
+		return pageSize;
 	}
 
-	/**
-	 * Determine if the PageRequest has a sort for the given property
-	 *
-	 * @param propertyName the name of the property
-	 * @return true if the PageRequest has a sort for the given property, else false
-	 */
-	public boolean hasSort(String propertyName) {
-		Iterator<Sort> ite = this.sorts.iterator();
-		boolean hasSort = false;
-		while (ite.hasNext() && !hasSort) {
-			Sort current = ite.next();
-			if (current.getProperty().equals(propertyName)) {
-				hasSort = true;
-			}
-		}
-		return hasSort;
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
 	}
 }

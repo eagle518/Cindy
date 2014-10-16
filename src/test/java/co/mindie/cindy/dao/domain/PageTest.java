@@ -35,7 +35,7 @@ public class PageTest {
 	@Test
 	public void hasPrevious_if_offset_not_0_and_totalElements_not_0_returns_true() {
 		// GIVEN
-		Page<MyObj> page = new Page<>(generateObjects(3), new PageRequest(1, 10), 3);
+		Page<MyObj> page = new Page<>(generateObjects(3), new OffsetedRequest(1, 10), 3);
 
 		// WHEN
 		boolean result = page.hasPrevious();
@@ -47,7 +47,7 @@ public class PageTest {
 	@Test
 	public void hasPrevious_if_offset_not_0_and_totalElements_0_returns_false() {
 		// GIVEN
-		Page<MyObj> page = new Page<>(generateObjects(3), new PageRequest(1, 10), 0);
+		Page<MyObj> page = new Page<>(generateObjects(3), new OffsetedRequest(1, 10), 0);
 
 		// WHEN
 		boolean result = page.hasPrevious();
@@ -59,7 +59,7 @@ public class PageTest {
 	@Test
 	public void hasPrevious_if_offset_0_returns_false() {
 		// GIVEN
-		Page<MyObj> page = new Page<>(generateObjects(3), new PageRequest(0, 10), 3);
+		Page<MyObj> page = new Page<>(generateObjects(3), new OffsetedRequest(0, 10), 3);
 
 		// WHEN
 		boolean result = page.hasPrevious();
@@ -74,7 +74,7 @@ public class PageTest {
 		Page<MyObj> page = new Page<>(generateObjects(3));
 
 		// WHEN
-		PageRequest result = page.previousPageRequest();
+		AbstractListRequest result = page.previousPageRequest();
 
 		// THEN
 		assertNull(result);
@@ -83,10 +83,10 @@ public class PageTest {
 	@Test
 	public void previousPageRequest_if_hasPrevious_false_returns_null() {
 		// GIVEN
-		Page<MyObj> page = new Page<>(generateObjects(3), new PageRequest(0, 1), 10);
+		Page<MyObj> page = new Page<>(generateObjects(3), new OffsetedRequest(0, 1), 10);
 
 		// WHEN
-		PageRequest result = page.previousPageRequest();
+		AbstractListRequest result = page.previousPageRequest();
 
 		// THEN
 		assertNull(result);
@@ -95,10 +95,10 @@ public class PageTest {
 	@Test
 	public void previousPageRequest_if_hasPrevious_true_returns_an_offset_decreased_by_the_limit() {
 		// GIVEN
-		Page<MyObj> page = new Page<>(generateObjects(3), new PageRequest(8, 1, SORTS), 10);
+		Page<MyObj> page = new Page<>(generateObjects(3), new OffsetedRequest(8, 1, SORTS), 10);
 
 		// WHEN
-		PageRequest result = page.previousPageRequest();
+		AbstractListRequest result = page.previousPageRequest();
 
 		// THEN
 		assertEquals(SORTS, result.getSorts());
@@ -121,7 +121,7 @@ public class PageTest {
 	@Test
 	public void hasNext_if_offset_plus_limit_lower_than_totalElements_returns_true() {
 		// GIVEN
-		Page<MyObj> page = new Page<>(generateObjects(3), new PageRequest(0, 10), 11);
+		Page<MyObj> page = new Page<>(generateObjects(3), new OffsetedRequest(0, 10), 11);
 
 		// WHEN
 		boolean result = page.hasNext();
@@ -133,7 +133,7 @@ public class PageTest {
 	@Test
 	public void hasNext_if_offset_plus_limit_equals_totalElements_returns_false() {
 		// GIVEN
-		Page<MyObj> page = new Page<>(generateObjects(3), new PageRequest(2, 10), 12);
+		Page<MyObj> page = new Page<>(generateObjects(3), new OffsetedRequest(2, 10), 12);
 
 		// WHEN
 		boolean result = page.hasNext();
@@ -145,7 +145,7 @@ public class PageTest {
 	@Test
 	public void hasNext_if_offset_plus_limit_greater_than_totalElements_returns_false() {
 		// GIVEN
-		Page<MyObj> page = new Page<>(generateObjects(3), new PageRequest(2, 11), 12);
+		Page<MyObj> page = new Page<>(generateObjects(3), new OffsetedRequest(2, 11), 12);
 
 		// WHEN
 		boolean result = page.hasNext();
@@ -160,7 +160,7 @@ public class PageTest {
 		Page<MyObj> page = new Page<>(generateObjects(3));
 
 		// WHEN
-		PageRequest result = page.nextPageRequest();
+		AbstractListRequest result = page.nextPageRequest();
 
 		// THEN
 		assertNull(result);
@@ -169,10 +169,10 @@ public class PageTest {
 	@Test
 	public void nextPageRequest_if_hasNext_false_returns_null() {
 		// GIVEN
-		Page<MyObj> page = new Page<>(generateObjects(3), new PageRequest(0, 100), 10);
+		Page<MyObj> page = new Page<>(generateObjects(3), new OffsetedRequest(0, 100), 10);
 
 		// WHEN
-		PageRequest result = page.nextPageRequest();
+		AbstractListRequest result = page.nextPageRequest();
 
 		// THEN
 		assertNull(result);
@@ -181,10 +181,10 @@ public class PageTest {
 	@Test
 	public void nextPageRequest_if_hasNext_true_returns_an_offset_increased_by_the_limit() {
 		// GIVEN
-		Page<MyObj> page = new Page<>(generateObjects(3), new PageRequest(8, 1, SORTS), 100);
+		Page<MyObj> page = new Page<>(generateObjects(3), new OffsetedRequest(8, 1, SORTS), 100);
 
 		// WHEN
-		PageRequest result = page.nextPageRequest();
+		AbstractListRequest result = page.nextPageRequest();
 
 		// THEN
 		assertEquals(SORTS, result.getSorts());

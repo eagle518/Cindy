@@ -9,16 +9,17 @@ import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.ComponentContext;
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.dao.domain.AbstractListRequest;
 import co.mindie.cindy.dao.domain.Direction;
+import co.mindie.cindy.dao.domain.OffsetedRequest;
 import co.mindie.cindy.dao.domain.Page;
-import co.mindie.cindy.dao.domain.PageRequest;
 import co.mindie.cindy.dao.domain.Sort;
 import co.mindie.cindy.dao.impl.HibernateDAO;
-import co.mindie.cindy.database.tools.CindyHibernateConfiguration;
 import co.mindie.cindy.dao.utils.CriteriaBuilder;
 import co.mindie.cindy.dao.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
+import co.mindie.cindy.database.tools.CindyHibernateConfiguration;
 import com.google.common.collect.Lists;
 import me.corsin.javatools.misc.SynchronizedPool;
 import org.apache.log4j.Logger;
@@ -161,10 +162,10 @@ public class HibernateDAOTest extends AbstractCindyTest {
 
 		this.dao.saveAll(Lists.newArrayList(fake1, fake2, fake3, fake4, fake5, fake6));
 
-		PageRequest pageRequest = new PageRequest(2, 3, new Sort(Direction.DESC, "id"));
+		AbstractListRequest abstractListRequest = new OffsetedRequest(2, 3, new Sort(Direction.DESC, "id"));
 
 		// WHEN
-		Page<FakeObject> page = this.dao.findAll(pageRequest);
+		Page<FakeObject> page = this.dao.findAll(abstractListRequest);
 
 		// THEN
 		assertEquals(6, page.getTotalElements());

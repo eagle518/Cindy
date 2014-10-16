@@ -11,7 +11,7 @@ package co.mindie.cindy.dao.impl;
 
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.dao.domain.Page;
-import co.mindie.cindy.dao.domain.PageRequest;
+import co.mindie.cindy.dao.domain.AbstractListRequest;
 import co.mindie.cindy.dao.utils.CriteriaBuilder;
 import co.mindie.cindy.dao.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.dao.utils.GroupByResultTransformer;
@@ -214,9 +214,9 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 				.list();
 	}
 
-	public Page<ElementType> findAll(PageRequest pageRequest) {
+	public Page<ElementType> findAll(AbstractListRequest abstractListRequest) {
 		return this.createCriteria()
-				.page(pageRequest);
+				.page(abstractListRequest);
 	}
 
 	public boolean exists(PrimaryKey key) {
@@ -241,10 +241,10 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 				.list();
 	}
 
-	public Page<ElementType> findSince(DateTime date, PageRequest pageRequest) {
+	public Page<ElementType> findSince(DateTime date, AbstractListRequest abstractListRequest) {
 		return this.createCriteria()
 				.add(Restrictions.gt(this.getCreatedDatePropertyName(), date))
-				.page(pageRequest);
+				.page(abstractListRequest);
 	}
 
 	/**
