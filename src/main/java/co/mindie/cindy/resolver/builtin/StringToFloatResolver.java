@@ -10,10 +10,10 @@
 package co.mindie.cindy.resolver.builtin;
 
 import co.mindie.cindy.automapping.Resolver;
-import me.corsin.javatools.misc.NullArgumentException;
 import co.mindie.cindy.resolver.IResolver;
+import me.corsin.javatools.misc.NullArgumentException;
 
-@Resolver(managedInputClasses = { String.class }, managedOutputClasses = { float.class, Float.class })
+@Resolver(managedInputClasses = {String.class}, managedOutputClasses = {Float.class, float.class})
 public class StringToFloatResolver implements IResolver<String, Float> {
 
 	////////////////////////

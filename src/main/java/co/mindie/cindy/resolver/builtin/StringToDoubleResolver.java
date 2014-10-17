@@ -13,7 +13,7 @@ import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
 import me.corsin.javatools.misc.NullArgumentException;
 
-@Resolver(managedInputClasses = { String.class }, managedOutputClasses = { double.class, Double.class })
+@Resolver(managedInputClasses = { String.class }, managedOutputClasses = { Double.class, double.class })
 public class StringToDoubleResolver implements IResolver<String, Double> {
 
 	////////////////////////

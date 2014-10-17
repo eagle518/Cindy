@@ -30,7 +30,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
 
 public class EndpointEntry {
 
@@ -274,7 +278,12 @@ public class EndpointEntry {
 				requestParameter.setStringValue(stringValue);
 				requestParameter.setInputStream(inputStreamValue);
 
-				Object output = fConverter.createResolversAndResolve(e.getComponentContext(), requestParameter, fResolverOptions);
+				Object output;
+				try {
+					output = fConverter.createResolversAndResolve(e.getComponentContext(), requestParameter, fResolverOptions);
+				} catch (Exception ex) {
+					throw new CindyException("Error while resolving the parameter: " + name, ex);
+				}
 
 				if (fRequired && output == null) {
 					throw new BadParameterException(name, this.mapped.httpMethod(), this.getPath());

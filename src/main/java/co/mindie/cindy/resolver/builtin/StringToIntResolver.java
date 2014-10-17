@@ -9,11 +9,11 @@
 
 package co.mindie.cindy.resolver.builtin;
 
-import me.corsin.javatools.misc.NullArgumentException;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
+import me.corsin.javatools.misc.NullArgumentException;
 
-@Resolver(managedInputClasses = { String.class }, managedOutputClasses = { int.class, Integer.class })
+@Resolver(managedInputClasses = {String.class}, managedOutputClasses = {Integer.class, int.class})
 public class StringToIntResolver implements IResolver<String, Integer> {
 
 	////////////////////////
