@@ -9,25 +9,25 @@
 
 package co.mindie.cindy.automapping;
 
-public enum CreationScope {
+public enum CreationBox {
 	/**
 	 * If not found while following the {@link SearchScope} rule,
-	 * the dependency will be created in the current {@link co.mindie.cindy.component.ComponentContext}
+	 * the dependency will be created in the current {@link co.mindie.cindy.component.ComponentBox}
 	 */
 	LOCAL,
 
 	/**
 	 * If not found while following the {@link SearchScope} rule,
-	 * the dependency will be created in a subcontext of the current {@link co.mindie.cindy.component.ComponentContext}.
+	 * the dependency will be created in a subcontext of the current {@link co.mindie.cindy.component.ComponentBox}.
 	 * <p/>
-	 * A Component will only create one sub {@link co.mindie.cindy.component.ComponentContext} for its dependencies,
-	 * therefore every dependency with this CreationScope will be in the same sub {@link co.mindie.cindy.component.ComponentContext}.
+	 * A Component will only create one sub {@link co.mindie.cindy.component.ComponentBox} for its dependencies,
+	 * therefore every dependency with this CreationBox will be in the same sub {@link co.mindie.cindy.component.ComponentBox}.
 	 */
 	SUB_CONTEXT,
 
 	/**
 	 * If not found while following the {@link SearchScope} rule,
-	 * the dependency will be created in its own private sub {@link co.mindie.cindy.component.ComponentContext}
+	 * the dependency will be created in its own private sub {@link co.mindie.cindy.component.ComponentBox}
 	 */
 	ISOLATED,
 
@@ -38,7 +38,7 @@ public enum CreationScope {
 	NO_CREATION,
 
 	/**
-	 * Let another instance decide the creationScope.
+	 * Let another instance decide the creationBox.
 	 */
 	UNDEFINED
 }

@@ -12,7 +12,7 @@ package co.mindie.cindy.controller.manager.entry;
 import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.Param;
-import co.mindie.cindy.component.ComponentContext;
+import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.CindyController;
 import co.mindie.cindy.controller.manager.RequestParameter;
@@ -98,8 +98,8 @@ public class EndpointEntry {
 		if (requestHandler == null) {
 			requestHandler = new RequestHandler(this);
 
-			ComponentContext cc = new ComponentContext(application.getComponentContext());
-			requestHandler.setComponentContext(cc);
+			ComponentBox cc = new ComponentBox(application.getComponentBox());
+			requestHandler.setComponentBox(cc);
 			requestHandler.setController(application.createComponent(cc, this.controllerEntry.getControllerClass()));
 			requestHandler.setRequestContext(application.findOrCreateComponent(cc, RequestContext.class));
 		}
@@ -280,7 +280,7 @@ public class EndpointEntry {
 
 				Object output;
 				try {
-					output = fConverter.createResolversAndResolve(e.getComponentContext(), requestParameter, fResolverOptions);
+					output = fConverter.createResolversAndResolve(e.getComponentBox(), requestParameter, fResolverOptions);
 				} catch (Exception ex) {
 					throw new CindyException("Error while resolving the parameter: " + name, ex);
 				}

@@ -142,7 +142,7 @@ public class ConsoleTools {
 			if (obj instanceof CindyComponent) {
 				CindyComponent component = (CindyComponent) obj;
 				List<Object> objs = new ArrayList<>();
-				for (Object childComponent : component.getComponentContext().getComponents()) {
+				for (Object childComponent : component.getComponentBox().getComponents()) {
 					if (childComponent.getClass().getSimpleName().contains(componentKind)) {
 						objs.add(childComponent);
 					}
@@ -163,7 +163,7 @@ public class ConsoleTools {
 		public Object find(Object obj, java.lang.Class<?> componentClass) {
 			if (obj instanceof CindyComponent) {
 				CindyComponent component = (CindyComponent) obj;
-				return component.getComponentContext().findComponent(componentClass);
+				return component.getComponentBox().findComponent(componentClass);
 			} else {
 				throw new CindyException("This object " + obj + " needs to be a CindyComponent in order to use findComponent on it.");
 			}
@@ -172,7 +172,7 @@ public class ConsoleTools {
 		public Object show(Object obj) {
 			if (obj instanceof CindyComponent) {
 				CindyComponent component = (CindyComponent) obj;
-				return component.getComponentContext().getComponents();
+				return component.getComponentBox().getComponents();
 			} else {
 				throw new CindyException("This object " + obj + " needs to be a CindyComponent in order to use findComponent on it.");
 			}

@@ -19,7 +19,7 @@ import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.controller.manager.HttpResponse;
 import co.mindie.cindy.utils.IFlushable;
 import co.mindie.cindy.automapping.Component;
-import co.mindie.cindy.automapping.CreationScope;
+import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.controller.CindyController;
 import co.mindie.cindy.controller.manager.HttpRequest;
 import co.mindie.cindy.responseserializer.IResponseWriter;
@@ -38,7 +38,7 @@ public class RequestContext extends CindyComponent {
 	private Boolean shouldResolveOutput;
 	private Integer outputResolverOptions;
 	@Wired(required = false) private IResponseWriter responseWriter;
-	@Wired(required = false, creationScope = CreationScope.NO_CREATION) private CindyController controller;
+	@Wired(required = false, creationScope = CreationBox.NO_CREATION) private CindyController controller;
 	@Wired(fieldClass = IFlushable.class) List<IFlushable> flushables;
 
 	// //////////////////////

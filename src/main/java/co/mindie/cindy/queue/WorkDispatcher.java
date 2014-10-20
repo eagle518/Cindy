@@ -52,7 +52,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 
 	@Override
 	public void init() {
-		this.componentPool = new ComponentPool<>(this.getApplication(), this.workContextTypeClass, this.getComponentContext(), true);
+		this.componentPool = new ComponentPool<>(this.getApplication(), this.workContextTypeClass, this.getComponentBox(), true);
 		this.workTaskQueue = new ThreadedConcurrentTaskQueue(this.maxNumberOfThreads);
 		this.maxPendingTasks = this.maxNumberOfThreads * DEFAULT_PENDING_TASKS_TO_THREAD_RATIO;
 

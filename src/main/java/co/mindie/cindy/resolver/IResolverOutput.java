@@ -9,17 +9,17 @@
 
 package co.mindie.cindy.resolver;
 
-import co.mindie.cindy.component.ComponentContext;
+import co.mindie.cindy.component.ComponentBox;
 
 public interface IResolverOutput {
 
 	/**
-	 * Create the required resolvers in the ComponentContext to resolve the inputObject.
+	 * Create the required resolvers in the ComponentBox to resolve the inputObject.
 	 * @param cc
 	 * @param inputObject
 	 * @param options
 	 * @return
 	 */
-	Object createResolversAndResolve(ComponentContext cc, Object inputObject, int options);
+	Object createResolversAndResolve(ComponentBox cc, Object inputObject, int options);
 
 }

@@ -6,7 +6,7 @@ import co.mindie.cindy.automapping.Component;
 import co.mindie.cindy.automapping.CreationResolveMode;
 import co.mindie.cindy.automapping.Singleton;
 import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.component.ComponentContext;
+import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.dao.domain.AbstractListRequest;
@@ -68,7 +68,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		ComponentInitializer initializer = metadataManager.createInitializer();
 		this.application = new CindyApp(metadataManager);
 
-		initializer.addCreatedComponent(this.application, new ComponentContext());
+		initializer.addCreatedComponent(this.application, new ComponentBox());
 
 		this.application.getComponentMetadataManager().loadComponent(FakeDatabase.class);
 		this.application.getComponentMetadataManager().loadComponent(FakeDatabaseHandle.class);
@@ -76,7 +76,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		this.application.getComponentMetadataManager().loadComponent(FakeCriteriaBuilderFactory.class);
 		this.application.getComponentMetadataManager().loadComponent(this.getClass());
 
-		initializer.addCreatedComponent(this, this.application.getComponentContext().createSubComponentContext());
+		initializer.addCreatedComponent(this, this.application.getComponentBox().createSubComponentContext());
 
 		initializer.init();
 	}

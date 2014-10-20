@@ -11,7 +11,7 @@ package co.mindie.cindy.component;
 
 import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.CreationResolveMode;
-import co.mindie.cindy.automapping.CreationScope;
+import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.exception.CindyException;
 import me.corsin.javatools.dynamictext.DynamicText;
@@ -115,7 +115,7 @@ public class ComponentMetadataManager {
 				this.log("Added {#0} to dependency of {#1}", cls, dependentClassMetadata.getComponentClass());
 
 				if (!dependentClassMetadata.hasDependency(cls)) {
-					dependentClassMetadata.addDependency(cls, true, false, SearchScope.UNDEFINED, CreationScope.UNDEFINED);
+					dependentClassMetadata.addDependency(cls, true, false, SearchScope.UNDEFINED, CreationBox.UNDEFINED);
 				}
 			}
 

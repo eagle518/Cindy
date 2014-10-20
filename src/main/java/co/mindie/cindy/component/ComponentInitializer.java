@@ -10,7 +10,7 @@
 package co.mindie.cindy.component;
 
 import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.automapping.CreationScope;
+import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.component.debugger.DebuggerJsonGenerator;
 import co.mindie.cindy.configuration.Configurations;
@@ -35,7 +35,7 @@ public class ComponentInitializer implements Initializable {
 	private Map<Object, CreatedComponent> components;
 	private List<CreatedComponent> createdComponents;
 	private ComponentMetadataManager metadataManager;
-	private List<ComponentContext> baseComponentContexts;
+	private List<ComponentBox> baseComponentBoxes;
 	private int currentRecursionCallCount;
 
 	////////////////////////
@@ -46,22 +46,22 @@ public class ComponentInitializer implements Initializable {
 		this.metadataManager = metadataManager;
 		this.components = new HashMap<Object, CreatedComponent>();
 		this.createdComponents = new ArrayList<>();
-		this.baseComponentContexts = new ArrayList<>();
+		this.baseComponentBoxes = new ArrayList<>();
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
 
-	public void addCreatedComponent(Object component, ComponentContext context) {
-		if (!this.baseComponentContexts.contains(context)) {
-			this.baseComponentContexts.add(context);
+	public void addCreatedComponent(Object component, ComponentBox context) {
+		if (!this.baseComponentBoxes.contains(context)) {
+			this.baseComponentBoxes.add(context);
 		}
 
 		this.addCreatedComponent(component, this.metadataManager.getComponentMetadata(component.getClass()), context, component.getClass());
 	}
 
-	private void addCreatedComponent(Object objectInstance, ComponentMetadata metadata, ComponentContext context, Class<?> cls) {
+	private void addCreatedComponent(Object objectInstance, ComponentMetadata metadata, ComponentBox context, Class<?> cls) {
 		if (objectInstance instanceof CindyComponent) {
 			CindyComponent component = (CindyComponent) objectInstance;
 			component.setApplication(this.metadataManager.getApplication());
@@ -89,7 +89,7 @@ public class ComponentInitializer implements Initializable {
 		LOGGER.trace(Strings.format(sb.toString(), params));
 	}
 
-	private void initComponent(ComponentContext componentContext, ComponentMetadata componentMetadata, Class<?> objectClass, Object objectInstance) {
+	private void initComponent(ComponentBox componentBox, ComponentMetadata componentMetadata, Class<?> objectClass, Object objectInstance) {
 		this.log("/ Initializing " + objectInstance.getClass().getSimpleName());
 
 		this.currentRecursionCallCount++;
@@ -112,24 +112,24 @@ public class ComponentInitializer implements Initializable {
 	}
 
 	private void injectDependencies(CreatedComponent createdComponent) {
-		ComponentContext componentContext = createdComponent.getContext();
+		ComponentBox componentBox = createdComponent.getContext();
 		ComponentMetadata componentMetadata = createdComponent.getMetadata();
 		Class<?> objectClass = createdComponent.getCls();
 		Object objectInstance = createdComponent.getInstance();
-		ComponentContext subContext = null;
+		ComponentBox subContext = null;
 
-		this.log("/ Injecting all dependencies of " + objectInstance.getClass().getSimpleName() + " in context " + componentContext);
+		this.log("/ Injecting all dependencies of " + objectInstance.getClass().getSimpleName() + " in context " + componentBox);
 		this.currentRecursionCallCount++;
 
 		for (ComponentDependency dependency : componentMetadata.getDependencies()) {
 			Class<?> dependencyClass = dependency.getComponentClass();
 
-			this.log("- Injecting dependency " + dependencyClass.getSimpleName() + " in creationScope " + dependency.getCreationScope() + " with searchScope " + dependency.getSearchScope());
+			this.log("- Injecting dependency " + dependencyClass.getSimpleName() + " in creationScope " + dependency.getCreationBox() + " with searchScope " + dependency.getSearchScope());
 
 			Object dependencyInstance = null;
 
 			if (dependency.isList()) {
-				List<?> list = componentContext.findComponents(dependencyClass, dependency.getSearchScope());
+				List<?> list = componentBox.findComponents(dependencyClass, dependency.getSearchScope());
 				if (list == null) {
 					list = new ArrayList<>();
 				} else {
@@ -137,32 +137,32 @@ public class ComponentInitializer implements Initializable {
 				}
 				dependencyInstance = list;
 			} else if (dependency.getSearchScope() != SearchScope.NO_SEARCH) {
-				dependencyInstance = componentContext.findComponent(dependencyClass, dependency.getSearchScope());
+				dependencyInstance = componentBox.findComponent(dependencyClass, dependency.getSearchScope());
 			}
 
-			ComponentContext dependencyContext = null;
-			if (dependencyInstance == null && dependency.getCreationScope() != CreationScope.NO_CREATION) {
+			ComponentBox dependencyContext = null;
+			if (dependencyInstance == null && dependency.getCreationBox() != CreationBox.NO_CREATION) {
 				try {
-					switch (dependency.getCreationScope()) {
+					switch (dependency.getCreationBox()) {
 						case LOCAL:
-							dependencyContext = componentContext;
+							dependencyContext = componentBox;
 							break;
 						case SUB_CONTEXT:
 							if (subContext == null) {
-								subContext = componentContext.createSubComponentContext();
+								subContext = componentBox.createSubComponentContext();
 								subContext.setOwner(objectInstance);
-								componentContext.addChildComponentContext(subContext);
+								componentBox.addChildComponentContext(subContext);
 								if (objectInstance instanceof CindyComponent) {
-									((CindyComponent) objectInstance).setSubComponentContext(subContext);
+									((CindyComponent) objectInstance).setSubComponentBox(subContext);
 								}
 							}
 
 							dependencyContext = subContext;
 							break;
 						case ISOLATED:
-							dependencyContext = componentContext.createSubComponentContext();
+							dependencyContext = componentBox.createSubComponentContext();
 							dependencyContext.setOwner(objectInstance);
-							componentContext.addChildComponentContext(dependencyContext);
+							componentBox.addChildComponentContext(dependencyContext);
 							break;
 						default:
 							break;
@@ -174,7 +174,7 @@ public class ComponentInitializer implements Initializable {
 						throw new Exception("Unable to find candidate");
 					}
 				} catch (Exception e) {
-					throw new CindyException("Failed to create dependency " + dependencyClass + " for " + objectClass + " using creationScope " + dependency.getCreationScope(), e);
+					throw new CindyException("Failed to create dependency " + dependencyClass + " for " + objectClass + " using creationScope " + dependency.getCreationBox(), e);
 				}
 			}
 
@@ -189,7 +189,7 @@ public class ComponentInitializer implements Initializable {
 		this.currentRecursionCallCount--;
 	}
 
-	private Object createComponentInternal(ComponentContext componentContext, Class<?> objectClass) {
+	private Object createComponentInternal(ComponentBox componentBox, Class<?> objectClass) {
 		this.currentRecursionCallCount++;
 		try {
 			ComponentMetadata metadata = this.metadataManager.getCompatibleMetadata(objectClass);
@@ -200,9 +200,9 @@ public class ComponentInitializer implements Initializable {
 
 			Object objectInstance = metadata.createInstance();
 
-			this.log("+ Created instance of " + objectClass.getSimpleName() + " resolved to " + metadata.getComponentClass().getSimpleName() + " in context " + componentContext);
+			this.log("+ Created instance of " + objectClass.getSimpleName() + " resolved to " + metadata.getComponentClass().getSimpleName() + " in context " + componentBox);
 
-			this.addCreatedComponent(objectInstance, metadata, componentContext, objectClass);
+			this.addCreatedComponent(objectInstance, metadata, componentBox, objectClass);
 			this.metadataManager.signalComponentCreated(objectInstance);
 
 			return objectInstance;
@@ -211,14 +211,14 @@ public class ComponentInitializer implements Initializable {
 		}
 	}
 
-	public Object createComponent(ComponentContext componentContext, Class<?> objectClass) {
-		if (!this.baseComponentContexts.contains(componentContext)) {
-			this.baseComponentContexts.add(componentContext);
+	public Object createComponent(ComponentBox componentBox, Class<?> objectClass) {
+		if (!this.baseComponentBoxes.contains(componentBox)) {
+			this.baseComponentBoxes.add(componentBox);
 		}
 		try {
-			return this.createComponentInternal(componentContext, objectClass);
+			return this.createComponentInternal(componentBox, objectClass);
 		} catch (RuntimeException e) {
-			DebuggerJsonGenerator.generateToTempFileSafe(componentContext);
+			DebuggerJsonGenerator.generateToTempFileSafe(componentBox);
 
 			throw e;
 		}
@@ -262,8 +262,8 @@ public class ComponentInitializer implements Initializable {
 		}
 
 		if (shouldWriteDotDebug) {
-			for (ComponentContext baseComponentContext : this.baseComponentContexts) {
-				DebuggerJsonGenerator.generateToTempFileSafe(baseComponentContext);
+			for (ComponentBox baseComponentBox : this.baseComponentBoxes) {
+				DebuggerJsonGenerator.generateToTempFileSafe(baseComponentBox);
 			}
 		}
 

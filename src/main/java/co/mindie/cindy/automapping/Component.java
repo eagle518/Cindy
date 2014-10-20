@@ -24,7 +24,7 @@ public @interface Component {
 
 	SearchScope dependenciesSearchScope() default SearchScope.GLOBAL;
 
-	CreationScope dependenciesCreationScope() default CreationScope.LOCAL;
+	CreationBox dependenciesCreationScope() default CreationBox.LOCAL;
 
 	CreationResolveMode creationResolveMode() default CreationResolveMode.DEFAULT;
 

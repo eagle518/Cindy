@@ -9,12 +9,8 @@
 
 package co.mindie.cindy.component;
 
-import co.mindie.cindy.automapping.Component;
-import co.mindie.cindy.automapping.CreationResolveMode;
-import co.mindie.cindy.automapping.CreationScope;
-import co.mindie.cindy.automapping.SearchScope;
-import co.mindie.cindy.automapping.Singleton;
-import co.mindie.cindy.automapping.Wired;
+import co.mindie.cindy.automapping.*;
+import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.exception.CindyException;
 
 import java.lang.reflect.Field;
@@ -61,7 +57,7 @@ public class ComponentMetadata {
 			for (Class<?> dependencyClass : this.componentAnnotation.dependenciesClasses()) {
 				this.addDependency(dependencyClass, true, false,
 						SearchScope.UNDEFINED,
-						CreationScope.UNDEFINED);
+						CreationBox.UNDEFINED);
 			}
 		}
 
@@ -91,18 +87,18 @@ public class ComponentMetadata {
 		return searchScope;
 	}
 
-	private CreationScope resolveCreationScope(Class<?> dependencyClass, CreationScope input) {
-		if (input != CreationScope.UNDEFINED) {
+	private CreationBox resolveCreationScope(Class<?> dependencyClass, CreationBox input) {
+		if (input != CreationBox.UNDEFINED) {
 			return input;
 		}
 
-		CreationScope creationScope = this.componentAnnotation != null ? this.componentAnnotation.dependenciesCreationScope() : CreationScope.LOCAL;
+		CreationBox creationBox = this.componentAnnotation != null ? this.componentAnnotation.dependenciesCreationScope() : CreationBox.LOCAL;
 
-		if (creationScope == CreationScope.UNDEFINED) {
-			throw new CindyException("Unable to determine a CreationScope for " + dependencyClass + " in " + this.componentClass +
-					" (Both the Component and the wire has an UNDEFINED CreationScope)");
+		if (creationBox == CreationBox.UNDEFINED) {
+			throw new CindyException("Unable to determine a CreationBox for " + dependencyClass + " in " + this.componentClass +
+					" (Both the Component and the wire has an UNDEFINED CreationBox)");
 		}
-		return creationScope;
+		return creationBox;
 	}
 
 	public static boolean isLoadable(Class<?> cls) {
@@ -138,7 +134,7 @@ public class ComponentMetadata {
 		}
 	}
 
-	public void autowire(Object object, ComponentContext ctx) {
+	public void autowire(Object object, ComponentBox ctx) {
 		if (this.wires != null) {
 			for (Wire wire : this.wires) {
 				if (wire.getScope() != SearchScope.NO_SEARCH) {
@@ -205,11 +201,11 @@ public class ComponentMetadata {
 		return false;
 	}
 
-	public ComponentDependency addDependency(Class<?> dependencyClass, boolean required, boolean isList, SearchScope searchScope, CreationScope creationScope) {
+	public ComponentDependency addDependency(Class<?> dependencyClass, boolean required, boolean isList, SearchScope searchScope, CreationBox creationBox) {
 		searchScope = this.resolveSearchScope(dependencyClass, searchScope);
-		creationScope = this.resolveCreationScope(dependencyClass, creationScope);
+		creationBox = this.resolveCreationScope(dependencyClass, creationBox);
 
-		ComponentDependency dependency = new ComponentDependency(dependencyClass, isList, searchScope, creationScope);
+		ComponentDependency dependency = new ComponentDependency(dependencyClass, isList, searchScope, creationBox);
 		this.dependencies.add(dependency);
 
 		dependency.setRequired(required);

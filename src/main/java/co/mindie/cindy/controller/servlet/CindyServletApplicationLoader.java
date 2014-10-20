@@ -15,13 +15,9 @@ import javax.servlet.ServletRegistration.Dynamic;
 
 import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.CindyAppCreator;
-import co.mindie.cindy.component.ComponentContext;
-import co.mindie.cindy.exception.CindyException;
 import org.apache.log4j.Logger;
 
-import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadataManager;
-import co.mindie.cindy.controller.servlet.ServletAdapter;
 
 public abstract class CindyServletApplicationLoader implements ServletContextListener {
 

@@ -11,7 +11,7 @@ package co.mindie.cindy.resolver;
 
 import java.util.List;
 
-import co.mindie.cindy.component.ComponentContext;
+import co.mindie.cindy.component.ComponentBox;
 
 public class ChainedResolverOutput implements IResolverOutput {
 
@@ -34,7 +34,7 @@ public class ChainedResolverOutput implements IResolverOutput {
 	////////////////
 
 	@Override
-	public Object createResolversAndResolve(ComponentContext cc, Object inputObject, int options) {
+	public Object createResolversAndResolve(ComponentBox cc, Object inputObject, int options) {
 		for (IResolverOutput output : this.outputs) {
 			inputObject = output.createResolversAndResolve(cc, inputObject, options);
 		}

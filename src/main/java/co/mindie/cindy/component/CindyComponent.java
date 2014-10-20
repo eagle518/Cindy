@@ -19,8 +19,8 @@ public class CindyComponent implements Initializable {
 	////////////////
 
 	private CindyApp application;
-	private ComponentContext componentContext;
-	private ComponentContext subComponentContext;
+	private ComponentBox componentBox;
+	private ComponentBox subComponentBox;
 	private boolean initialized;
 
 	////////////////////////
@@ -52,20 +52,20 @@ public class CindyComponent implements Initializable {
 		this.application = application;
 	}
 
-	public ComponentContext getComponentContext() {
-		return this.componentContext;
+	public ComponentBox getComponentBox() {
+		return this.componentBox;
 	}
 
-	public void setComponentContext(ComponentContext componentContext) {
-		this.componentContext = componentContext;
+	public void setComponentBox(ComponentBox componentBox) {
+		this.componentBox = componentBox;
 	}
 
-	public ComponentContext getSubComponentContext() {
-		return subComponentContext;
+	public ComponentBox getSubComponentBox() {
+		return subComponentBox;
 	}
 
-	public void setSubComponentContext(ComponentContext subComponentContext) {
-		this.subComponentContext = subComponentContext;
+	public void setSubComponentBox(ComponentBox subComponentBox) {
+		this.subComponentBox = subComponentBox;
 	}
 
 	@Override

@@ -27,7 +27,7 @@ public @interface Wired {
 
 	/**
 	 * On which scope the wiring should try to find the instance. A GLOBAL scope
-	 * will try to find an instance from the current ComponentContext. A LOCAL scope
+	 * will try to find an instance from the current ComponentBox. A LOCAL scope
 	 * will only try to find an instance that has been added in the CindyComponent
 	 *
 	 * @return
@@ -38,7 +38,7 @@ public @interface Wired {
 	 * On which scope the wiring should create the instance if it is not found.
 	 * @return
 	 */
-	CreationScope creationScope() default CreationScope.UNDEFINED;
+	CreationBox creationScope() default CreationBox.UNDEFINED;
 
 	/**
 	 * Which class to use for wiring. This is necessary if the actual type is a collection

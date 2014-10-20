@@ -2,7 +2,7 @@ package co.mindie.cindy.resolver;
 
 import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.CindyAppCreator;
-import co.mindie.cindy.component.ComponentContext;
+import co.mindie.cindy.component.ComponentBox;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,13 +19,13 @@ public class ResolverManagerTest {
 
 	private ResolverManager resolverManager;
 	private CindyApp application;
-	private ComponentContext cc;
+	private ComponentBox cc;
 
 	@Before
 	public void setUp() {
 		this.application = new CindyAppCreator().createApplication();
 		this.resolverManager = this.application.getModelConverterManager();
-		this.cc = this.application.getComponentContext();
+		this.cc = this.application.getComponentBox();
 	}
 
 	@Test

@@ -62,7 +62,7 @@ public class CollectionResolver extends CindyComponent implements IResolver<Coll
 					}
 				}
 
-				output.add(resolverOutput.createResolversAndResolve(this.getComponentContext(), obj, options));
+				output.add(resolverOutput.createResolversAndResolve(this.getComponentBox(), obj, options));
 			}
 		}
 

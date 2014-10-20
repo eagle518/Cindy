@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////
 // Project : WSFramework
 // Package : co.mindie.wsframework
-// ComponentContext.java
+// ComponentBox.java
 //
 // Author : Simon CORSIN <simoncorsin@gmail.com>
 // File created on Jun 10, 2014 at 6:05:55 PM
@@ -22,18 +22,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ComponentContext implements Closeable {
+public class ComponentBox implements Closeable {
 
 	////////////////////////
 	// VARIABLES
 	////////////////
 
 	private static AtomicLong ID_SEQUENCE = new AtomicLong();
-	private ComponentContext parentContext;
+	private ComponentBox parentBox;
 	private ClassIndexer<Object> indexer;
 	private Set<Object> components;
 	private List<Closeable> closeables;
-	private List<ComponentContext> childComponentContexts;
+	private List<ComponentBox> childComponentBoxes;
 	private Object owner;
 	private long id;
 
@@ -41,16 +41,16 @@ public class ComponentContext implements Closeable {
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentContext() {
+	public ComponentBox() {
 		this(null);
 	}
 
-	public ComponentContext(ComponentContext parentContext) {
+	public ComponentBox(ComponentBox parentBox) {
 		this.indexer = new ClassIndexer<>();
 		this.components = new HashSet<>();
 		this.closeables = new ArrayList<>();
-		this.childComponentContexts = new ArrayList<>();
-		this.parentContext = parentContext;
+		this.childComponentBoxes = new ArrayList<>();
+		this.parentBox = parentBox;
 		this.id = ID_SEQUENCE.getAndIncrement();
 	}
 
@@ -65,7 +65,7 @@ public class ComponentContext implements Closeable {
 
 		if (component instanceof CindyComponent) {
 			CindyComponent cindyComponent = (CindyComponent) component;
-			cindyComponent.setComponentContext(this);
+			cindyComponent.setComponentBox(this);
 		}
 
 		if (component instanceof Closeable && !this.closeables.contains(component)) {
@@ -83,7 +83,7 @@ public class ComponentContext implements Closeable {
 
 		if (component instanceof CindyComponent) {
 			CindyComponent cindyComponent = (CindyComponent) component;
-			cindyComponent.setComponentContext(null);
+			cindyComponent.setComponentBox(null);
 		}
 
 		if (component instanceof Closeable) {
@@ -102,7 +102,7 @@ public class ComponentContext implements Closeable {
 		return this.findComponents(accessibleClass, searchScope, null);
 	}
 
-	public List<Object> findComponents(Class<?> accessibleClass, SearchScope searchScope, ValueHolder<ComponentContext> outputComponentContext) {
+	public List<Object> findComponents(Class<?> accessibleClass, SearchScope searchScope, ValueHolder<ComponentBox> outputComponentContext) {
 		if (searchScope == SearchScope.UNDEFINED) {
 			throw new CindyException("Cannot find a component with a UNDEFINED searchScope");
 		}
@@ -113,8 +113,8 @@ public class ComponentContext implements Closeable {
 			outputComponentContext.setValue(this);
 		}
 
-		if (this.parentContext != null && searchScope == SearchScope.GLOBAL) {
-			List<Object> parentComponents = this.parentContext.findComponents(accessibleClass, searchScope, outputComponentContext);
+		if (this.parentBox != null && searchScope == SearchScope.GLOBAL) {
+			List<Object> parentComponents = this.parentBox.findComponents(accessibleClass, searchScope, outputComponentContext);
 
 			if (components == null) {
 				return parentComponents;
@@ -136,7 +136,7 @@ public class ComponentContext implements Closeable {
 		return this.findComponent(accessibleClass, searchScope, null);
 	}
 
-	public Object findComponent(Class<?> accessibleClass, SearchScope searchScope, ValueHolder<ComponentContext> outputComponentContext) {
+	public Object findComponent(Class<?> accessibleClass, SearchScope searchScope, ValueHolder<ComponentBox> outputComponentContext) {
 		List<Object> components = this.findComponents(accessibleClass, searchScope, outputComponentContext);
 
 		if (components == null) {
@@ -179,8 +179,8 @@ public class ComponentContext implements Closeable {
 		}
 	}
 
-	public ComponentContext createSubComponentContext() {
-		return new ComponentContext(this);
+	public ComponentBox createSubComponentContext() {
+		return new ComponentBox(this);
 	}
 
 	@Override
@@ -190,14 +190,14 @@ public class ComponentContext implements Closeable {
 				")";
 	}
 
-	public void addChildComponentContext(ComponentContext componentContext) {
-		this.childComponentContexts.add(componentContext);
-		this.addCloseable(componentContext);
+	public void addChildComponentContext(ComponentBox componentBox) {
+		this.childComponentBoxes.add(componentBox);
+		this.addCloseable(componentBox);
 	}
 
-	public void removeChildComponentContext(ComponentContext componentContext) {
-		this.childComponentContexts.remove(componentContext);
-		this.removeCloseable(componentContext);
+	public void removeChildComponentContext(ComponentBox componentBox) {
+		this.childComponentBoxes.remove(componentBox);
+		this.removeCloseable(componentBox);
 	}
 
 	private void addCloseable(Closeable closeable) {
@@ -212,12 +212,12 @@ public class ComponentContext implements Closeable {
 	// GETTERS/SETTERS
 	////////////////
 
-	public ComponentContext getParentContext() {
-		return this.parentContext;
+	public ComponentBox getParentBox() {
+		return this.parentBox;
 	}
 
-	public void setParentContext(ComponentContext parentContext) {
-		this.parentContext = parentContext;
+	public void setParentBox(ComponentBox parentBox) {
+		this.parentBox = parentBox;
 	}
 
 	public Set<Object> getComponents() {
@@ -240,7 +240,7 @@ public class ComponentContext implements Closeable {
 		return id;
 	}
 
-	public List<ComponentContext> getChildComponentContexts() {
-		return childComponentContexts;
+	public List<ComponentBox> getChildComponentBoxes() {
+		return childComponentBoxes;
 	}
 }

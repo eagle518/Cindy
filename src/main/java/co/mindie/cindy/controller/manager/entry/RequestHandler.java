@@ -11,10 +11,9 @@ package co.mindie.cindy.controller.manager.entry;
 
 import java.io.Closeable;
 
-import co.mindie.cindy.component.ComponentContext;
+import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.CindyController;
-import co.mindie.cindy.controller.manager.entry.EndpointEntry;
 
 public class RequestHandler implements Closeable {
 
@@ -24,7 +23,7 @@ public class RequestHandler implements Closeable {
 
 	private Object controller;
 	private RequestContext requestContext;
-	private ComponentContext componentContext;
+	private ComponentBox componentBox;
 	private EndpointEntry endpointEntry;
 
 	////////////////////////
@@ -41,7 +40,7 @@ public class RequestHandler implements Closeable {
 
 	@Override
 	public void close() {
-		this.componentContext.close();
+		this.componentBox.close();
 	}
 
 	public void reset() {
@@ -78,12 +77,12 @@ public class RequestHandler implements Closeable {
 		this.requestContext = requestContext;
 	}
 
-	public ComponentContext getComponentContext() {
-		return this.componentContext;
+	public ComponentBox getComponentBox() {
+		return this.componentBox;
 	}
 
-	public void setComponentContext(ComponentContext componentContext) {
-		this.componentContext = componentContext;
+	public void setComponentBox(ComponentBox componentBox) {
+		this.componentBox = componentBox;
 	}
 
 }

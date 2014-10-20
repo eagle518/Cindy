@@ -9,8 +9,8 @@
 
 package co.mindie.cindy.component;
 
+import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.automapping.SearchScope;
-import co.mindie.cindy.automapping.CreationScope;
 
 public class ComponentDependency {
 
@@ -22,18 +22,18 @@ public class ComponentDependency {
 	private boolean required;
 	private boolean list;
 	private SearchScope searchScope;
-	private CreationScope creationScope;
+	private CreationBox creationBox;
 	private Wire wire;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentDependency(Class<?> componentClass, boolean isList, SearchScope searchScope, CreationScope creationScope) {
+	public ComponentDependency(Class<?> componentClass, boolean isList, SearchScope searchScope, CreationBox creationBox) {
 		this.componentClass = componentClass;
 		this.list = isList;
 		this.searchScope = searchScope;
-		this.creationScope = creationScope;
+		this.creationBox = creationBox;
 	}
 
 	////////////////////////
@@ -68,8 +68,8 @@ public class ComponentDependency {
 		return this.list;
 	}
 
-	public CreationScope getCreationScope() {
-		return this.creationScope;
+	public CreationBox getCreationBox() {
+		return this.creationBox;
 	}
 
 	public Wire getWire() {

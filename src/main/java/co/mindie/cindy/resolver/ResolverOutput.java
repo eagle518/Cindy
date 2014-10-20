@@ -10,7 +10,7 @@
 package co.mindie.cindy.resolver;
 
 import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.component.ComponentContext;
+import co.mindie.cindy.component.ComponentBox;
 
 public class ResolverOutput implements IResolverOutput {
 
@@ -40,7 +40,7 @@ public class ResolverOutput implements IResolverOutput {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Object createResolversAndResolve(ComponentContext cc, Object inputObject, int options) {
+	public Object createResolversAndResolve(ComponentBox cc, Object inputObject, int options) {
 		@SuppressWarnings("rawtypes")
 		IResolver resolver = (IResolver)this.application.findOrCreateComponent(cc, this.converterClass);
 		return resolver.resolve(inputObject, this.outputClass, options);

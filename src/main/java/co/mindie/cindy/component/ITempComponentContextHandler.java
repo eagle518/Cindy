@@ -11,6 +11,6 @@ package co.mindie.cindy.component;
 
 public interface ITempComponentContextHandler<T> {
 
-	void handle(ComponentContext ctx, T object);
+	void handle(ComponentBox ctx, T object);
 
 }

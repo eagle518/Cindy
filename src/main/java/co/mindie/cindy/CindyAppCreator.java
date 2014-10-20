@@ -9,10 +9,9 @@
 
 package co.mindie.cindy;
 
-import co.mindie.cindy.component.ComponentContext;
+import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.component.ComponentInitializer;
-import co.mindie.cindy.component.debugger.DebuggerJsonGenerator;
 import org.apache.log4j.Logger;
 
 public class CindyAppCreator {
@@ -60,7 +59,7 @@ public class CindyAppCreator {
 			application.scanForComponents("co.mindie.cindy");
 		}
 
-		initializer.addCreatedComponent(application, new ComponentContext());
+		initializer.addCreatedComponent(application, new ComponentBox());
 
 		initializer.init();
 

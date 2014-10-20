@@ -367,7 +367,7 @@ public class ControllerManager extends CindyComponent {
 				IResolverOutput resolverOutput = this.getApplication().getModelConverterManager().getDefaultResolverOutputForInput(response);
 
 				if (resolverOutput != null) {
-					response = resolverOutput.createResolversAndResolve(context.getComponentContext(), response, options);
+					response = resolverOutput.createResolversAndResolve(context.getComponentBox(), response, options);
 				} else if (this.failOnResolverNotFound) {
 					throw new CindyException("No resolver output found for " + response.getClass().getName());
 				}

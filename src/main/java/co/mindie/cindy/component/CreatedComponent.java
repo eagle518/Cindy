@@ -20,7 +20,7 @@ public class CreatedComponent {
 
 	private Object instance;
 	private ComponentMetadata metadata;
-	private ComponentContext context;
+	private ComponentBox context;
 	private Class<?> cls;
 	private List<Object> dependencies;
 	private boolean initialized;
@@ -29,7 +29,7 @@ public class CreatedComponent {
 	// CONSTRUCTORS
 	////////////////
 
-	public CreatedComponent(Object instance, ComponentMetadata metadata, ComponentContext context, Class<?> cls) {
+	public CreatedComponent(Object instance, ComponentMetadata metadata, ComponentBox context, Class<?> cls) {
 		this.instance = instance;
 		this.metadata = metadata;
 		this.context = context;
@@ -57,7 +57,7 @@ public class CreatedComponent {
 		return this.metadata;
 	}
 
-	public ComponentContext getContext() {
+	public ComponentBox getContext() {
 		return this.context;
 	}
 

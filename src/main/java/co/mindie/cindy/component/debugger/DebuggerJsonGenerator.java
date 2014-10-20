@@ -1,6 +1,6 @@
 package co.mindie.cindy.component.debugger;
 
-import co.mindie.cindy.component.ComponentContext;
+import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.responseserializer.JsonResponseWriter;
 import org.apache.log4j.Logger;
@@ -25,7 +25,7 @@ public class DebuggerJsonGenerator {
 
 	private static final Logger LOGGER = Logger.getLogger(DebuggerJsonGenerator.class);
 	private File outputFile;
-	private ComponentContext componentContext;
+	private ComponentBox componentBox;
 	private int idSequence;
 	private Map<Object, Integer> idByObject;
 
@@ -52,18 +52,18 @@ public class DebuggerJsonGenerator {
 		return id;
 	}
 
-	private ComponentContextModel createComponentContextModel(ComponentContext componentContext) {
+	private ComponentContextModel createComponentContextModel(ComponentBox componentBox) {
 		ComponentContextModel contextModel = new ComponentContextModel();
-		contextModel.setId(this.getId(componentContext));
+		contextModel.setId(this.getId(componentBox));
 
-		if (componentContext.getOwner() != null) {
-			contextModel.setOwnerId(this.getId(componentContext.getOwner()));
+		if (componentBox.getOwner() != null) {
+			contextModel.setOwnerId(this.getId(componentBox.getOwner()));
 		}
 
 		List<ComponentModel> components = new ArrayList<>();
 		contextModel.setComponents(components);
 
-		for (Object component : componentContext.getComponents()) {
+		for (Object component : componentBox.getComponents()) {
 			ComponentModel componentModel = new ComponentModel();
 			componentModel.setId(this.getId(component));
 			componentModel.setType(component.getClass().getName());
@@ -72,13 +72,13 @@ public class DebuggerJsonGenerator {
 			components.add(componentModel);
 		}
 
-		for (ComponentContext childComponentContext : componentContext.getChildComponentContexts()) {
-			ComponentContextModel childContextModel = this.createComponentContextModel(childComponentContext);
+		for (ComponentBox childComponentBox : componentBox.getChildComponentBoxes()) {
+			ComponentContextModel childContextModel = this.createComponentContextModel(childComponentBox);
 
 			ComponentModel ownerModel = null;
 
-			if (childComponentContext.getOwner() != null) {
-				int ownerId = this.getId(childComponentContext.getOwner());
+			if (childComponentBox.getOwner() != null) {
+				int ownerId = this.getId(childComponentBox.getOwner());
 				Object[] ownerModels = components.stream().filter(e -> e.getId() == ownerId).toArray();
 
 				if (ownerModels != null && ownerModels.length == 1) {
@@ -103,7 +103,7 @@ public class DebuggerJsonGenerator {
 	}
 
 	public void generate() throws IOException {
-		if (this.componentContext == null) {
+		if (this.componentBox == null) {
 			throw new CindyException("The component context to generate must be set");
 		}
 		if (this.outputFile == null) {
@@ -113,33 +113,33 @@ public class DebuggerJsonGenerator {
 		this.idByObject.clear();
 
 		try (OutputStream outputStream = new FileOutputStream(this.outputFile)) {
-			ComponentContextModel model = this.createComponentContextModel(this.componentContext);
+			ComponentContextModel model = this.createComponentContextModel(this.componentBox);
 			JsonResponseWriter writer = new JsonResponseWriter();
 			writer.setIndentEnabled(true);
 			writer.writeResponse(model, outputStream);
 		}
 	}
 
-	public static void generateToTempFile(ComponentContext componentContext) throws IOException {
+	public static void generateToTempFile(ComponentBox componentBox) throws IOException {
 		String name = "cindy_debugger";
 
-		if (componentContext.getOwner() != null) {
-			name = componentContext.getOwner().getClass().getSimpleName();
+		if (componentBox.getOwner() != null) {
+			name = componentBox.getOwner().getClass().getSimpleName();
 		}
 
 		File outputFile = File.createTempFile(name, ".json");
 
 		DebuggerJsonGenerator dotGenerator = new DebuggerJsonGenerator();
 		dotGenerator.setOutputFile(outputFile);
-		dotGenerator.setComponentContext(componentContext);
+		dotGenerator.setComponentBox(componentBox);
 		dotGenerator.generate();
 
-		LOGGER.info("Generated ComponentContext Json debug file on " + outputFile);
+		LOGGER.info("Generated ComponentBox Json debug file on " + outputFile);
 	}
 
-	public static void generateToTempFileSafe(ComponentContext componentContext) {
+	public static void generateToTempFileSafe(ComponentBox componentBox) {
 		try {
-			generateToTempFile(componentContext);
+			generateToTempFile(componentBox);
 		} catch (Exception e) {
 			LOGGER.error("Failed to generate debug file: " + e.getMessage());
 			e.printStackTrace();
@@ -150,12 +150,12 @@ public class DebuggerJsonGenerator {
 	// GETTERS/SETTERS
 	////////////////
 
-	public ComponentContext getComponentContext() {
-		return componentContext;
+	public ComponentBox getComponentBox() {
+		return componentBox;
 	}
 
-	public void setComponentContext(ComponentContext componentContext) {
-		this.componentContext = componentContext;
+	public void setComponentBox(ComponentBox componentBox) {
+		this.componentBox = componentBox;
 	}
 
 	public File getOutputFile() {

@@ -9,15 +9,15 @@ public class PoolableComponent<T> extends PoolableImpl implements Closeable {
 	// VARIABLES
 	////////////////
 
-	private final ComponentContext componentContext;
+	private final ComponentBox componentBox;
 	private final T component;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public PoolableComponent(ComponentContext componentContext, T component) {
-		this.componentContext = componentContext;
+	public PoolableComponent(ComponentBox componentBox, T component) {
+		this.componentBox = componentBox;
 		this.component = component;
 	}
 
@@ -33,8 +33,8 @@ public class PoolableComponent<T> extends PoolableImpl implements Closeable {
 
 	@Override
 	public void close() {
-		if (this.componentContext != null) {
-			this.componentContext.close();
+		if (this.componentBox != null) {
+			this.componentBox.close();
 		}
 	}
 

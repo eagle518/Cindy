@@ -11,12 +11,8 @@ package co.mindie.cindy;
 
 import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
 import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.component.CindyComponent;
-import co.mindie.cindy.component.ComponentContext;
-import co.mindie.cindy.component.ComponentInitializer;
-import co.mindie.cindy.component.ComponentMetadataManager;
-import co.mindie.cindy.component.ITempComponentContextHandler;
-import co.mindie.cindy.component.ITempComponentsContextHandler;
+import co.mindie.cindy.component.*;
+import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.controller.manager.ControllerManager;
 import co.mindie.cindy.controller.manager.IParameterNameResolver;
@@ -106,7 +102,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 
 	public <T, T2> void useTemporaryComponents(ITempComponentsContextHandler handler, Class<?>... objectClasses) {
 
-		try (ComponentContext ctx = new ComponentContext(this.getComponentContext())) {
+		try (ComponentBox ctx = new ComponentBox(this.getComponentBox())) {
 			Object[] objects = new Object[objectClasses.length];
 			for (int i = 0; i < objectClasses.length; i++) {
 				objects[i] = this.createComponent(ctx, objectClasses[i]);
@@ -117,35 +113,35 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 	}
 
 	public <T> void useTemporaryComponent(ITempComponentContextHandler<T> handler, Class<T> componentClass) {
-		try (ComponentContext ctx = new ComponentContext(this.getComponentContext())) {
+		try (ComponentBox ctx = new ComponentBox(this.getComponentBox())) {
 			T object = this.createComponent(ctx, componentClass);
 			handler.handle(ctx, object);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T createComponent(ComponentContext componentContext, Class<T> componentClass) {
-		if (componentContext == null) {
-			componentContext = this.getComponentContext();
+	public <T> T createComponent(ComponentBox componentBox, Class<T> componentClass) {
+		if (componentBox == null) {
+			componentBox = this.getComponentBox();
 		}
 
 		ComponentInitializer initializer = this.componentMetadataManager.createInitializer();
-		T instance = (T) initializer.createComponent(componentContext, componentClass);
+		T instance = (T) initializer.createComponent(componentBox, componentClass);
 		initializer.init();
 
 		return instance;
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T findOrCreateComponent(ComponentContext componentContext, Class<T> componentClass) {
-		if (componentContext == null) {
-			componentContext = this.getComponentContext();
+	public <T> T findOrCreateComponent(ComponentBox componentBox, Class<T> componentClass) {
+		if (componentBox == null) {
+			componentBox = this.getComponentBox();
 		}
 
-		T instance = (T) componentContext.findComponent(componentClass);
+		T instance = (T) componentBox.findComponent(componentClass);
 
 		if (instance == null) {
-			instance = this.createComponent(componentContext, componentClass);
+			instance = this.createComponent(componentBox, componentClass);
 		}
 
 		return instance;
@@ -155,7 +151,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 	public void close() {
 		if (!this.closed) {
 			this.closed = true;
-			this.getComponentContext().close();
+			this.getComponentBox().close();
 		}
 	}
 
@@ -167,7 +163,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 	@Override
 	public void pause() {
 		this.paused = true;
-		List<Object> components = this.getComponentContext().findComponents(Pausable.class);
+		List<Object> components = this.getComponentBox().findComponents(Pausable.class);
 
 		if (components != null) {
 			for (Object obj : components) {
@@ -181,7 +177,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 	@Override
 	public void resume() {
 		this.paused = false;
-		List<Object> components = this.getComponentContext().findComponents(Pausable.class);
+		List<Object> components = this.getComponentBox().findComponents(Pausable.class);
 
 		if (components != null) {
 			for (Object obj : components) {
