@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import co.mindie.cindy.component.CindyComponent;
+import co.mindie.cindy.component.ComponentBoxListener;
 import co.mindie.cindy.exception.CindyException;
 import me.corsin.javatools.string.Strings;
 
@@ -139,12 +139,14 @@ public class ConsoleTools {
 		}
 
 		public Object find(Object obj, String componentKind) {
-			if (obj instanceof CindyComponent) {
-				CindyComponent component = (CindyComponent) obj;
+			if (obj instanceof ComponentBoxListener) {
+				ComponentBoxListener component = (ComponentBoxListener) obj;
 				List<Object> objs = new ArrayList<>();
-				for (Object childComponent : component.getComponentBox().getComponents()) {
-					if (childComponent.getClass().getSimpleName().contains(componentKind)) {
-						objs.add(childComponent);
+				if (component.getInnerBox() != null) {
+					for (Object childComponent : component.getInnerBox().getComponents()) {
+						if (childComponent.getClass().getSimpleName().contains(componentKind)) {
+							objs.add(childComponent);
+						}
 					}
 				}
 
@@ -161,18 +163,18 @@ public class ConsoleTools {
 		}
 
 		public Object find(Object obj, java.lang.Class<?> componentClass) {
-			if (obj instanceof CindyComponent) {
-				CindyComponent component = (CindyComponent) obj;
-				return component.getComponentBox().findComponent(componentClass);
+			if (obj instanceof ComponentBoxListener) {
+				ComponentBoxListener component = (ComponentBoxListener) obj;
+				return component.getInnerBox().findComponent(componentClass);
 			} else {
 				throw new CindyException("This object " + obj + " needs to be a CindyComponent in order to use findComponent on it.");
 			}
 		}
 
 		public Object show(Object obj) {
-			if (obj instanceof CindyComponent) {
-				CindyComponent component = (CindyComponent) obj;
-				return component.getComponentBox().getComponents();
+			if (obj instanceof ComponentBoxListener) {
+				ComponentBoxListener component = (ComponentBoxListener) obj;
+				return component.getInnerBox().getComponents();
 			} else {
 				throw new CindyException("This object " + obj + " needs to be a CindyComponent in order to use findComponent on it.");
 			}

@@ -13,6 +13,8 @@ import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.Param;
 import co.mindie.cindy.component.ComponentBox;
+import co.mindie.cindy.component.ComponentInitializer;
+import co.mindie.cindy.component.CreatedComponent;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.CindyController;
 import co.mindie.cindy.controller.manager.RequestParameter;
@@ -63,7 +65,7 @@ public class EndpointEntry {
 		this.mapped = mapped;
 		this.path = path;
 		this.pool = new ArrayDeque<>();
-		this.shouldResolveOutput = method.getReturnType() == void.class ? false : mapped.resolveOutput();
+		this.shouldResolveOutput = method.getReturnType() != void.class && mapped.resolveOutput();
 		this.parameterResolvers = new ArrayList<>();
 		this.pathIdentifierForIndex = new ArrayList<>();
 	}
@@ -98,10 +100,20 @@ public class EndpointEntry {
 		if (requestHandler == null) {
 			requestHandler = new RequestHandler(this);
 
-			ComponentBox cc = new ComponentBox(application.getComponentBox());
-			requestHandler.setComponentBox(cc);
-			requestHandler.setController(application.createComponent(cc, this.controllerEntry.getControllerClass()));
-			requestHandler.setRequestContext(application.findOrCreateComponent(cc, RequestContext.class));
+			ComponentInitializer initializer = application.getComponentMetadataManager().createInitializer();
+
+			CreatedComponent requestContextCC = initializer.createComponent(null, RequestContext.class);
+			ComponentBox box = requestContextCC.getInnerBox();
+
+			CreatedComponent controllerCC = initializer.createComponent(box, this.controllerEntry.getControllerClass());
+
+			requestContextCC.getInnerBox().setSuperBox(application.getInnerBox());
+
+			initializer.init();
+
+			requestHandler.setComponentBox(box);
+			requestHandler.setController(controllerCC.getInstance());
+			requestHandler.setRequestContext((RequestContext)requestContextCC.getInstance());
 		}
 
 		return requestHandler;
@@ -280,7 +292,7 @@ public class EndpointEntry {
 
 				Object output;
 				try {
-					output = fConverter.createResolversAndResolve(e.getComponentBox(), requestParameter, fResolverOptions);
+					output = fConverter.createResolversAndResolve(e.getInnerBox(), requestParameter, fResolverOptions);
 				} catch (Exception ex) {
 					throw new CindyException("Error while resolving the parameter: " + name, ex);
 				}

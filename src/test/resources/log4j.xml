@@ -10,7 +10,7 @@
 	</appender>
 
 	<logger name="co.mindie.cindy">
-		<level value="debug"/>
+		<level value="trace"/>
 	</logger>
 
 	<root>

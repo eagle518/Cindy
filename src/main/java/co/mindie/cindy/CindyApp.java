@@ -10,6 +10,7 @@
 package co.mindie.cindy;
 
 import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
+import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.*;
 import co.mindie.cindy.component.ComponentBox;
@@ -32,7 +33,8 @@ import org.joda.time.DateTimeZone;
 import java.io.Closeable;
 import java.util.List;
 
-public class CindyApp extends CindyComponent implements Closeable, Pausable {
+@Box(needAspects = { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE })
+public class CindyApp extends ComponentBoxListenerImpl implements Closeable, Pausable{
 
 	// //////////////////////
 	// VARIABLES
@@ -69,8 +71,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 
 		this.componentMetadataManager.loadComponent(this.getClass());
 
-		this.controllerManager = new ControllerManager();
-		this.controllerManager.setApplication(this);
+		this.controllerManager = new ControllerManager(this);
 
 		this.taskQueue = new ThreadedConcurrentTaskQueue();
 	}
@@ -79,16 +80,11 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 	// METHODS
 	// //////////////
 
-	@Override
 	public void init() {
-		if (!this.isInitialized()) {
-			super.init();
-
-			if (this.rootLogAppender != null) {
-				Logger.getRootLogger().addAppender(this.rootLogAppender);
-			}
-			this.controllerManager.init();
+		if (this.rootLogAppender != null) {
+			Logger.getRootLogger().addAppender(this.rootLogAppender);
 		}
+		this.controllerManager.init();
 	}
 
 	public void addController(Class<?> controllerClass, String basePath) {
@@ -100,29 +96,10 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 		return this.createComponent(null, componentClass);
 	}
 
-	public <T, T2> void useTemporaryComponents(ITempComponentsContextHandler handler, Class<?>... objectClasses) {
-
-		try (ComponentBox ctx = new ComponentBox(this.getComponentBox())) {
-			Object[] objects = new Object[objectClasses.length];
-			for (int i = 0; i < objectClasses.length; i++) {
-				objects[i] = this.createComponent(ctx, objectClasses[i]);
-			}
-
-			handler.handle(ctx, objects);
-		}
-	}
-
-	public <T> void useTemporaryComponent(ITempComponentContextHandler<T> handler, Class<T> componentClass) {
-		try (ComponentBox ctx = new ComponentBox(this.getComponentBox())) {
-			T object = this.createComponent(ctx, componentClass);
-			handler.handle(ctx, object);
-		}
-	}
-
 	@SuppressWarnings("unchecked")
 	public <T> T createComponent(ComponentBox componentBox, Class<T> componentClass) {
 		if (componentBox == null) {
-			componentBox = this.getComponentBox();
+			componentBox = this.getInnerBox();
 		}
 
 		ComponentInitializer initializer = this.componentMetadataManager.createInitializer();
@@ -135,7 +112,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 	@SuppressWarnings("unchecked")
 	public <T> T findOrCreateComponent(ComponentBox componentBox, Class<T> componentClass) {
 		if (componentBox == null) {
-			componentBox = this.getComponentBox();
+			componentBox = this.getInnerBox();
 		}
 
 		T instance = (T) componentBox.findComponent(componentClass);
@@ -151,7 +128,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 	public void close() {
 		if (!this.closed) {
 			this.closed = true;
-			this.getComponentBox().close();
+			this.getInnerBox().close();
 		}
 	}
 
@@ -163,7 +140,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 	@Override
 	public void pause() {
 		this.paused = true;
-		List<Object> components = this.getComponentBox().findComponents(Pausable.class);
+		List<Object> components = this.getInnerBox().findComponents(Pausable.class);
 
 		if (components != null) {
 			for (Object obj : components) {
@@ -177,7 +154,7 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 	@Override
 	public void resume() {
 		this.paused = false;
-		List<Object> components = this.getComponentBox().findComponents(Pausable.class);
+		List<Object> components = this.getInnerBox().findComponents(Pausable.class);
 
 		if (components != null) {
 			for (Object obj : components) {
@@ -259,4 +236,5 @@ public class CindyApp extends CindyComponent implements Closeable, Pausable {
 	public boolean isPaused() {
 		return this.paused;
 	}
+
 }

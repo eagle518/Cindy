@@ -13,7 +13,6 @@ import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.HttpMethod;
-import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.manager.entry.ControllerEntry;
 import co.mindie.cindy.controller.manager.entry.EndpointEntry;
@@ -24,6 +23,7 @@ import co.mindie.cindy.resolver.IResolverOutput;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 import co.mindie.cindy.responseserializer.StringResponseWriter;
 import co.mindie.cindy.utils.EndpointIndexer;
+import co.mindie.cindy.utils.Initializable;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.io.IOUtils;
 import me.corsin.javatools.misc.ValueHolder;
@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ControllerManager extends CindyComponent {
+public class ControllerManager implements Initializable {
 
 	////////////////////////
 	// VARIABLES
@@ -52,12 +52,14 @@ public class ControllerManager extends CindyComponent {
 	private volatile boolean maintenanceModeEnabled;
 	private volatile boolean failOnResolverNotFound;
 	private boolean useReusePool;
+	private CindyApp cindyApp;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ControllerManager() {
+	public ControllerManager(CindyApp cindyApp) {
+		this.cindyApp = cindyApp;
 		this.getMapping = new EndpointIndexer();
 		this.putMapping = new EndpointIndexer();
 		this.postMapping = new EndpointIndexer();
@@ -72,8 +74,6 @@ public class ControllerManager extends CindyComponent {
 
 	@Override
 	public void init() {
-		super.init();
-
 		for (ControllerEntry controller : this.controllers.values()) {
 			for (EndpointEntry endpoint : controller.getEndpoints()) {
 				endpoint.init();
@@ -83,7 +83,7 @@ public class ControllerManager extends CindyComponent {
 
 	public void preloadEndpoints() {
 		if (this.useReusePool) {
-			CindyApp app = this.getApplication();
+			CindyApp app = this.cindyApp;
 			for (ControllerEntry controllerEntry : this.getControllers()) {
 				for (EndpointEntry endpointEntry : controllerEntry.getEndpoints()) {
 					endpointEntry.preload(app);
@@ -97,7 +97,7 @@ public class ControllerManager extends CindyComponent {
 			basePath = basePath + "/";
 		}
 
-		ControllerEntry controllerEntry = new ControllerEntry(controllerClass, basePath, this.getApplication());
+		ControllerEntry controllerEntry = new ControllerEntry(controllerClass, basePath, this.cindyApp);
 
 		Method[] methods = controllerClass.getMethods();
 
@@ -151,7 +151,7 @@ public class ControllerManager extends CindyComponent {
 		}
 
 		if (context.getResponseWriter() == null) {
-			IResponseWriter writer = this.getApplication().getDefaultResponseWriter();
+			IResponseWriter writer = this.cindyApp.getDefaultResponseWriter();
 
 			if (writer == null) {
 				throw new CindyException("No compatible response writer found");
@@ -162,7 +162,7 @@ public class ControllerManager extends CindyComponent {
 	}
 
 	private RequestHandler createRequestHandler(HttpRequest httpRequest, HttpResponse httpResponse, EndpointEntry associatedMethod) {
-		RequestHandler requestHandler = associatedMethod.createRequestHandler(this.getApplication(), this.useReusePool);
+		RequestHandler requestHandler = associatedMethod.createRequestHandler(this.cindyApp, this.useReusePool);
 		RequestContext context = requestHandler.getRequestContext();
 
 		context.setHttpResponse(httpResponse);
@@ -178,7 +178,7 @@ public class ControllerManager extends CindyComponent {
 		Object response = this.getRequestResponse(httpRequest, httpResponse, result, requestHandlerVH);
 
 		RequestHandler requestHandler = requestHandlerVH.value();
-		IResponseWriter responseWriter = this.getApplication().getDefaultResponseWriter();
+		IResponseWriter responseWriter = this.cindyApp.getDefaultResponseWriter();
 
 		if (requestHandler != null && requestHandler.getRequestContext().getResponseWriter() != null) {
 			responseWriter = requestHandler.getRequestContext().getResponseWriter();
@@ -199,7 +199,7 @@ public class ControllerManager extends CindyComponent {
 
 	private Object handleRequestException(RequestContext context, Throwable exception) {
 		try {
-			IRequestErrorHandler exceptionHandler = this.getApplication().getRequestErrorHandler();
+			IRequestErrorHandler exceptionHandler = this.cindyApp.getRequestErrorHandler();
 
 			if (exceptionHandler != null) {
 				return exceptionHandler.handleRequestException(context, exception);
@@ -214,7 +214,7 @@ public class ControllerManager extends CindyComponent {
 	private Object handleEndpointNotFound(HttpRequest servletRequest, HttpResponse response) {
 		response.setStatusCode(404);
 
-		IRequestErrorHandler errorHandler = this.getApplication().getRequestErrorHandler();
+		IRequestErrorHandler errorHandler = this.cindyApp.getRequestErrorHandler();
 
 		if (errorHandler != null) {
 			try {
@@ -232,7 +232,7 @@ public class ControllerManager extends CindyComponent {
 	private Object handleMaintenanceMode(HttpRequest servletRequest, HttpResponse response) {
 		response.setStatusCode(410);
 
-		IRequestErrorHandler errorHandler = this.getApplication().getRequestErrorHandler();
+		IRequestErrorHandler errorHandler = this.cindyApp.getRequestErrorHandler();
 
 		if (errorHandler != null) {
 			try {
@@ -249,7 +249,7 @@ public class ControllerManager extends CindyComponent {
 	private Object handleRequestCreationFailed(HttpRequest servletRequest, HttpResponse response, Throwable e) {
 		response.setStatusCode(500);
 
-		IRequestErrorHandler errorHandler = this.getApplication().getRequestErrorHandler();
+		IRequestErrorHandler errorHandler = this.cindyApp.getRequestErrorHandler();
 
 		if (errorHandler != null) {
 			try {
@@ -266,7 +266,7 @@ public class ControllerManager extends CindyComponent {
 	private Object handleResponseConverterException(RequestContext context, Throwable e) {
 		context.getHttpResponse().setStatusCode(500);
 
-		IRequestErrorHandler errorHandler = this.getApplication().getRequestErrorHandler();
+		IRequestErrorHandler errorHandler = this.cindyApp.getRequestErrorHandler();
 
 		if (errorHandler != null) {
 			try {
@@ -281,7 +281,7 @@ public class ControllerManager extends CindyComponent {
 	}
 
 	private void handleResponseWritingException(HttpRequest request, IOException e) {
-		IRequestErrorHandler errorHandler = this.getApplication().getRequestErrorHandler();
+		IRequestErrorHandler errorHandler = this.cindyApp.getRequestErrorHandler();
 
 		if (errorHandler != null) {
 			try {
@@ -364,10 +364,10 @@ public class ControllerManager extends CindyComponent {
 
 		if (shouldResolveOutput && response != null) {
 			try {
-				IResolverOutput resolverOutput = this.getApplication().getModelConverterManager().getDefaultResolverOutputForInput(response);
+				IResolverOutput resolverOutput = this.cindyApp.getModelConverterManager().getDefaultResolverOutputForInput(response);
 
 				if (resolverOutput != null) {
-					response = resolverOutput.createResolversAndResolve(context.getComponentBox(), response, options);
+					response = resolverOutput.createResolversAndResolve(context.getInnerBox(), response, options);
 				} else if (this.failOnResolverNotFound) {
 					throw new CindyException("No resolver output found for " + response.getClass().getName());
 				}
@@ -435,7 +435,7 @@ public class ControllerManager extends CindyComponent {
 	}
 
 	protected void checkAuthorization(RequestContext context, String[] requiredAuthorizations) throws Exception {
-		IRequestContextAuthorizer authorizer = this.getApplication().getRequestContextAuthorizer();
+		IRequestContextAuthorizer authorizer = this.cindyApp.getRequestContextAuthorizer();
 
 		if (authorizer != null) {
 			authorizer.checkAuthorization(context, requiredAuthorizations);

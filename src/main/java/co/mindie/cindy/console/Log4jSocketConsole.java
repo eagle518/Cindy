@@ -39,7 +39,6 @@ public class Log4jSocketConsole extends AbstractAppender implements IConnectionL
 	private ServerSocket serverSocket;
 	private final List<Connection> connections;
 	private boolean closed;
-	private boolean initialized;
 	@Wired
 	private Configuration configuration;
 	@Wired private CindyApp application;
@@ -62,24 +61,20 @@ public class Log4jSocketConsole extends AbstractAppender implements IConnectionL
 
 	@Override
 	public void init() {
-		if (!this.isInitialized()) {
-			this.initialized = true;
+		Integer port = this.configuration.getInteger("cindy.socket_console_port");
 
-			Integer port = this.configuration.getInteger("cindy.socket_console_port");
-
-			if (port != null) {
-				try {
-					this.serverSocket = new ServerSocket(port);
-				} catch (IOException e) {
-					throw new CindyException("Failed to init SocketConsole socket", e);
-				}
-
-				Thread thread = new Thread(Log4jSocketConsole.this::accept);
-
-				thread.start();
-				LOGGER.trace("Enabled Log4jSocketConsole on port " + port);
+		if (port != null) {
+			try {
+				this.serverSocket = new ServerSocket(port);
+			} catch (IOException e) {
+				throw new CindyException("Failed to init SocketConsole socket", e);
 			}
-		}
+
+			Thread thread = new Thread(Log4jSocketConsole.this::accept);
+
+			thread.start();
+			LOGGER.trace("Enabled Log4jSocketConsole on port " + port);
+ 		}
 	}
 
 	private void accept() {
@@ -158,8 +153,4 @@ public class Log4jSocketConsole extends AbstractAppender implements IConnectionL
 	// GETTERS/SETTERS
 	////////////////
 
-	@Override
-	public boolean isInitialized() {
-		return this.initialized;
-	}
 }

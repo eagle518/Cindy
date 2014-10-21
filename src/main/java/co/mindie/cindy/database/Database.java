@@ -11,11 +11,10 @@ package co.mindie.cindy.database;
 
 import java.io.Closeable;
 
-import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.utils.Pausable;
 import org.apache.log4j.Logger;
 
-public abstract class Database extends CindyComponent implements Closeable, Pausable {
+public abstract class Database implements Closeable, Pausable {
 
 	// //////////////////////
 	// VARIABLES

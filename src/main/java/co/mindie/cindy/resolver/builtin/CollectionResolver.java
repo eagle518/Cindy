@@ -16,7 +16,7 @@ import java.util.List;
 import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.component.CindyComponent;
+import co.mindie.cindy.component.ComponentBoxListenerImpl;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.resolver.IResolver;
 import co.mindie.cindy.resolver.IResolverOutput;
@@ -24,7 +24,7 @@ import co.mindie.cindy.resolver.IResolverOutput;
 @Resolver(managedInputClasses = { ArrayList.class, List.class, Collection.class }, managedOutputClasses = { ArrayList.class, List.class, Collection.class },
 isDefaultForInputTypes = true)
 @SuppressWarnings({ "rawtypes" })
-public class CollectionResolver extends CindyComponent implements IResolver<Collection, Collection> {
+public class CollectionResolver extends ComponentBoxListenerImpl implements IResolver<Collection, Collection> {
 
 	// //////////////////////
 	// VARIABLES
@@ -62,7 +62,7 @@ public class CollectionResolver extends CindyComponent implements IResolver<Coll
 					}
 				}
 
-				output.add(resolverOutput.createResolversAndResolve(this.getComponentBox(), obj, options));
+				output.add(resolverOutput.createResolversAndResolve(this.getEnclosingBox(), obj, options));
 			}
 		}
 

@@ -58,9 +58,6 @@ public class ComponentScanner {
 		if (this.shouldScanSingletons) {
 			this.scanClass(Singleton.class, Object.class, (matchedType, service) -> {
 				application.getComponentMetadataManager().loadComponent(matchedType);
-//				if (!applicationMetadata.hasDependency(matchedType)) {
-//					applicationMetadata.addDependency(matchedType, true, false, SearchScope.NO_SEARCH, CreationBox.LOCAL);
-//				}
 			});
 		}
 
@@ -74,7 +71,7 @@ public class ComponentScanner {
 			this.scanClass(Worker.class, Object.class, (matchedType, service) -> {
 				application.getComponentMetadataManager().loadComponent(matchedType);
 				if (!applicationMetadata.hasDependency(matchedType)) {
-					applicationMetadata.addDependency(matchedType, true, false, SearchScope.NO_SEARCH, CreationBox.LOCAL);
+					applicationMetadata.addDependency(matchedType, true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
 				}
 			});
 		}

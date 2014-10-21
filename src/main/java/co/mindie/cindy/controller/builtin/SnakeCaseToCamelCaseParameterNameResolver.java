@@ -11,12 +11,10 @@ package co.mindie.cindy.controller.builtin;
 
 import co.mindie.cindy.automapping.Component;
 import co.mindie.cindy.automapping.CreationResolveMode;
-import co.mindie.cindy.automapping.Singleton;
-import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.controller.manager.IParameterNameResolver;
 
 @Component(creationResolveMode = CreationResolveMode.FALLBACK)
-public class SnakeCaseToCamelCaseParameterNameResolver extends CindyComponent implements IParameterNameResolver {
+public class SnakeCaseToCamelCaseParameterNameResolver implements IParameterNameResolver {
 
 	////////////////////////
 	// VARIABLES

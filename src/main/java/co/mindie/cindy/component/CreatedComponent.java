@@ -20,7 +20,8 @@ public class CreatedComponent {
 
 	private Object instance;
 	private ComponentMetadata metadata;
-	private ComponentBox context;
+	private ComponentBox enclosingBox;
+	private ComponentBox innerBox;
 	private Class<?> cls;
 	private List<Object> dependencies;
 	private boolean initialized;
@@ -29,10 +30,11 @@ public class CreatedComponent {
 	// CONSTRUCTORS
 	////////////////
 
-	public CreatedComponent(Object instance, ComponentMetadata metadata, ComponentBox context, Class<?> cls) {
+	public CreatedComponent(Object instance, ComponentMetadata metadata, ComponentBox enclosingBox, ComponentBox innerBox, Class<?> cls) {
 		this.instance = instance;
 		this.metadata = metadata;
-		this.context = context;
+		this.enclosingBox = enclosingBox;
+		this.innerBox = innerBox;
 		this.cls = cls;
 		this.dependencies = new ArrayList<>();
 	}
@@ -57,8 +59,8 @@ public class CreatedComponent {
 		return this.metadata;
 	}
 
-	public ComponentBox getContext() {
-		return this.context;
+	public ComponentBox getEnclosingBox() {
+		return this.enclosingBox;
 	}
 
 	public Class<?> getCls() {
@@ -76,4 +78,18 @@ public class CreatedComponent {
 	public void setInitialized(boolean initialized) {
 		this.initialized = initialized;
 	}
+
+	public ComponentBox getInnerBox() {
+		return innerBox;
+	}
+
+	public void setInnerBox(ComponentBox innerBox) {
+		this.innerBox = innerBox;
+	}
+
+	public ComponentBox getCurrentBox() {
+		return this.innerBox != null ? this.innerBox : this.enclosingBox;
+
+	}
+
 }

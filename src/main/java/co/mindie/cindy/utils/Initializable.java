@@ -13,6 +13,4 @@ public interface Initializable {
 
 	void init();
 
-	boolean isInitialized();
-
 }

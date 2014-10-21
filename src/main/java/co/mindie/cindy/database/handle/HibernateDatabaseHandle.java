@@ -9,7 +9,6 @@
 
 package co.mindie.cindy.database.handle;
 
-import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.database.Database;
 import co.mindie.cindy.database.HibernateDatabase;
@@ -23,7 +22,7 @@ import org.hibernate.exception.LockAcquisitionException;
 
 import java.io.Serializable;
 
-public abstract class HibernateDatabaseHandle extends CindyComponent implements IDatabaseHandle, IFlushable {
+public abstract class HibernateDatabaseHandle implements IDatabaseHandle, IFlushable {
 
 	// //////////////////////
 	// VARIABLES
@@ -53,24 +52,18 @@ public abstract class HibernateDatabaseHandle extends CindyComponent implements 
 		}
 	}
 
-	@Override
-	public void init() {
-		super.init();
-		LOGGER.trace("Initialized HibernateDatabaseHandle in " + printComponentContextTree(this.getComponentBox(), true));
-	}
-
 	private static String printComponentContextTree(ComponentBox ctx, boolean first) {
 		String prefix = first ? "" : " < ";
 		String parents = "";
-		if (ctx.getParentBox() != null) {
-			parents = printComponentContextTree(ctx.getParentBox(), false);
+		if (ctx.getSuperBox() != null) {
+			parents = printComponentContextTree(ctx.getSuperBox(), false);
 		}
 		return prefix + ctx + parents;
 	}
 
 	@Override
 	public void close() {
-		LOGGER.trace("Closing HibernateDatabaseHandle#" + this.hashCode() + " with session#" + (this.openedSession != null ? this.openedSession.hashCode() : null) + " in " + printComponentContextTree(this.getComponentBox(), true));
+		LOGGER.trace("Closing HibernateDatabaseHandle#" + this.hashCode() + " with session#" + (this.openedSession != null ? this.openedSession.hashCode() : null));
 		this.autoFlushEnabled = false;
 
 		RuntimeException thrownException = null;
@@ -204,7 +197,7 @@ public abstract class HibernateDatabaseHandle extends CindyComponent implements 
 
 	public Session createSession() {
 		Session session = this.getHibernateDatabase().openSession();
-		LOGGER.trace("HibernateDatabaseHandle opens a session#" + session.hashCode() + " in " + printComponentContextTree(this.getComponentBox(), true));
+		LOGGER.trace("HibernateDatabaseHandle opens a session#" + session.hashCode());
 		return session;
 	}
 

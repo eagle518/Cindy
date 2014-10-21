@@ -9,10 +9,9 @@
 
 package co.mindie.cindy.resolver;
 
-import co.mindie.cindy.component.CindyComponent;
 import org.apache.log4j.Logger;
 
-public abstract class Resolver<Input, Output> extends CindyComponent implements IResolver<Input, Output> {
+public abstract class Resolver<Input, Output> implements IResolver<Input, Output> {
 
 	////////////////////////
 	// VARIABLES

@@ -9,6 +9,7 @@
 
 package co.mindie.cindy.component;
 
+import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.exception.CindyException;
@@ -24,15 +25,17 @@ public class Wire {
 
 	private Field field;
 	private Wired wired;
+	private Box box;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public Wire(Field field, Wired wired) {
+	public Wire(Field field, Box box, Wired wired) {
 		field.setAccessible(true);
 
 		this.field = field;
+		this.box = box;
 		this.wired = wired;
 	}
 
@@ -90,5 +93,9 @@ public class Wire {
 
 	public Field getField() {
 		return this.field;
+	}
+
+	public Box getBox() {
+		return box;
 	}
 }

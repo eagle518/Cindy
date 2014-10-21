@@ -14,8 +14,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * A Singleton is a Component that has the THREAD_SAFE and SINGLETON ComponentAspects and adds itself into
+ * the application dependency. This makes the component to be created at the same time where the application gets
+ * loaded.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Singleton {
+
+	/**
+	 * @return the CreationResolveMode to use for this Component.
+	 */
+	CreationResolveMode creationResolveMode() default CreationResolveMode.DEFAULT;
 
 }

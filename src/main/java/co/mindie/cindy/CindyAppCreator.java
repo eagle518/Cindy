@@ -59,7 +59,7 @@ public class CindyAppCreator {
 			application.scanForComponents("co.mindie.cindy");
 		}
 
-		initializer.addCreatedComponent(application, new ComponentBox());
+		initializer.addCreatedComponent(application, null);
 
 		initializer.init();
 

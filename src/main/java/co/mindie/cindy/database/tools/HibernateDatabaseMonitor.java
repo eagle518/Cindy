@@ -10,10 +10,10 @@
 package co.mindie.cindy.database.tools;
 
 import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
+import co.mindie.cindy.utils.Initializable;
 import me.corsin.javatools.timer.TimeSpan;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
@@ -21,7 +21,7 @@ import org.joda.time.DateTime;
 import java.io.Closeable;
 import java.util.List;
 
-public abstract class HibernateDatabaseMonitor extends CindyComponent implements Runnable, Closeable {
+public abstract class HibernateDatabaseMonitor implements Runnable, Closeable, Initializable {
 
 	////////////////////////
 	// VARIABLES
@@ -44,8 +44,6 @@ public abstract class HibernateDatabaseMonitor extends CindyComponent implements
 
 	@Override
 	public void init() {
-		super.init();
-
 		// TODO remove this reference to WSFramework
 		Integer leakDetectThredshold = this.configuration.getInteger("wsframework.hibernate_session_leak_detect_threshold");
 

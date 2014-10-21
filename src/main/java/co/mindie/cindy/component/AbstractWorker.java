@@ -1,5 +1,6 @@
 package co.mindie.cindy.component;
 
+import co.mindie.cindy.utils.Initializable;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.task.TaskQueue;
 import me.corsin.javatools.timer.TimeSpan;
@@ -8,7 +9,7 @@ import org.joda.time.DateTimeUtils;
 
 import java.io.Closeable;
 
-public abstract class AbstractWorker extends CindyComponent implements Worker, Closeable {
+public abstract class AbstractWorker extends ComponentBoxListenerImpl implements Worker, Closeable, Initializable {
 
     ///////////////////
     // VARIABLES
@@ -45,7 +46,6 @@ public abstract class AbstractWorker extends CindyComponent implements Worker, C
 
     @Override
     public void init() {
-        super.init();
         if (this.startOnInit) {
             this.start();
         }

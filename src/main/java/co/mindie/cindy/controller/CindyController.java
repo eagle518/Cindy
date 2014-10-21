@@ -9,9 +9,7 @@
 
 package co.mindie.cindy.controller;
 
-import co.mindie.cindy.component.CindyComponent;
-
-public class CindyController extends CindyComponent {
+public class CindyController {
 
 	////////////////////////
 	// VARIABLES

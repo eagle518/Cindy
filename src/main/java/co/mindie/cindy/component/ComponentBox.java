@@ -11,9 +11,11 @@ package co.mindie.cindy.component;
 
 import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.exception.CindyException;
+import me.corsin.javatools.array.ArrayUtils;
 import me.corsin.javatools.misc.Pair;
 import me.corsin.javatools.misc.ValueHolder;
 import me.corsin.javatools.reflect.ClassIndexer;
+import me.corsin.javatools.string.Strings;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -29,43 +31,52 @@ public class ComponentBox implements Closeable {
 	////////////////
 
 	private static AtomicLong ID_SEQUENCE = new AtomicLong();
-	private ComponentBox parentBox;
+	private ComponentBox superBox;
 	private ClassIndexer<Object> indexer;
 	private Set<Object> components;
 	private List<Closeable> closeables;
 	private List<ComponentBox> childComponentBoxes;
-	private Object owner;
 	private long id;
+	private ComponentAspect[] neededAspects;
+	private ComponentAspect[] rejectedAspects;
+	private Object owner;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentBox() {
-		this(null);
+	public ComponentBox(ComponentAspect[] neededAspects, ComponentAspect[] rejectedAspects) {
+		this(neededAspects, rejectedAspects, null);
 	}
 
-	public ComponentBox(ComponentBox parentBox) {
+	public ComponentBox(ComponentAspect[] neededAspects, ComponentAspect[] rejectedAspects, ComponentBox superBox) {
 		this.indexer = new ClassIndexer<>();
 		this.components = new HashSet<>();
 		this.closeables = new ArrayList<>();
 		this.childComponentBoxes = new ArrayList<>();
-		this.parentBox = parentBox;
+		this.superBox = superBox;
 		this.id = ID_SEQUENCE.getAndIncrement();
+		this.neededAspects = neededAspects;
+		this.rejectedAspects = rejectedAspects;
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
 
-	public void addComponent(Object component) {
-		if (this.owner == null) {
-			this.owner = component;
+	public void addComponent(Object component, ComponentAspect[] aspects) {
+		if (!ArrayUtils.containsAll(this.neededAspects, aspects)) {
+			throw new CindyException("Attempting to add a component {" + component + "} with aspects " + Strings.getObjectDescription(aspects) +
+					" to a box that needs aspects " + Strings.getObjectDescription(this.neededAspects) + " (box owner: " + this.getOwner() + ")");
+		}
+		if (ArrayUtils.containsAny(this.rejectedAspects, aspects)) {
+			throw new CindyException("Attempting to add a component {" + component + "} with aspects " + Strings.getObjectDescription(aspects) +
+					" to a box that reject aspects " + Strings.getObjectDescription(this.rejectedAspects) + " (box owner: " + this.getOwner() + ")");
 		}
 
-		if (component instanceof CindyComponent) {
-			CindyComponent cindyComponent = (CindyComponent) component;
-			cindyComponent.setComponentBox(this);
+		if (component instanceof ComponentBoxListener) {
+			ComponentBoxListener cindyComponent = (ComponentBoxListener) component;
+			cindyComponent.setEnclosingBox(this);
 		}
 
 		if (component instanceof Closeable && !this.closeables.contains(component)) {
@@ -77,13 +88,9 @@ public class ComponentBox implements Closeable {
 	}
 
 	public void removeComponent(Object component) {
-		if (this.owner == component) {
-			this.owner = null;
-		}
-
-		if (component instanceof CindyComponent) {
-			CindyComponent cindyComponent = (CindyComponent) component;
-			cindyComponent.setComponentBox(null);
+		if (component instanceof ComponentBoxListener) {
+			ComponentBoxListener cindyComponent = (ComponentBoxListener) component;
+			cindyComponent.setEnclosingBox(null);
 		}
 
 		if (component instanceof Closeable) {
@@ -113,8 +120,8 @@ public class ComponentBox implements Closeable {
 			outputComponentContext.setValue(this);
 		}
 
-		if (this.parentBox != null && searchScope == SearchScope.GLOBAL) {
-			List<Object> parentComponents = this.parentBox.findComponents(accessibleClass, searchScope, outputComponentContext);
+		if (this.superBox != null && searchScope == SearchScope.GLOBAL) {
+			List<Object> parentComponents = this.superBox.findComponents(accessibleClass, searchScope, outputComponentContext);
 
 			if (components == null) {
 				return parentComponents;
@@ -179,8 +186,22 @@ public class ComponentBox implements Closeable {
 		}
 	}
 
-	public ComponentBox createSubComponentContext() {
-		return new ComponentBox(this);
+	public ComponentBox createChildBox() {
+		return this.createChildBox(new ComponentAspect[0], new ComponentAspect[0], null);
+	}
+
+	/**
+	 * Create a child ComponentBox that has this box as the super box.
+	 * @param owner the owner of the new created ComponentBox
+	 * @return the new created ComponentBox.
+	 */
+	public ComponentBox createChildBox(ComponentAspect[] neededAspects, ComponentAspect[] rejectedAspects, Object owner) {
+		ComponentBox box = new ComponentBox(neededAspects, rejectedAspects, this);
+		box.setOwner(owner);
+
+		this.addChildBox(box);
+
+		return box;
 	}
 
 	@Override
@@ -190,7 +211,7 @@ public class ComponentBox implements Closeable {
 				")";
 	}
 
-	public void addChildComponentContext(ComponentBox componentBox) {
+	public void addChildBox(ComponentBox componentBox) {
 		this.childComponentBoxes.add(componentBox);
 		this.addCloseable(componentBox);
 	}
@@ -212,12 +233,12 @@ public class ComponentBox implements Closeable {
 	// GETTERS/SETTERS
 	////////////////
 
-	public ComponentBox getParentBox() {
-		return this.parentBox;
+	public ComponentBox getSuperBox() {
+		return this.superBox;
 	}
 
-	public void setParentBox(ComponentBox parentBox) {
-		this.parentBox = parentBox;
+	public void setSuperBox(ComponentBox superBox) {
+		this.superBox = superBox;
 	}
 
 	public Set<Object> getComponents() {
@@ -233,7 +254,17 @@ public class ComponentBox implements Closeable {
 	}
 
 	public void setOwner(Object owner) {
-		this.owner = owner;
+		if (this.owner != owner) {
+			if (this.owner != null) {
+				this.indexer.remove(this.owner, this.owner.getClass());
+			}
+
+			this.owner = owner;
+
+			if (owner != null) {
+				this.indexer.add(owner, owner.getClass());
+			}
+		}
 	}
 
 	public long getId() {
@@ -242,5 +273,13 @@ public class ComponentBox implements Closeable {
 
 	public List<ComponentBox> getChildComponentBoxes() {
 		return childComponentBoxes;
+	}
+
+	public ComponentAspect[] getNeededAspects() {
+		return neededAspects;
+	}
+
+	public ComponentAspect[] getRejectedAspects() {
+		return rejectedAspects;
 	}
 }

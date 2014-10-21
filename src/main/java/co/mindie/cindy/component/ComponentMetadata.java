@@ -13,6 +13,7 @@ import co.mindie.cindy.automapping.*;
 import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.exception.CindyException;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -29,8 +30,9 @@ public class ComponentMetadata {
 	private List<ComponentDependency> dependencies;
 	private Component componentAnnotation;
 	private Singleton singletonAnnotation;
+	private Dependencies dependenciesAnnotation;
+	private Box boxAnnotation;
 	private Factory<Object> factory;
-	private boolean isWeak;
 	private CreationResolveMode creationResolveMode;
 
 	////////////////////////
@@ -38,12 +40,11 @@ public class ComponentMetadata {
 	////////////////
 
 	public ComponentMetadata(Class<?> objectClass) {
-		this.isWeak = true;
 		this.dependencies = new ArrayList<>();
 		this.wires = new ArrayList<>();
 		this.componentClass = objectClass;
-		this.componentAnnotation = objectClass.getAnnotation(Component.class);
-		this.singletonAnnotation = objectClass.getAnnotation(Singleton.class);
+
+		this.parseAnnotations();
 
 		this.factory = () -> {
 			try {
@@ -53,19 +54,57 @@ public class ComponentMetadata {
 			}
 		};
 
-		if (this.componentAnnotation != null) {
-			for (Class<?> dependencyClass : this.componentAnnotation.dependenciesClasses()) {
+		if (this.dependenciesAnnotation != null) {
+			for (Class<?> dependencyClass : this.dependenciesAnnotation.dependenciesClasses()) {
 				this.addDependency(dependencyClass, true, false,
 						SearchScope.UNDEFINED,
-						CreationBox.UNDEFINED);
+						CreationBox.CURRENT_BOX);
 			}
 		}
 
-		if (this.singletonAnnotation != null && this.componentAnnotation == null) {
-			this.creationResolveMode = CreationResolveMode.DEFAULT;
+		this.load();
+	}
+
+	private void parseAnnotations() {
+		Class<?> objectClass = this.componentClass;
+		boolean foundComponentAnnotation = false;
+
+		while ((!foundComponentAnnotation || this.dependenciesAnnotation == null || this.boxAnnotation == null) &&  objectClass != null) {
+			if (!foundComponentAnnotation) {
+				Component component = objectClass.getAnnotation(Component.class);
+				if (component != null) {
+					this.componentAnnotation = component;
+					foundComponentAnnotation = true;
+				} else {
+					Singleton singleton = objectClass.getAnnotation(Singleton.class);
+					if (singleton != null) {
+						this.singletonAnnotation = singleton;
+						foundComponentAnnotation = true;
+					}
+				}
+			}
+
+			if (this.dependenciesAnnotation == null) {
+				this.dependenciesAnnotation = objectClass.getAnnotation(Dependencies.class);
+			}
+
+			if (this.boxAnnotation == null) {
+				this.boxAnnotation = objectClass.getAnnotation(Box.class);
+			}
+
+			objectClass = objectClass.getSuperclass();
+		}
+	}
+
+	private static <T extends Annotation> T getAnnotation(Class<?> objectClass, Class<T> annotationClass) {
+		T annotation = null;
+
+		while (annotation == null && objectClass != null) {
+			annotation = objectClass.getAnnotation(annotationClass);
+			objectClass = objectClass.getSuperclass();
 		}
 
-		this.load();
+		return annotation;
 	}
 
 	////////////////////////
@@ -77,7 +116,7 @@ public class ComponentMetadata {
 			return input;
 		}
 
-		SearchScope searchScope = this.componentAnnotation != null ? this.componentAnnotation.dependenciesSearchScope() : SearchScope.GLOBAL;
+		SearchScope searchScope = this.dependenciesAnnotation != null ? this.dependenciesAnnotation.searchScope() : SearchScope.GLOBAL;
 
 		if (searchScope == SearchScope.UNDEFINED) {
 			throw new CindyException("Unable to determine a SearchScope for " + dependencyClass + " in " + this.componentClass +
@@ -87,20 +126,6 @@ public class ComponentMetadata {
 		return searchScope;
 	}
 
-	private CreationBox resolveCreationScope(Class<?> dependencyClass, CreationBox input) {
-		if (input != CreationBox.UNDEFINED) {
-			return input;
-		}
-
-		CreationBox creationBox = this.componentAnnotation != null ? this.componentAnnotation.dependenciesCreationScope() : CreationBox.LOCAL;
-
-		if (creationBox == CreationBox.UNDEFINED) {
-			throw new CindyException("Unable to determine a CreationBox for " + dependencyClass + " in " + this.componentClass +
-					" (Both the Component and the wire has an UNDEFINED CreationBox)");
-		}
-		return creationBox;
-	}
-
 	public static boolean isLoadable(Class<?> cls) {
 		return (cls.getModifiers() & Modifier.ABSTRACT) == 0 && !cls.isInterface();
 	}
@@ -108,7 +133,7 @@ public class ComponentMetadata {
 	private void load() {
 		Class<?> currentClass = this.componentClass;
 
-		while (currentClass != CindyComponent.class && currentClass != null) {
+		while (currentClass != null) {
 			Field[] fields = currentClass.getDeclaredFields();
 
 			for (Field field : fields) {
@@ -116,13 +141,14 @@ public class ComponentMetadata {
 
 				if (wired != null) {
 					field.setAccessible(true);
+					Box box = field.getAnnotation(Box.class);
 
-					Wire wire = new Wire(field, wired);
+					Wire wire = new Wire(field, box, wired);
 
 					Class<?> wireClass = wire.getFieldType();
 					ComponentDependency dependency = this.addDependency(wireClass, wire.isRequired(), wire.isList(),
 							wired.searchScope(),
-							wired.creationScope()
+							wired.creationBox()
 					);
 					dependency.setWire(wire);
 
@@ -203,7 +229,6 @@ public class ComponentMetadata {
 
 	public ComponentDependency addDependency(Class<?> dependencyClass, boolean required, boolean isList, SearchScope searchScope, CreationBox creationBox) {
 		searchScope = this.resolveSearchScope(dependencyClass, searchScope);
-		creationBox = this.resolveCreationScope(dependencyClass, creationBox);
 
 		ComponentDependency dependency = new ComponentDependency(dependencyClass, isList, searchScope, creationBox);
 		this.dependencies.add(dependency);
@@ -226,8 +251,8 @@ public class ComponentMetadata {
 	}
 
 	public Class<?> getDependentClass() {
-		if (this.componentAnnotation != null) {
-			return this.componentAnnotation.dependentClass() != void.class ? this.componentAnnotation.dependentClass() : null;
+		if (this.dependenciesAnnotation != null) {
+			return this.dependenciesAnnotation.dependentClass() != void.class ? this.dependenciesAnnotation.dependentClass() : null;
 		}
 		return null;
 	}
@@ -250,6 +275,10 @@ public class ComponentMetadata {
 			return this.creationResolveMode;
 		}
 
+		if (this.singletonAnnotation != null) {
+			return this.singletonAnnotation.creationResolveMode();
+		}
+
 		if (this.componentAnnotation != null) {
 			return this.componentAnnotation.creationResolveMode();
 		}
@@ -263,5 +292,21 @@ public class ComponentMetadata {
 
 	public boolean isSingleton() {
 		return this.singletonAnnotation != null;
+	}
+
+	public ComponentAspect[] getAspects() {
+		if (this.singletonAnnotation != null) {
+			return new ComponentAspect[] { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE };
+		}
+
+		if (this.componentAnnotation != null) {
+			return this.componentAnnotation.aspects();
+		}
+
+		return new ComponentAspect[0];
+	}
+
+	public Box getBox() {
+		return this.boxAnnotation;
 	}
 }

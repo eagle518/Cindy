@@ -9,7 +9,7 @@
 
 package co.mindie.cindy.configuration;
 
-import co.mindie.cindy.component.CindyComponent;
+import co.mindie.cindy.utils.Initializable;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
@@ -18,7 +18,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.Set;
 
-public class Configuration extends CindyComponent {
+public class Configuration implements Initializable {
 
 	// //////////////////////
 	// VARIABLES
@@ -49,8 +49,6 @@ public class Configuration extends CindyComponent {
 
 	@Override
 	public void init() {
-		super.init();
-
 		if (this.configurationFilePath == null) {
 			this.configurationFilePath = this.get("wsframework.configuration_file");
 		}

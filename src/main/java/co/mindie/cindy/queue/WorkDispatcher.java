@@ -1,5 +1,9 @@
 package co.mindie.cindy.queue;
 
+import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.automapping.Box;
+import co.mindie.cindy.automapping.CreationBox;
+import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.AbstractWorker;
 import co.mindie.cindy.component.ComponentPool;
 import co.mindie.cindy.component.PoolableComponent;
@@ -11,9 +15,7 @@ import org.apache.log4j.Logger;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Created by simoncorsin on 29/09/14.
- */
+@Box
 public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataType>> extends AbstractWorker {
 
 	////////////////////////
@@ -32,6 +34,9 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	private ThreadedConcurrentTaskQueue workTaskQueue;
 	private AtomicInteger pendingTasks;
 	private final String workerName;
+
+	@Wired(creationBox = CreationBox.NO_CREATION)
+	private CindyApp app;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -52,7 +57,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 
 	@Override
 	public void init() {
-		this.componentPool = new ComponentPool<>(this.getApplication(), this.workContextTypeClass, this.getComponentBox(), true);
+		this.componentPool = new ComponentPool<>(this.app, this.workContextTypeClass, this.getInnerBox());
 		this.workTaskQueue = new ThreadedConcurrentTaskQueue(this.maxNumberOfThreads);
 		this.maxPendingTasks = this.maxNumberOfThreads * DEFAULT_PENDING_TASKS_TO_THREAD_RATIO;
 

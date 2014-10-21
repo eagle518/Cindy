@@ -2,6 +2,7 @@ package co.mindie.cindy.resolver;
 
 import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.CindyAppCreator;
+import co.mindie.cindy.component.ComponentAspect;
 import co.mindie.cindy.component.ComponentBox;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,13 +26,13 @@ public class ResolverManagerTest {
 	public void setUp() {
 		this.application = new CindyAppCreator().createApplication();
 		this.resolverManager = this.application.getModelConverterManager();
-		this.cc = this.application.getComponentBox();
+		this.cc = this.application.getInnerBox();
 	}
 
 	@Test
 	public void resolve_string_to_int() {
 		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, int.class);
-		int nb = (int) output.createResolversAndResolve(this.cc.createSubComponentContext(), "42", 0);
+		int nb = (int) output.createResolversAndResolve(this.cc.createChildBox(), "42", 0);
 
 		assertTrue(nb == 42);
 	}
@@ -43,7 +44,7 @@ public class ResolverManagerTest {
 
 		Exception ex = null;
 		try {
-			output.createResolversAndResolve(this.cc.createSubComponentContext(), null, 0);
+			output.createResolversAndResolve(this.cc.createChildBox(), null, 0);
 		} catch (Exception e) {
 			ex = e;
 		}
@@ -55,7 +56,7 @@ public class ResolverManagerTest {
 	public void resolve_nullstring_to_integer() {
 		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, Integer.class);
 
-		Integer it = (Integer) output.createResolversAndResolve(this.cc.createSubComponentContext(), null, 0);
+		Integer it = (Integer) output.createResolversAndResolve(this.cc.createChildBox(), null, 0);
 
 		assertNull(it);
 	}
@@ -64,7 +65,7 @@ public class ResolverManagerTest {
 	public void resolve_string_to_longarray() {
 		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, long[].class);
 
-		long[] array = (long[]) output.createResolversAndResolve(this.cc.createSubComponentContext(), "1;2;3;4;5;6;7;8", 0);
+		long[] array = (long[]) output.createResolversAndResolve(this.cc.createChildBox(), "1;2;3;4;5;6;7;8", 0);
 
 		assertNotNull(array);
 		assertTrue(array.length == 8);
@@ -74,7 +75,7 @@ public class ResolverManagerTest {
 	public void resolve_string_to_longarray_with_commas() {
 		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, long[].class);
 
-		long[] array = (long[]) output.createResolversAndResolve(this.cc.createSubComponentContext(), "1,2,3,4,5,6", 0);
+		long[] array = (long[]) output.createResolversAndResolve(this.cc.createChildBox(), "1,2,3,4,5,6", 0);
 
 		assertNotNull(array);
 		assertTrue(array.length == 6);
@@ -93,7 +94,7 @@ public class ResolverManagerTest {
 
 		assertNotNull(output);
 
-		MyObject obj = (MyObject) output.createResolversAndResolve(this.cc.createSubComponentContext(), "1337", 0);
+		MyObject obj = (MyObject) output.createResolversAndResolve(this.cc.createChildBox(), "1337", 0);
 
 		assertTrue(obj.value == 1337);
 	}
@@ -112,7 +113,7 @@ public class ResolverManagerTest {
 
 		assertNotNull(output);
 
-		List<Object> list = (List<Object>) output.createResolversAndResolve(this.cc.createSubComponentContext(), true, 0);
+		List<Object> list = (List<Object>) output.createResolversAndResolve(this.cc.createChildBox(), true, 0);
 
 		assertTrue(list.size() == 1);
 	}

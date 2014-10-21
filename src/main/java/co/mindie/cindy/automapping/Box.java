@@ -17,18 +17,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Component {
+@Target({ ElementType.FIELD, ElementType.TYPE })
+public @interface Box {
 
 	/**
-	 * @return the CreationResolveMode to use for this Component.
+	 * @return the ComponentAspects that every component added in this box must have.
+	 * Attempting to add a Component that doesn't have those aspects inside this box
+	 * will fail.
 	 */
-	CreationResolveMode creationResolveMode() default CreationResolveMode.DEFAULT;
+	ComponentAspect[] needAspects() default {};
 
 	/**
- 	 * @return the ComponentAspect's that this component has. This gives insight on whether this component
-	 * can be added in a particular ComponentBox.
+	 * @return the ComponentAspects that every component added in this box must NOT have.
+	 * Attempting to add a Component that have one of those aspects inside this box
+	 * will fail.
 	 */
-	ComponentAspect[] aspects() default {};
+	ComponentAspect[] rejectAspects() default { ComponentAspect.SINGLETON };
 
 }

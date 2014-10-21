@@ -115,7 +115,7 @@ public class ComponentMetadataManager {
 				this.log("Added {#0} to dependency of {#1}", cls, dependentClassMetadata.getComponentClass());
 
 				if (!dependentClassMetadata.hasDependency(cls)) {
-					dependentClassMetadata.addDependency(cls, true, false, SearchScope.UNDEFINED, CreationBox.UNDEFINED);
+					dependentClassMetadata.addDependency(cls, true, false, SearchScope.UNDEFINED, CreationBox.CURRENT_BOX);
 				}
 			}
 
@@ -128,10 +128,8 @@ public class ComponentMetadataManager {
 	private void log(String format, Object... params) {
 		StringBuilder sb = new StringBuilder();
 
-		if (!this.application.isInitialized()) {
-			for (int i = 0; i < this.currentRecursionCallCount; i++) {
-				sb.append(' ');
-			}
+		for (int i = 0; i < this.currentRecursionCallCount; i++) {
+			sb.append(' ');
 		}
 
 		sb.append(format);

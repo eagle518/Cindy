@@ -16,13 +16,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import co.mindie.cindy.component.CindyComponent;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.notifier.NotifierListener;
 import me.corsin.javatools.misc.Pair;
 import me.corsin.javatools.task.TaskQueue;
 
-public class IOSNotifierManager extends CindyComponent implements Closeable {
+public class IOSNotifierManager implements Closeable {
 
 	////////////////////////
 	// VARIABLES

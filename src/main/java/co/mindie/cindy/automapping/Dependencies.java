@@ -9,8 +9,6 @@
 
 package co.mindie.cindy.automapping;
 
-import co.mindie.cindy.component.ComponentAspect;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -18,17 +16,21 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Component {
+public @interface Dependencies {
 
 	/**
-	 * @return the CreationResolveMode to use for this Component.
+	 * @return the class that this class depends. This adds this class as the returned class dependencies.
 	 */
-	CreationResolveMode creationResolveMode() default CreationResolveMode.DEFAULT;
+	Class<?> dependentClass() default void.class;
 
 	/**
- 	 * @return the ComponentAspect's that this component has. This gives insight on whether this component
-	 * can be added in a particular ComponentBox.
+	 * @return the classes that depend on this class. This adds these classes in the class dependencies.
 	 */
-	ComponentAspect[] aspects() default {};
+	Class<?>[] dependenciesClasses() default {};
+
+	/**
+	 * @return the ComponentBox's SearchScope to use for searching dependencies.
+	 */
+	SearchScope searchScope() default SearchScope.GLOBAL;
 
 }

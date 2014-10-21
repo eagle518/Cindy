@@ -13,17 +13,15 @@ public class ComponentPool<T> extends SynchronizedPool<PoolableComponent<T>> {
 	private final CindyApp application;
 	private final Class<T> componentClass;
 	private final ComponentBox parentComponentBox;
-	private final boolean useSubComponentContext;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentPool(CindyApp application, Class<T> componentClass, ComponentBox parentComponentBox, boolean useSubComponentContext) {
+	public ComponentPool(CindyApp application, Class<T> componentClass, ComponentBox parentComponentBox) {
 		this.application = application;
 		this.componentClass = componentClass;
 		this.parentComponentBox = parentComponentBox;
-		this.useSubComponentContext = useSubComponentContext;
 	}
 
 	////////////////////////
@@ -33,13 +31,8 @@ public class ComponentPool<T> extends SynchronizedPool<PoolableComponent<T>> {
 	@Override
 	protected PoolableComponent<T> instantiate() {
 		ComponentBox componentBox = this.parentComponentBox;
-		if (useSubComponentContext) {
-			if (componentBox == null) {
-				throw new CindyException("A parent ComponentBox must be set to use the SubComponentContext property");
-			}
-			componentBox = componentBox.createSubComponentContext();
-		}
 
+		// TODO NOT THREAD SAFE
 		T component = this.application.createComponent(componentBox, componentClass);
 		return new PoolableComponent<>(componentBox, component);
 	}

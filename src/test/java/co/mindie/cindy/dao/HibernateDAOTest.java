@@ -6,7 +6,6 @@ import co.mindie.cindy.automapping.Component;
 import co.mindie.cindy.automapping.CreationResolveMode;
 import co.mindie.cindy.automapping.Singleton;
 import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.dao.domain.AbstractListRequest;
@@ -20,6 +19,7 @@ import co.mindie.cindy.dao.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.database.tools.CindyHibernateConfiguration;
+import co.mindie.cindy.utils.Initializable;
 import com.google.common.collect.Lists;
 import me.corsin.javatools.misc.SynchronizedPool;
 import org.apache.log4j.Logger;
@@ -68,7 +68,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		ComponentInitializer initializer = metadataManager.createInitializer();
 		this.application = new CindyApp(metadataManager);
 
-		initializer.addCreatedComponent(this.application, new ComponentBox());
+		initializer.addCreatedComponent(this.application, null);
 
 		this.application.getComponentMetadataManager().loadComponent(FakeDatabase.class);
 		this.application.getComponentMetadataManager().loadComponent(FakeDatabaseHandle.class);
@@ -76,7 +76,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		this.application.getComponentMetadataManager().loadComponent(FakeCriteriaBuilderFactory.class);
 		this.application.getComponentMetadataManager().loadComponent(this.getClass());
 
-		initializer.addCreatedComponent(this, this.application.getComponentBox().createSubComponentContext());
+		initializer.addCreatedComponent(this, this.application.getInnerBox().createChildBox());
 
 		initializer.init();
 	}
@@ -220,7 +220,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 	}
 
 	@Component
-	public static class FakeDAO extends HibernateDAO<FakeObject, Integer> {
+	public static class FakeDAO extends HibernateDAO<FakeObject, Integer> implements Initializable {
 		@Wired private FakeDatabaseHandle databaseHandle;
 
 		public FakeDAO() {
@@ -229,7 +229,6 @@ public class HibernateDAOTest extends AbstractCindyTest {
 
 		@Override
 		public void init() {
-			super.init();
 			this.setDatabaseHandle(this.databaseHandle);
 		}
 	}

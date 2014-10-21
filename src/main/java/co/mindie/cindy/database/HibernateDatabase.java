@@ -13,6 +13,7 @@ import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.database.tools.TracedHibernateDatabaseHandle;
+import co.mindie.cindy.utils.Initializable;
 import co.mindie.cindy.utils.Pausable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.Session;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class HibernateDatabase extends Database implements Pausable {
+public abstract class HibernateDatabase extends Database implements Pausable, Initializable {
 
 	// //////////////////////
 	// VARIABLES
@@ -75,7 +76,6 @@ public abstract class HibernateDatabase extends Database implements Pausable {
 
 	@Override
 	public void init() {
-		super.init();
 		this.traceStartedSession = this.configuration.getBoolean("cindy.hibernate_trace_sessions", false);
 	}
 

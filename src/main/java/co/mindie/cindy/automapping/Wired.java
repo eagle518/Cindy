@@ -35,10 +35,10 @@ public @interface Wired {
 	SearchScope searchScope() default SearchScope.UNDEFINED;
 
 	/**
-	 * On which scope the wiring should create the instance if it is not found.
+	 * @return On which box the wiring should create the instance if it is not found.
 	 * @return
 	 */
-	CreationBox creationScope() default CreationBox.UNDEFINED;
+	CreationBox creationBox() default CreationBox.CURRENT_BOX;
 
 	/**
 	 * Which class to use for wiring. This is necessary if the actual type is a collection

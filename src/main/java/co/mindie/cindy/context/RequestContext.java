@@ -13,19 +13,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import co.mindie.cindy.automapping.CreationResolveMode;
-import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.component.CindyComponent;
+import co.mindie.cindy.automapping.*;
+import co.mindie.cindy.component.ComponentBoxListenerImpl;
 import co.mindie.cindy.controller.manager.HttpResponse;
 import co.mindie.cindy.utils.IFlushable;
-import co.mindie.cindy.automapping.Component;
-import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.controller.CindyController;
 import co.mindie.cindy.controller.manager.HttpRequest;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 
 @Component(creationResolveMode = CreationResolveMode.FALLBACK)
-public class RequestContext extends CindyComponent {
+@Box
+public class RequestContext extends ComponentBoxListenerImpl {
 
 	// //////////////////////
 	// VARIABLES
@@ -38,7 +36,7 @@ public class RequestContext extends CindyComponent {
 	private Boolean shouldResolveOutput;
 	private Integer outputResolverOptions;
 	@Wired(required = false) private IResponseWriter responseWriter;
-	@Wired(required = false, creationScope = CreationBox.NO_CREATION) private CindyController controller;
+	@Wired(required = false, creationBox = CreationBox.NO_CREATION) private CindyController controller;
 	@Wired(fieldClass = IFlushable.class) List<IFlushable> flushables;
 
 	// //////////////////////

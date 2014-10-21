@@ -9,11 +9,9 @@
 
 package co.mindie.cindy.dao.impl;
 
-import co.mindie.cindy.component.CindyComponent;
-
 import java.io.Serializable;
 
-public abstract class AbstractDAO<ElementType, PrimaryKey extends Serializable, DatabaseType> extends CindyComponent {
+public abstract class AbstractDAO<ElementType, PrimaryKey extends Serializable, DatabaseType> {
 
 	// //////////////////////
 	// VARIABLES

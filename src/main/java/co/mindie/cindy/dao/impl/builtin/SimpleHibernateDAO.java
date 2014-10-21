@@ -15,8 +15,9 @@ import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.dao.impl.HibernateDAO;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
+import co.mindie.cindy.utils.Initializable;
 
-public abstract class SimpleHibernateDAO<ElementType, PrimaryKey extends Serializable> extends HibernateDAO<ElementType, PrimaryKey> {
+public abstract class SimpleHibernateDAO<ElementType, PrimaryKey extends Serializable> extends HibernateDAO<ElementType, PrimaryKey> implements Initializable{
 
 	////////////////////////
 	// VARIABLES
@@ -38,8 +39,6 @@ public abstract class SimpleHibernateDAO<ElementType, PrimaryKey extends Seriali
 
 	@Override
 	public void init() {
-		super.init();
-
 		this.setDatabaseHandle(this.databaseHandle);
 	}
 
