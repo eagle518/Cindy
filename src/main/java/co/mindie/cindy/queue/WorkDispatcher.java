@@ -1,10 +1,9 @@
 package co.mindie.cindy.queue;
 
-import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Box;
-import co.mindie.cindy.automapping.CreationBox;
-import co.mindie.cindy.automapping.Wired;
+import co.mindie.cindy.automapping.WiredCore;
 import co.mindie.cindy.component.AbstractWorker;
+import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.component.ComponentPool;
 import co.mindie.cindy.component.PoolableComponent;
 import me.corsin.javatools.exception.StackTraceUtils;
@@ -35,8 +34,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	private AtomicInteger pendingTasks;
 	private final String workerName;
 
-	@Wired(creationBox = CreationBox.NO_CREATION)
-	private CindyApp app;
+	@WiredCore private ComponentMetadataManager metadataManager;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -57,7 +55,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 
 	@Override
 	public void init() {
-		this.componentPool = new ComponentPool<>(this.app, this.workContextTypeClass, this.getInnerBox());
+		this.componentPool = new ComponentPool<>(this.metadataManager, this.workContextTypeClass, this.getInnerBox());
 		this.workTaskQueue = new ThreadedConcurrentTaskQueue(this.maxNumberOfThreads);
 		this.maxPendingTasks = this.maxNumberOfThreads * DEFAULT_PENDING_TASKS_TO_THREAD_RATIO;
 

@@ -14,6 +14,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Add the component type as the dependency of the component in which this wire
+ * is declared. The dependency will be available at runtime through this property.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Wired {
@@ -39,14 +43,5 @@ public @interface Wired {
 	 * @return
 	 */
 	CreationBox creationBox() default CreationBox.CURRENT_BOX;
-
-	/**
-	 * Which class to use for wiring. This is necessary if the actual type is a collection
-	 * or if you want to specialize a type to use
-	 *
-	 * @return
-	 */
-	Class<?> fieldClass() default void.class;
-
 
 }

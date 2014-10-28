@@ -1,6 +1,6 @@
 package co.mindie.cindy.utils;
 
-public interface IFlushable {
+public interface Flushable {
 
 	void cancel();
 

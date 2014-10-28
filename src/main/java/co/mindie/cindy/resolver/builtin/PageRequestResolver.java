@@ -1,10 +1,12 @@
 package co.mindie.cindy.resolver.builtin;
 
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.dao.domain.PageRequest;
 
+@Load
 @Resolver(managedInputClasses = RequestParameter.class, managedOutputClasses = PageRequest.class)
 public class PageRequestResolver extends AbstractListRequestResolver<PageRequest> {
 

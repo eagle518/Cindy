@@ -12,9 +12,11 @@ package co.mindie.cindy.resolver.builtin;
 import java.util.ArrayList;
 import java.util.List;
 
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
 
+@Load
 @Resolver(managedInputClasses = Object[].class, managedOutputClasses = List.class)
 public class ArrayToListResolver implements IResolver<Object[], List<Object>> {
 

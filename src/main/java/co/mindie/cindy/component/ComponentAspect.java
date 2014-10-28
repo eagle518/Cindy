@@ -12,7 +12,7 @@ public enum ComponentAspect {
 	THREAD_SAFE,
 
 	/**
-	 * The component should be in the most upper ComponentBox (the application's box)
+	 * The component requires to be in the most upper ComponentBox (the application's box)
 	 */
 	SINGLETON
 

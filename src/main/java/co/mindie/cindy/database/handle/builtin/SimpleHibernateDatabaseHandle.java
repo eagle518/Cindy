@@ -9,13 +9,12 @@
 
 package co.mindie.cindy.database.handle.builtin;
 
-import co.mindie.cindy.automapping.Component;
-import co.mindie.cindy.automapping.CreationResolveMode;
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 
-@Component(creationResolveMode = CreationResolveMode.FALLBACK)
+@Load
 public class SimpleHibernateDatabaseHandle extends HibernateDatabaseHandle {
 
 	////////////////////////

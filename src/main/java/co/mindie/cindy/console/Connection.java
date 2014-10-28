@@ -9,7 +9,7 @@
 
 package co.mindie.cindy.console;
 
-import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.CindyWebApp;
 import com.google.common.collect.Lists;
 import me.corsin.javatools.io.IOUtils;
 import me.corsin.javatools.task.SingleThreadedTaskQueue;
@@ -41,7 +41,7 @@ public class Connection implements Closeable, Runnable {
 			Level.ALL
 	);
 
-	private CindyApp application;
+	private CindyWebApp application;
 	private Socket socket;
 	private boolean closed;
 	private IConnectionListener listener;
@@ -53,7 +53,7 @@ public class Connection implements Closeable, Runnable {
 	// CONSTRUCTORS
 	////////////////
 
-	public Connection(CindyApp application, Socket socket) {
+	public Connection(CindyWebApp application, Socket socket) {
 		this.application = application;
 		this.socket = socket;
 		this.writeQueue = new SingleThreadedTaskQueue();
@@ -158,7 +158,7 @@ public class Connection implements Closeable, Runnable {
 		this.protocol = protocol;
 	}
 
-	public CindyApp getApplication() {
+	public CindyWebApp getApplication() {
 		return this.application;
 	}
 

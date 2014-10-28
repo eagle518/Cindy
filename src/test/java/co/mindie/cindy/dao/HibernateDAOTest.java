@@ -1,9 +1,8 @@
 package co.mindie.cindy.dao;
 
 import co.mindie.cindy.AbstractCindyTest;
-import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.automapping.Component;
-import co.mindie.cindy.automapping.CreationResolveMode;
 import co.mindie.cindy.automapping.Singleton;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.ComponentInitializer;
@@ -56,7 +55,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 
 	@Wired private FakeDAO dao;
 
-	private CindyApp application;
+	private CindyWebApp application;
 
 	// //////////////////////
 	// TESTS LIFECYCLE
@@ -66,7 +65,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 	public void setUp() throws IllegalAccessException, InstantiationException {
 		ComponentMetadataManager metadataManager = new ComponentMetadataManager();
 		ComponentInitializer initializer = metadataManager.createInitializer();
-		this.application = new CindyApp(metadataManager);
+		this.application = new CindyWebApp(metadataManager);
 
 		initializer.addCreatedComponent(this.application, null);
 

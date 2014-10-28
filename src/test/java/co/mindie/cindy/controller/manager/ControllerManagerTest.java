@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.CindyAppCreator;
+import co.mindie.cindy.CindyWebApp;
+import co.mindie.cindy.CindyWebAppCreator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,14 +41,14 @@ public class ControllerManagerTest {
 
 	}
 
-	private CindyApp application;
+	private CindyWebApp application;
 
 	@Before
 	public void setUp() {
-		CindyAppCreator creator = new CindyAppCreator() {
+		CindyWebAppCreator creator = new CindyWebAppCreator() {
 
 			@Override
-			protected void onLoad(CindyApp application) {
+			protected void onLoad(CindyWebApp application) {
 				application.getControllerManager().setUseReusePool(false);
 				application.addController(ControllerTest.class, "");
 			}

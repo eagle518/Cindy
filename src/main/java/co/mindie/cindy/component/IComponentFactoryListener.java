@@ -1,5 +1,6 @@
 package co.mindie.cindy.component;
 
+@Deprecated
 public interface IComponentFactoryListener {
 
 	void onComponentCreated(Object componentInstance);

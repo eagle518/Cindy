@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.CindyWebApp;
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.ComponentBoxListenerImpl;
@@ -21,6 +22,7 @@ import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.resolver.IResolver;
 import co.mindie.cindy.resolver.IResolverOutput;
 
+@Load
 @Resolver(managedInputClasses = { ArrayList.class, List.class, Collection.class }, managedOutputClasses = { ArrayList.class, List.class, Collection.class },
 isDefaultForInputTypes = true)
 @SuppressWarnings({ "rawtypes" })
@@ -31,7 +33,7 @@ public class CollectionResolver extends ComponentBoxListenerImpl implements IRes
 	// //////////////
 
 	@Wired
-	private CindyApp application;
+	private CindyWebApp application;
 
 	// //////////////////////
 	// CONSTRUCTORS
@@ -56,7 +58,7 @@ public class CollectionResolver extends ComponentBoxListenerImpl implements IRes
 				output.add(null);
 			} else {
 				if (resolverOutput == null) {
-					resolverOutput = this.application.getModelConverterManager().getDefaultResolverOutputForInput(obj);
+					resolverOutput = this.application.getResolverManager().getDefaultResolverOutputForInput(obj);
 					if (resolverOutput == null) {
 						throw new CindyException("No Resolver found for input type " + obj.getClass());
 					}

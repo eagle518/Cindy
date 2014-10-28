@@ -19,11 +19,6 @@ import java.lang.annotation.Target;
 public @interface Dependencies {
 
 	/**
-	 * @return the class that this class depends. This adds this class as the returned class dependencies.
-	 */
-	Class<?> dependentClass() default void.class;
-
-	/**
 	 * @return the classes that depend on this class. This adds these classes in the class dependencies.
 	 */
 	Class<?>[] dependenciesClasses() default {};

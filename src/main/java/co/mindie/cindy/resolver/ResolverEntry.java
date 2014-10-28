@@ -14,9 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import co.mindie.cindy.CindyWebApp;
+import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.exception.CindyException;
 import me.corsin.javatools.string.Strings;
-import co.mindie.cindy.CindyApp;
 
 public class ResolverEntry {
 
@@ -24,18 +25,18 @@ public class ResolverEntry {
 	// VARIABLES
 	////////////////
 
+	final private ComponentMetadataManager metadataManager;
 	final private Class<?> inputClass;
-	private List<ResolverOutput> outputs;
-	private Map<Class<?>, ResolverOutput> outputsByOutputClass;
+	final private List<ResolverOutput> outputs;
+	final private Map<Class<?>, ResolverOutput> outputsByOutputClass;
 	private ResolverOutput defaultConverterOutput;
-	final private CindyApp application;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ResolverEntry(CindyApp application, Class<?> inputClass) {
-		this.application = application;
+	public ResolverEntry(ComponentMetadataManager metadataManager, Class<?> inputClass) {
+		this.metadataManager = metadataManager;
 		this.inputClass = inputClass;
 		this.outputs = new ArrayList<>();
 		this.outputsByOutputClass = new HashMap<>();
@@ -59,7 +60,7 @@ public class ResolverEntry {
 							+ " has been already added set as default", converterClass, this.inputClass, this.defaultConverterOutput.getConverterClass()));
 			}
 
-			output = new ResolverOutput(this.application, converterClass, this.inputClass, outputClass);
+			output = new ResolverOutput(this.metadataManager, converterClass, this.inputClass, outputClass);
 			if (isDefault) {
 				this.defaultConverterOutput = output;
 			}

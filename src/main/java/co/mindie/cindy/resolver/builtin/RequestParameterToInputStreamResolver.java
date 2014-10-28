@@ -11,10 +11,12 @@ package co.mindie.cindy.resolver.builtin;
 
 import java.io.InputStream;
 
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.resolver.IResolver;
 
+@Load
 @Resolver(managedInputClasses = RequestParameter.class, managedOutputClasses = InputStream.class)
 public class RequestParameterToInputStreamResolver implements IResolver<RequestParameter, InputStream> {
 

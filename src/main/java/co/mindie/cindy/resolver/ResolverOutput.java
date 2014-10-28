@@ -9,8 +9,8 @@
 
 package co.mindie.cindy.resolver;
 
-import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.component.ComponentBox;
+import co.mindie.cindy.component.ComponentMetadataManager;
 
 public class ResolverOutput implements IResolverOutput {
 
@@ -18,7 +18,7 @@ public class ResolverOutput implements IResolverOutput {
 	// VARIABLES
 	////////////////
 
-	final private CindyApp application;
+	final private ComponentMetadataManager metadataManager;
 	final private Class<?> converterClass;
 	final private Class<?> inputClass;
 	final private Class<?> outputClass;
@@ -27,8 +27,8 @@ public class ResolverOutput implements IResolverOutput {
 	// CONSTRUCTORS
 	////////////////
 
-	public ResolverOutput(CindyApp application, Class<?> converterClass, Class<?> inputClass, Class<?> outputClass) {
-		this.application = application;
+	public ResolverOutput(ComponentMetadataManager metadataManager, Class<?> converterClass, Class<?> inputClass, Class<?> outputClass) {
+		this.metadataManager = metadataManager;
 		this.converterClass = converterClass;
 		this.inputClass = inputClass;
 		this.outputClass = outputClass;
@@ -41,8 +41,12 @@ public class ResolverOutput implements IResolverOutput {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Object createResolversAndResolve(ComponentBox cc, Object inputObject, int options) {
-		@SuppressWarnings("rawtypes")
-		IResolver resolver = (IResolver)this.application.findOrCreateComponent(cc, this.converterClass);
+		IResolver resolver =  (IResolver)cc.findComponent(this.converterClass);
+
+		if (resolver == null) {
+			resolver = (IResolver)this.metadataManager.createComponent(this.converterClass, cc);
+		}
+
 		return resolver.resolve(inputObject, this.outputClass, options);
 	}
 

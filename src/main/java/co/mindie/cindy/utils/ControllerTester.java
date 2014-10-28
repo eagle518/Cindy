@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.automapping.HttpMethod;
 import co.mindie.cindy.controller.dummy.DummyHttpRequest;
 import co.mindie.cindy.controller.dummy.DummyHttpResponse;
@@ -27,7 +27,7 @@ public class ControllerTester {
 	// VARIABLES
 	////////////////
 
-	final private CindyApp application;
+	final private CindyWebApp application;
 	final private JsonResponseWriter responseWriter;
 
 
@@ -35,7 +35,7 @@ public class ControllerTester {
 	// CONSTRUCTORS
 	////////////////
 
-	public ControllerTester(CindyApp application) {
+	public ControllerTester(CindyWebApp application) {
 		this.application = application;
 		this.responseWriter = new JsonResponseWriter();
 	}

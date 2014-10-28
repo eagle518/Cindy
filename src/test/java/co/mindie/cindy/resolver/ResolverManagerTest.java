@@ -1,8 +1,7 @@
 package co.mindie.cindy.resolver;
 
-import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.CindyAppCreator;
-import co.mindie.cindy.component.ComponentAspect;
+import co.mindie.cindy.CindyWebApp;
+import co.mindie.cindy.CindyWebAppCreator;
 import co.mindie.cindy.component.ComponentBox;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,13 +18,13 @@ import static org.junit.Assert.assertTrue;
 public class ResolverManagerTest {
 
 	private ResolverManager resolverManager;
-	private CindyApp application;
+	private CindyWebApp application;
 	private ComponentBox cc;
 
 	@Before
 	public void setUp() {
-		this.application = new CindyAppCreator().createApplication();
-		this.resolverManager = this.application.getModelConverterManager();
+		this.application = new CindyWebAppCreator().createApplication();
+		this.resolverManager = this.application.getResolverManager();
 		this.cc = this.application.getInnerBox();
 	}
 

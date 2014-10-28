@@ -9,12 +9,10 @@
 
 package co.mindie.cindy.component;
 
-import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.component.debugger.DebuggerJsonGenerator;
-import co.mindie.cindy.configuration.Configurations;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.utils.Initializable;
 import me.corsin.javatools.string.Strings;
@@ -33,7 +31,7 @@ public class ComponentInitializer implements Initializable {
 
 	private static final Logger LOGGER = Logger.getLogger(ComponentInitializer.class);
 
-	private Map<Object, CreatedComponent> components;
+	private Map<Object, CreatedComponent<?>> components;
 	private List<CreatedComponent> createdComponents;
 	private ComponentMetadataManager metadataManager;
 	private int currentRecursionCallCount;
@@ -44,7 +42,7 @@ public class ComponentInitializer implements Initializable {
 
 	public ComponentInitializer(ComponentMetadataManager metadataManager) {
 		this.metadataManager = metadataManager;
-		this.components = new HashMap<Object, CreatedComponent>();
+		this.components = new HashMap<>();
 		this.createdComponents = new ArrayList<>();
 	}
 
@@ -52,11 +50,11 @@ public class ComponentInitializer implements Initializable {
 	// METHODS
 	////////////////
 
-	public CreatedComponent addCreatedComponent(Object component, ComponentBox box) {
-		return this.addCreatedComponent(component, this.metadataManager.getComponentMetadata(component.getClass()), box, component.getClass());
+	public <T> CreatedComponent<T> addCreatedComponent(T component, ComponentBox box) {
+		return this.addCreatedComponent(component, this.metadataManager.getComponentMetadata(component.getClass()), box, (Class<T>)component.getClass());
 	}
 
-	private CreatedComponent addCreatedComponent(Object objectInstance, ComponentMetadata metadata, ComponentBox enclosingBox, Class<?> cls) {
+	private <T> CreatedComponent<T> addCreatedComponent(T objectInstance, ComponentMetadata metadata, ComponentBox enclosingBox, Class<T> cls) {
 		if (enclosingBox != null) {
 			enclosingBox.addComponent(objectInstance, metadata.getAspects());
 		}
@@ -77,7 +75,7 @@ public class ComponentInitializer implements Initializable {
 			}
 		}
 
-		CreatedComponent createdComponent = new CreatedComponent(objectInstance, metadata, enclosingBox, innerBox, cls);
+		CreatedComponent<T> createdComponent = new CreatedComponent<T>(objectInstance, metadata, enclosingBox, innerBox, cls);
 		this.createdComponents.add(createdComponent);
 
 		this.components.put(objectInstance, createdComponent);
@@ -117,13 +115,19 @@ public class ComponentInitializer implements Initializable {
 		}
 	}
 
-	private void injectDependencies(CreatedComponent createdComponent) {
+	private <T> void injectDependencies(CreatedComponent<T> createdComponent) {
 		ComponentMetadata componentMetadata = createdComponent.getMetadata();
 		Class<?> objectClass = createdComponent.getCls();
 		Object objectInstance = createdComponent.getInstance();
+		WireListener objectInstanceAsInitializerListener = objectInstance instanceof WireListener ?
+				(WireListener)objectInstance : null;
 
 		this.log("/ Injecting all dependencies of " + objectInstance.getClass().getSimpleName() + " in box " + createdComponent.getCurrentBox());
 		this.currentRecursionCallCount++;
+
+		if (objectInstanceAsInitializerListener != null) {
+			objectInstanceAsInitializerListener.onWillWire();
+		}
 
 		for (ComponentDependency dependency : componentMetadata.getDependencies()) {
 			ComponentBox currentBox = createdComponent.getCurrentBox();
@@ -140,7 +144,9 @@ public class ComponentInitializer implements Initializable {
 
 			Object dependencyInstance = null;
 
-			if (dependency.isList()) {
+			if (dependencyClass == ComponentMetadataManager.class) {
+				dependencyInstance = componentMetadata.getManager();
+			} else if (dependency.isList()) {
 				List<?> list = currentBox.findComponents(dependencyClass, dependency.getSearchScope());
 				if (list == null) {
 					list = new ArrayList<>();
@@ -158,7 +164,7 @@ public class ComponentInitializer implements Initializable {
 						currentBox = currentBox.getSuperBox();
 					}
 
-					CreatedComponent createdDependencyComponent = this.createComponentInternal(currentBox, dependencyClass);
+					CreatedComponent createdDependencyComponent = this.createComponentInternal(currentBox, (Class)dependencyClass);
 
 					if (createdDependencyComponent != null) {
 						dependencyInstance = createdDependencyComponent.getInstance();
@@ -180,10 +186,50 @@ public class ComponentInitializer implements Initializable {
 				createdComponent.addDependency(dependencyInstance);
 			}
 		}
+
+		for (Wire wireCore : componentMetadata.getWireCores()) {
+			Class<?> wireType = wireCore.getFieldType();
+
+			if (wireType == ComponentMetadataManager.class) {
+				wireCore.set(objectInstance, this.metadataManager);
+			} else if (wireType == ComponentBox.class) {
+				String context = wireCore.getContext();
+
+				if (context == null) {
+					throw new CindyException("A WiredCore to a ComponentBox needs a context to know which box should be wired.");
+				}
+
+				if (context.equals("this")) {
+					wireCore.set(objectInstance, createdComponent.getCurrentBox());
+				} else if (context.equals("super")) {
+					wireCore.set(objectInstance, createdComponent.getEnclosingBox());
+				} else {
+					throw new CindyException("Referencing a ComponentBox other than 'this' and 'super' is not supported yet.");
+				}
+			} else if (wireType == ComponentMetadata.class) {
+				String context = wireCore.getContext();
+
+				if (context == null) {
+					throw new CindyException("A WiredCore to a ComponentMetadata needs a context to know which metadata should be wired.");
+				}
+
+				if (context.equals("this")) {
+					wireCore.set(objectInstance, componentMetadata);
+				} else {
+					throw new CindyException("Referencing a ComponentMetata other than 'this' is not supported yet.");
+				}
+			}
+		}
+
 		this.currentRecursionCallCount--;
+
+		if (objectInstanceAsInitializerListener != null) {
+			objectInstanceAsInitializerListener.onWired();
+		}
+
 	}
 
-	private CreatedComponent createComponentInternal(ComponentBox enclosingBox, Class<?> objectClass) {
+	private <T> CreatedComponent<T> createComponentInternal(ComponentBox enclosingBox, Class<T> objectClass) {
 		this.currentRecursionCallCount++;
 		try {
 			ComponentMetadata metadata = this.metadataManager.getCompatibleMetadata(objectClass);
@@ -192,11 +238,11 @@ public class ComponentInitializer implements Initializable {
 				return null;
 			}
 
-			Object objectInstance = metadata.createInstance();
+			T objectInstance = (T)metadata.createInstance();
 
 			this.log("+ Created instance of " + objectClass.getSimpleName() + " resolved to " + metadata.getComponentClass().getSimpleName() + " in context " + enclosingBox);
 
-			CreatedComponent createdComponent =  this.addCreatedComponent(objectInstance, metadata, enclosingBox, objectClass);
+			CreatedComponent<T> createdComponent =  this.addCreatedComponent(objectInstance, metadata, enclosingBox, objectClass);
 			this.metadataManager.signalComponentCreated(objectInstance);
 
 			return createdComponent;
@@ -205,7 +251,7 @@ public class ComponentInitializer implements Initializable {
 		}
 	}
 
-	public CreatedComponent createComponent(ComponentBox enclosingBox, Class<?> objectClass) {
+	public <T> CreatedComponent<T> createComponent(ComponentBox enclosingBox, Class<T> objectClass) {
 		try {
 			return this.createComponentInternal(enclosingBox, objectClass);
 		} catch (RuntimeException e) {
@@ -215,7 +261,7 @@ public class ComponentInitializer implements Initializable {
 		}
 	}
 
-	private void init(CreatedComponent createdComponent) {
+	private <T> void init(CreatedComponent<T> createdComponent) {
 		if (!createdComponent.isInitialized()) {
 			createdComponent.setInitialized(true);
 
@@ -233,8 +279,8 @@ public class ComponentInitializer implements Initializable {
 
 	@Override
 	public void init() {
-		for (int i = 0; i < this.createdComponents.size(); i++) {
-			this.injectDependencies(this.createdComponents.get(i));
+		for (CreatedComponent createdComponent : this.createdComponents) {
+			this.injectDependencies(createdComponent);
 		}
 
 		for (CreatedComponent createdComponent : this.createdComponents) {
@@ -246,12 +292,7 @@ public class ComponentInitializer implements Initializable {
 	// GETTERS/SETTERS
 	////////////////
 
-	public boolean isWriteDotDebugEnabled() {
-		CindyApp app = this.metadataManager.getApplication();
-		if (app != null && app.getConfiguration() != null) {
-			return app.getConfiguration().getBoolean(Configurations.WRITE_JSON_DEBUG_ON_COMPONENT_CREATION, false);
-		}
-
-		return false;
+	public ComponentMetadataManager getMetadataManager() {
+		return metadataManager;
 	}
 }

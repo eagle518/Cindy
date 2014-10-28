@@ -23,9 +23,4 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Singleton {
 
-	/**
-	 * @return the CreationResolveMode to use for this Component.
-	 */
-	CreationResolveMode creationResolveMode() default CreationResolveMode.DEFAULT;
-
 }

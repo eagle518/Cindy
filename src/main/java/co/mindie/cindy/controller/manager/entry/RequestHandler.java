@@ -10,28 +10,38 @@
 package co.mindie.cindy.controller.manager.entry;
 
 import java.io.Closeable;
+import java.util.List;
 
+import co.mindie.cindy.automapping.Box;
+import co.mindie.cindy.automapping.Wired;
+import co.mindie.cindy.automapping.WiredCore;
+import co.mindie.cindy.component.ComponentAspect;
 import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.CindyController;
+import co.mindie.cindy.utils.Flushable;
 
-public class RequestHandler implements Closeable {
+@Box(rejectAspects = ComponentAspect.SINGLETON)
+public class RequestHandler<T> implements Closeable {
 
 	////////////////////////
 	// VARIABLES
 	////////////////
 
-	private Object controller;
+	@WiredCore private ComponentBox componentBox;
+
+	@Wired
 	private RequestContext requestContext;
-	private ComponentBox componentBox;
+
+	private T controller;
+
 	private EndpointEntry endpointEntry;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public RequestHandler(EndpointEntry endpointEntry) {
-		this.endpointEntry = endpointEntry;
+	public RequestHandler() {
 	}
 
 	////////////////////////
@@ -44,9 +54,6 @@ public class RequestHandler implements Closeable {
 	}
 
 	public void reset() {
-		if (this.controller instanceof CindyController) {
-			((CindyController)this.controller).reset();
-		}
 		this.requestContext.reset();
 	}
 
@@ -61,12 +68,16 @@ public class RequestHandler implements Closeable {
 	// GETTERS/SETTERS
 	////////////////
 
-	public Object getController() {
-		return this.controller;
+	public T getController() {
+		return controller;
 	}
 
-	public void setController(Object controller) {
-		this.controller = controller;
+	public EndpointEntry getEndpointEntry() {
+		return endpointEntry;
+	}
+
+	public void setEndpointEntry(EndpointEntry endpointEntry) {
+		this.endpointEntry = endpointEntry;
 	}
 
 	public RequestContext getRequestContext() {

@@ -9,10 +9,9 @@
 
 package co.mindie.cindy.controller.manager;
 
-import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
-import co.mindie.cindy.automapping.Endpoint;
-import co.mindie.cindy.automapping.HttpMethod;
+import co.mindie.cindy.automapping.*;
+import co.mindie.cindy.component.*;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.manager.entry.ControllerEntry;
 import co.mindie.cindy.controller.manager.entry.EndpointEntry;
@@ -20,10 +19,14 @@ import co.mindie.cindy.controller.manager.entry.EndpointPathResult;
 import co.mindie.cindy.controller.manager.entry.RequestHandler;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.resolver.IResolverOutput;
+import co.mindie.cindy.resolver.ResolverManager;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 import co.mindie.cindy.responseserializer.StringResponseWriter;
 import co.mindie.cindy.utils.EndpointIndexer;
 import co.mindie.cindy.utils.Initializable;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtField;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.io.IOUtils;
 import me.corsin.javatools.misc.ValueHolder;
@@ -37,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Box(readOnly = false)
 public class ControllerManager implements Initializable {
 
 	////////////////////////
@@ -52,14 +56,23 @@ public class ControllerManager implements Initializable {
 	private volatile boolean maintenanceModeEnabled;
 	private volatile boolean failOnResolverNotFound;
 	private boolean useReusePool;
-	private CindyApp cindyApp;
+
+	@Wired private ResolverManager resolverManager;
+
+	@Wired(required = false) private IParameterNameResolver parameterNameResolver;
+
+	@Wired(required = false) private IRequestContextAuthorizer requestContextAuthorizer;
+	@Wired(required = false) private IRequestErrorHandler requestErrorHandler;
+	@Wired(required = false) private IResponseWriter defaultResponseWriter;
+
+	@WiredCore private ComponentBox innerBox;
+	@WiredCore private ComponentMetadataManager metadataManager;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ControllerManager(CindyApp cindyApp) {
-		this.cindyApp = cindyApp;
+	public ControllerManager() {
 		this.getMapping = new EndpointIndexer();
 		this.putMapping = new EndpointIndexer();
 		this.postMapping = new EndpointIndexer();
@@ -74,21 +87,44 @@ public class ControllerManager implements Initializable {
 
 	@Override
 	public void init() {
+		for (ComponentMetadata controllerMetadata : this.metadataManager.getLoadedComponentsWithAnnotation(Controller.class)) {
+			Controller controllerAnnotation = controllerMetadata.getAnnotation(Controller.class);
+
+			this.addController(controllerMetadata.getComponentClass(), controllerAnnotation.basePath());
+		}
+
 		for (ControllerEntry controller : this.controllers.values()) {
 			for (EndpointEntry endpoint : controller.getEndpoints()) {
-				endpoint.init();
+				endpoint.init(this.parameterNameResolver, this.resolverManager);
 			}
 		}
 	}
 
 	public void preloadEndpoints() {
 		if (this.useReusePool) {
-			CindyApp app = this.cindyApp;
 			for (ControllerEntry controllerEntry : this.getControllers()) {
 				for (EndpointEntry endpointEntry : controllerEntry.getEndpoints()) {
-					endpointEntry.preload(app);
+					endpointEntry.preload(this.metadataManager, this.innerBox);
 				}
 			}
+		}
+	}
+
+	private Class<?> makeEndpointType(Class<?> controllerClass, Method method) {
+		try {
+			ClassPool pool = ClassPool.getDefault();
+			CtClass requestHandlerClass = pool.get(RequestHandler.class.getName());
+			CtClass cls = pool.makeClass("co.mindie.cindy.controller.manager.entry.RequestHandler$" + controllerClass.getSimpleName() + "$" + method.getName(), requestHandlerClass);
+			Class createdClass = cls.toClass();
+
+			ComponentMetadata metadata = this.metadataManager.loadComponent(createdClass);
+
+			ComponentDependency dependency = metadata.addDependency(controllerClass, true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
+			dependency.setWire(new Wire(createdClass.getField("controller"), null, null));
+
+			return createdClass;
+		} catch (Exception e) {
+			throw new CindyException("Unable to make endpoint type", e);
 		}
 	}
 
@@ -97,7 +133,7 @@ public class ControllerManager implements Initializable {
 			basePath = basePath + "/";
 		}
 
-		ControllerEntry controllerEntry = new ControllerEntry(controllerClass, basePath, this.cindyApp);
+		ControllerEntry controllerEntry = new ControllerEntry(controllerClass, basePath);
 
 		Method[] methods = controllerClass.getMethods();
 
@@ -107,11 +143,15 @@ public class ControllerManager implements Initializable {
 			if (mapped != null) {
 				final String path = mapped.path();
 				final HttpMethod type = mapped.httpMethod();
-				EndpointEntry endpointEntry = new EndpointEntry(controllerEntry, basePath + path, method, mapped);
+
+				Class<?> endpointType = this.makeEndpointType(controllerClass, method);
+
+				EndpointEntry endpointEntry = new EndpointEntry(controllerEntry, basePath + path, method, mapped, endpointType);
 
 				controllerEntry.addEndpoint(endpointEntry);
 
 				this.registerMethod(type, endpointEntry);
+
 			}
 		}
 
@@ -151,7 +191,7 @@ public class ControllerManager implements Initializable {
 		}
 
 		if (context.getResponseWriter() == null) {
-			IResponseWriter writer = this.cindyApp.getDefaultResponseWriter();
+			IResponseWriter writer = this.defaultResponseWriter;
 
 			if (writer == null) {
 				throw new CindyException("No compatible response writer found");
@@ -162,7 +202,7 @@ public class ControllerManager implements Initializable {
 	}
 
 	private RequestHandler createRequestHandler(HttpRequest httpRequest, HttpResponse httpResponse, EndpointEntry associatedMethod) {
-		RequestHandler requestHandler = associatedMethod.createRequestHandler(this.cindyApp, this.useReusePool);
+		RequestHandler requestHandler = associatedMethod.createRequestHandler(this.metadataManager, this.innerBox, this.useReusePool);
 		RequestContext context = requestHandler.getRequestContext();
 
 		context.setHttpResponse(httpResponse);
@@ -178,7 +218,7 @@ public class ControllerManager implements Initializable {
 		Object response = this.getRequestResponse(httpRequest, httpResponse, result, requestHandlerVH);
 
 		RequestHandler requestHandler = requestHandlerVH.value();
-		IResponseWriter responseWriter = this.cindyApp.getDefaultResponseWriter();
+		IResponseWriter responseWriter = this.defaultResponseWriter;
 
 		if (requestHandler != null && requestHandler.getRequestContext().getResponseWriter() != null) {
 			responseWriter = requestHandler.getRequestContext().getResponseWriter();
@@ -199,7 +239,7 @@ public class ControllerManager implements Initializable {
 
 	private Object handleRequestException(RequestContext context, Throwable exception) {
 		try {
-			IRequestErrorHandler exceptionHandler = this.cindyApp.getRequestErrorHandler();
+			IRequestErrorHandler exceptionHandler = this.requestErrorHandler;
 
 			if (exceptionHandler != null) {
 				return exceptionHandler.handleRequestException(context, exception);
@@ -214,7 +254,7 @@ public class ControllerManager implements Initializable {
 	private Object handleEndpointNotFound(HttpRequest servletRequest, HttpResponse response) {
 		response.setStatusCode(404);
 
-		IRequestErrorHandler errorHandler = this.cindyApp.getRequestErrorHandler();
+		IRequestErrorHandler errorHandler = this.requestErrorHandler;
 
 		if (errorHandler != null) {
 			try {
@@ -232,7 +272,7 @@ public class ControllerManager implements Initializable {
 	private Object handleMaintenanceMode(HttpRequest servletRequest, HttpResponse response) {
 		response.setStatusCode(410);
 
-		IRequestErrorHandler errorHandler = this.cindyApp.getRequestErrorHandler();
+		IRequestErrorHandler errorHandler = this.requestErrorHandler;
 
 		if (errorHandler != null) {
 			try {
@@ -249,7 +289,7 @@ public class ControllerManager implements Initializable {
 	private Object handleRequestCreationFailed(HttpRequest servletRequest, HttpResponse response, Throwable e) {
 		response.setStatusCode(500);
 
-		IRequestErrorHandler errorHandler = this.cindyApp.getRequestErrorHandler();
+		IRequestErrorHandler errorHandler = this.requestErrorHandler;
 
 		if (errorHandler != null) {
 			try {
@@ -266,7 +306,7 @@ public class ControllerManager implements Initializable {
 	private Object handleResponseConverterException(RequestContext context, Throwable e) {
 		context.getHttpResponse().setStatusCode(500);
 
-		IRequestErrorHandler errorHandler = this.cindyApp.getRequestErrorHandler();
+		IRequestErrorHandler errorHandler = this.requestErrorHandler;
 
 		if (errorHandler != null) {
 			try {
@@ -281,7 +321,7 @@ public class ControllerManager implements Initializable {
 	}
 
 	private void handleResponseWritingException(HttpRequest request, IOException e) {
-		IRequestErrorHandler errorHandler = this.cindyApp.getRequestErrorHandler();
+		IRequestErrorHandler errorHandler = this.requestErrorHandler;
 
 		if (errorHandler != null) {
 			try {
@@ -364,7 +404,7 @@ public class ControllerManager implements Initializable {
 
 		if (shouldResolveOutput && response != null) {
 			try {
-				IResolverOutput resolverOutput = this.cindyApp.getModelConverterManager().getDefaultResolverOutputForInput(response);
+				IResolverOutput resolverOutput = this.resolverManager.getDefaultResolverOutputForInput(response);
 
 				if (resolverOutput != null) {
 					response = resolverOutput.createResolversAndResolve(context.getInnerBox(), response, options);
@@ -435,7 +475,7 @@ public class ControllerManager implements Initializable {
 	}
 
 	protected void checkAuthorization(RequestContext context, String[] requiredAuthorizations) throws Exception {
-		IRequestContextAuthorizer authorizer = this.cindyApp.getRequestContextAuthorizer();
+		IRequestContextAuthorizer authorizer = this.requestContextAuthorizer;
 
 		if (authorizer != null) {
 			authorizer.checkAuthorization(context, requiredAuthorizations);
@@ -473,4 +513,5 @@ public class ControllerManager implements Initializable {
 	public void setUseReusePool(boolean useReusePool) {
 		this.useReusePool = useReusePool;
 	}
+
 }

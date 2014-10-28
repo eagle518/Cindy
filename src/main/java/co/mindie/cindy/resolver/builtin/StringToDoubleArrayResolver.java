@@ -9,10 +9,12 @@
 
 package co.mindie.cindy.resolver.builtin;
 
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.resolver.IResolver;
 
+@Load
 @Resolver(managedInputClasses = { String.class }, managedOutputClasses = { double[].class })
 public class StringToDoubleArrayResolver implements IResolver<String, double[]> {
 

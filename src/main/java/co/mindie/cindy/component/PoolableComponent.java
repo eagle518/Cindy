@@ -5,20 +5,19 @@ import me.corsin.javatools.misc.PoolableImpl;
 import java.io.Closeable;
 
 public class PoolableComponent<T> extends PoolableImpl implements Closeable {
+
 	////////////////////////
 	// VARIABLES
 	////////////////
 
-	private final ComponentBox componentBox;
-	private final T component;
+	private final CreatedComponent<T> createdComponent;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public PoolableComponent(ComponentBox componentBox, T component) {
-		this.componentBox = componentBox;
-		this.component = component;
+	public PoolableComponent(CreatedComponent<T> createdComponent) {
+		this.createdComponent = createdComponent;
 	}
 
 	////////////////////////
@@ -33,17 +32,14 @@ public class PoolableComponent<T> extends PoolableImpl implements Closeable {
 
 	@Override
 	public void close() {
-		if (this.componentBox != null) {
-			this.componentBox.close();
-		}
+		this.createdComponent.close();
 	}
 
 	////////////////////////
 	// GETTERS/SETTERS
 	////////////////
 
-
 	public T getComponent() {
-		return component;
+		return this.createdComponent.getInstance();
 	}
 }

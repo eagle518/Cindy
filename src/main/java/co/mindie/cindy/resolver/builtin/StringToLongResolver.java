@@ -9,10 +9,12 @@
 
 package co.mindie.cindy.resolver.builtin;
 
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
 import me.corsin.javatools.misc.NullArgumentException;
 
+@Load
 @Resolver(managedInputClasses = {String.class}, managedOutputClasses = {Long.class, long.class})
 public class StringToLongResolver implements IResolver<String, Long> {
 

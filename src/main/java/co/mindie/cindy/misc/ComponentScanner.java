@@ -9,12 +9,6 @@
 
 package co.mindie.cindy.misc;
 
-import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.automapping.*;
-import co.mindie.cindy.automapping.CreationBox;
-import co.mindie.cindy.component.ComponentMetadata;
-import co.mindie.cindy.resolver.IResolver;
-import me.corsin.javatools.misc.Action2;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
@@ -27,11 +21,6 @@ public class ComponentScanner {
 	////////////////
 
 	private Reflections reflections;
-	private boolean shouldScanComponents;
-	private boolean shouldScanControllers;
-	private boolean shouldScanResolvers;
-	private boolean shouldScanWorkers;
-	private boolean shouldScanSingletons;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -40,122 +29,58 @@ public class ComponentScanner {
 	public ComponentScanner(String classPath) {
 		Reflections.log = null;
 		this.reflections = new Reflections(classPath);
-
-		this.shouldScanComponents = true;
-		this.shouldScanControllers = true;
-		this.shouldScanResolvers = true;
-		this.shouldScanWorkers = true;
-		this.shouldScanSingletons = true;
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
 
-	public void addComponents(CindyApp application) {
-		final ComponentMetadata applicationMetadata = application.getComponentMetadataManager().loadComponent(application.getClass());
+//	public void addComponents(ComponentMetadataManager componentMetadataManager) {
+//
+//		if (this.shouldScanSingletons) {
+//			this.findAnnotedTypes(Singleton.class, Object.class, (matchedType, service) -> {
+//				componentMetadataManager.loadComponent(matchedType);
+//			});
+//		}
+//
+//		if (this.shouldScanComponents) {
+//			this.findAnnotedTypes(Component.class, Object.class, (matchedType, service) -> {
+//				componentMetadataManager.loadComponent(matchedType);
+//			});
+//		}
+//
+//		if (this.shouldScanWorkers) {
+//			this.findAnnotedTypes(Worker.class, Object.class, (matchedType, service) -> {
+//				componentMetadataManager.loadComponent(matchedType);
+//			});
+//		}
+//
+//		if (this.shouldScanControllers) {
+//			this.findAnnotedTypes(Controller.class, Object.class, (matchedType, service) -> {
+//				componentMetadataManager.loadComponent(matchedType);
+//			});
+//		}
+//
+//		if (this.shouldScanResolvers) {
+//			this.findAnnotedTypes(Resolver.class, IResolver.class, (matchedType, modelConverter) -> {
+//				componentMetadataManager.loadComponent(matchedType);
+//
+//				// TODO Should be moved in ResolverManager class
+////				for (Class<?> inputClass : modelConverter.managedInputClasses()) {
+////					for (Class<?> outputClass : modelConverter.managedOutputClasses()) {
+////						application.getResolverManager().addConverter(matchedType, inputClass, outputClass, modelConverter.isDefaultForInputTypes());
+////					}
+////				}
+//			});
+//		}
+//	}
 
-		if (this.shouldScanSingletons) {
-			this.scanClass(Singleton.class, Object.class, (matchedType, service) -> {
-				application.getComponentMetadataManager().loadComponent(matchedType);
-			});
-		}
-
-		if (this.shouldScanComponents) {
-			this.scanClass(Component.class, Object.class, (matchedType, service) -> {
-				application.getComponentMetadataManager().loadComponent(matchedType);
-			});
-		}
-
-		if (this.shouldScanWorkers) {
-			this.scanClass(Worker.class, Object.class, (matchedType, service) -> {
-				application.getComponentMetadataManager().loadComponent(matchedType);
-				if (!applicationMetadata.hasDependency(matchedType)) {
-					applicationMetadata.addDependency(matchedType, true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
-				}
-			});
-		}
-
-		if (this.shouldScanControllers) {
-			this.scanClass(Controller.class, Object.class, (matchedType, service) -> {
-				application.addController(matchedType, service.basePath());
-			});
-		}
-
-		if (this.shouldScanResolvers) {
-			this.scanClass(Resolver.class, IResolver.class, (matchedType, modelConverter) -> {
-				application.getComponentMetadataManager().loadComponent(matchedType);
-
-				for (Class<?> inputClass : modelConverter.managedInputClasses()) {
-					for (Class<?> outputClass : modelConverter.managedOutputClasses()) {
-						application.getModelConverterManager().addConverter(matchedType, inputClass, outputClass, modelConverter.isDefaultForInputTypes());
-					}
-				}
-			});
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T, T2 extends Annotation> void scanClass(Class<T2> annotationType, Class<T> outputClass, Action2<Class<T>, T2> classHandler) {
-		Set<Class<?>> matchedTypes = this.reflections.getTypesAnnotatedWith(annotationType);
-
-		for (Class<?> matchedType : matchedTypes) {
-			if (outputClass.isAssignableFrom(matchedType)) {
-//				try {
-				classHandler.run((Class<T>) matchedType, matchedType.getAnnotation(annotationType));
-//				} catch (Throwable t) {
-//					t.printStackTrace();
-//					System.err.println("=== Unable to instantiate " + annotationType.getSimpleName().toLowerCase() + " " + matchedType.getSimpleName() + ": " + t.getMessage());
-//					throw new RuntimeException(t);
-//				}
-			} else {
-				System.err.println("=== Found a class " + matchedType.getSimpleName() + " with a " + annotationType.getSimpleName() +
-						" annotation but it does not implement " + outputClass.getSimpleName());
-			}
-		}
+	public <T extends Annotation> Set<Class<?>> findAnnotedTypes(Class<T> annotationType) {
+		return this.reflections.getTypesAnnotatedWith(annotationType);
 	}
 
 	////////////////////////
 	// GETTERS/SETTERS
 	////////////////
 
-	public boolean isShouldScanComponents() {
-		return shouldScanComponents;
-	}
-
-	public void setShouldScanComponents(boolean shouldScanComponents) {
-		this.shouldScanComponents = shouldScanComponents;
-	}
-
-	public boolean isShouldScanControllers() {
-		return shouldScanControllers;
-	}
-
-	public void setShouldScanControllers(boolean shouldScanControllers) {
-		this.shouldScanControllers = shouldScanControllers;
-	}
-
-	public boolean isShouldScanResolvers() {
-		return shouldScanResolvers;
-	}
-
-	public void setShouldScanResolvers(boolean shouldScanResolvers) {
-		this.shouldScanResolvers = shouldScanResolvers;
-	}
-
-	public boolean isShouldScanWorkers() {
-		return shouldScanWorkers;
-	}
-
-	public void setShouldScanWorkers(boolean shouldScanWorkers) {
-		this.shouldScanWorkers = shouldScanWorkers;
-	}
-
-	public boolean isShouldScanSingletons() {
-		return shouldScanSingletons;
-	}
-
-	public void setShouldScanSingletons(boolean shouldScanSingletons) {
-		this.shouldScanSingletons = shouldScanSingletons;
-	}
 }

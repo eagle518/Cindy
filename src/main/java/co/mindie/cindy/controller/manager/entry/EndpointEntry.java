@@ -9,18 +9,20 @@
 
 package co.mindie.cindy.controller.manager.entry;
 
-import co.mindie.cindy.CindyApp;
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.Param;
 import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.component.ComponentInitializer;
+import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.component.CreatedComponent;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.CindyController;
+import co.mindie.cindy.controller.manager.IParameterNameResolver;
 import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.exception.BadParameterException;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.resolver.IResolverOutput;
+import co.mindie.cindy.resolver.ResolverManager;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.string.Strings;
 import org.apache.commons.fileupload.FileItem;
@@ -54,12 +56,13 @@ public class EndpointEntry {
 	final private String path;
 	final private boolean shouldResolveOutput;
 	final private Deque<RequestHandler> pool;
+	final private Class<?> requestHandlerType;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public EndpointEntry(ControllerEntry controllerEntry, String path, Method method, Endpoint mapped) {
+	public EndpointEntry(ControllerEntry controllerEntry, String path, Method method, Endpoint mapped, Class<?> requestHandlerType) {
 		this.controllerEntry = controllerEntry;
 		this.method = method;
 		this.mapped = mapped;
@@ -68,6 +71,7 @@ public class EndpointEntry {
 		this.shouldResolveOutput = method.getReturnType() != void.class && mapped.resolveOutput();
 		this.parameterResolvers = new ArrayList<>();
 		this.pathIdentifierForIndex = new ArrayList<>();
+		this.requestHandlerType = requestHandlerType;
 	}
 
 	////////////////////////
@@ -82,12 +86,12 @@ public class EndpointEntry {
 		this.pathIdentifierForIndex.set(index, identifier);
 	}
 
-	public void preload(CindyApp app) {
-		this.createRequestHandler(app, true).release(true);
+	public void preload(ComponentMetadataManager metadataManager, ComponentBox box) {
+		this.createRequestHandler(metadataManager, box, true).release(true);
 	}
 
-	public RequestHandler createRequestHandler(CindyApp application, boolean useReusePool) {
-		RequestHandler requestHandler = null;
+	public RequestHandler<?> createRequestHandler(ComponentMetadataManager metadataManager, ComponentBox box, boolean useReusePool) {
+		RequestHandler<?> requestHandler = null;
 
 		if (useReusePool) {
 			synchronized (this.pool) {
@@ -98,22 +102,8 @@ public class EndpointEntry {
 		}
 
 		if (requestHandler == null) {
-			requestHandler = new RequestHandler(this);
-
-			ComponentInitializer initializer = application.getComponentMetadataManager().createInitializer();
-
-			CreatedComponent requestContextCC = initializer.createComponent(null, RequestContext.class);
-			ComponentBox box = requestContextCC.getInnerBox();
-
-			CreatedComponent controllerCC = initializer.createComponent(box, this.controllerEntry.getControllerClass());
-
-			requestContextCC.getInnerBox().setSuperBox(application.getInnerBox());
-
-			initializer.init();
-
-			requestHandler.setComponentBox(box);
-			requestHandler.setController(controllerCC.getInstance());
-			requestHandler.setRequestContext((RequestContext)requestContextCC.getInstance());
+			requestHandler = (RequestHandler<?>)metadataManager.createComponent(this.requestHandlerType, box).getInstance();
+			requestHandler.setEndpointEntry(this);
 		}
 
 		return requestHandler;
@@ -133,12 +123,12 @@ public class EndpointEntry {
 		throw new CindyException(Strings.format("On controller {#0}, method {#1} and parameter {#2}: {#3}", this.controllerEntry.getControllerClass(), this.method, parameter.getName(), error));
 	}
 
-	private IResolverOutput getConverter(Parameter parameter, Type genericParameterType, String name, boolean required) {
+	private IResolverOutput getConverter(ResolverManager resolverManager, Parameter parameter, Type genericParameterType, String name, boolean required) {
 		IResolverOutput converter = null;
 		Class<?> type = parameter.getType();
 
 		if (type == List.class) {
-			IResolverOutput stringToStringArray = this.controllerEntry.getApplication().getModelConverterManager().getResolverOutput(RequestParameter.class, String[].class);
+			IResolverOutput stringToStringArray = resolverManager.getResolverOutput(RequestParameter.class, String[].class);
 
 			if (stringToStringArray == null) {
 				this.throwParameterError(parameter, "For a using List parameter, a RequestParameter to String[] resolver must be available");
@@ -149,12 +139,12 @@ public class EndpointEntry {
 			IResolverOutput batchedConverter = null;
 			try {
 				Class<?> arrayType = Class.forName("[L" + listType.getName() + ";");
-				batchedConverter = this.controllerEntry.getApplication().getModelConverterManager().getResolverOutput(String[].class, arrayType);
+				batchedConverter = resolverManager.getResolverOutput(String[].class, arrayType);
 			} catch (ClassNotFoundException ignored) {
 			}
 
 			if (batchedConverter == null) {
-				final IResolverOutput singleConverter = this.controllerEntry.getApplication().getModelConverterManager().getResolverOutput(String.class, listType);
+				final IResolverOutput singleConverter = resolverManager.getResolverOutput(String.class, listType);
 
 				if (singleConverter == null) {
 					this.throwParameterError(parameter, "No resolver exists for input String to output " + listType);
@@ -205,7 +195,7 @@ public class EndpointEntry {
 			};
 
 		} else {
-			converter = this.controllerEntry.getApplication().getModelConverterManager().getResolverOutput(RequestParameter.class, type);
+			converter = resolverManager.getResolverOutput(RequestParameter.class, type);
 		}
 
 		if (converter == null) {
@@ -215,7 +205,7 @@ public class EndpointEntry {
 		return converter;
 	}
 
-	public void init() {
+	public void init(IParameterNameResolver parameterNameResolver, ResolverManager resolverManager) {
 		Parameter[] parameters = this.method.getParameters();
 		this.parameterResolvers.clear();
 
@@ -227,7 +217,7 @@ public class EndpointEntry {
 			Param paramAnnotation = parameter.getAnnotation(Param.class);
 			boolean required = true;
 			String resolvedName = null;
-			boolean needsNameResolve = this.controllerEntry.getApplication().getParameterNameResolver() != null;
+			boolean needsNameResolve = parameterNameResolver != null;
 			int resolverOptions = 0;
 
 			if (paramAnnotation != null) {
@@ -246,7 +236,7 @@ public class EndpointEntry {
 			boolean shouldFetchFromResource = this.pathIdentifierForIndex.contains(resolvedName);
 
 			if (needsNameResolve && !shouldFetchFromResource) {
-				resolvedName = this.controllerEntry.getApplication().getParameterNameResolver().javaParameterNameToApiName(resolvedName);
+				resolvedName = parameterNameResolver.javaParameterNameToApiName(resolvedName);
 			}
 
 			if (!shouldFetchFromResource) {
@@ -257,7 +247,7 @@ public class EndpointEntry {
 			final int fResolverOptions = resolverOptions;
 			final boolean fRequired = required;
 			final boolean fShouldFetchFromResource = shouldFetchFromResource;
-			final IResolverOutput fConverter = this.getConverter(parameter, genericParameterType, name, required);
+			final IResolverOutput fConverter = this.getConverter(resolverManager, parameter, genericParameterType, name, required);
 			IParameterResolver resolver;
 
 			resolver = (e) -> {

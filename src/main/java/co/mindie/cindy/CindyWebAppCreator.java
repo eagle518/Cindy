@@ -9,25 +9,24 @@
 
 package co.mindie.cindy;
 
-import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.component.ComponentInitializer;
 import org.apache.log4j.Logger;
 
-public class CindyAppCreator {
+public class CindyWebAppCreator {
 
 	////////////////////////
 	// VARIABLES
 	////////////////
 
-	private static final Logger LOGGER = Logger.getLogger(CindyAppCreator.class);
+	private static final Logger LOGGER = Logger.getLogger(CindyWebAppCreator.class);
 	private boolean shouldLoadBuiltinComponents;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public CindyAppCreator() {
+	public CindyWebAppCreator() {
 		this.shouldLoadBuiltinComponents = true;
 	}
 
@@ -35,39 +34,39 @@ public class CindyAppCreator {
 	// METHODS
 	////////////////
 
-	protected void onLoad(CindyApp application) {
+	protected void onLoad(ComponentMetadataManager metadataManager) {
 
 	}
 
-	protected CindyApp onCreate(ComponentMetadataManager metadataManager) {
-		return new CindyApp(metadataManager);
+	protected void onCreate(ComponentInitializer initializer) {
+
 	}
 
-	public CindyApp createApplication() {
+	public CindyWebApp createApplication() {
 		return this.createApplication(false);
 	}
 
-	public CindyApp createApplication(boolean preloadEndpoints) {
+	public CindyWebApp createApplication(boolean preloadEndpoints) {
 		ComponentMetadataManager metadataManager = new ComponentMetadataManager();
 		ComponentInitializer initializer = metadataManager.createInitializer();
 
-		CindyApp application = this.onCreate(metadataManager);
-
-		this.onLoad(application);
+		this.onLoad(metadataManager);
 
 		if (this.shouldLoadBuiltinComponents) {
-			application.scanForComponents("co.mindie.cindy");
+			metadataManager.autoloadComponents("co.mindie.cindy", false);
 		}
 
-		initializer.addCreatedComponent(application, null);
+		this.onCreate(initializer);
+
+		CindyWebApp webApp = initializer.createComponent(null, CindyWebApp.class).getInstance();
 
 		initializer.init();
 
 		if (preloadEndpoints) {
-			application.getControllerManager().preloadEndpoints();
+			webApp.getControllerManager().preloadEndpoints();
 		}
 
-		return application;
+		return webApp;
 	}
 
 	////////////////////////

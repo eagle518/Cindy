@@ -18,28 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.CindyWebApp;
+import co.mindie.cindy.automapping.Load;
+import co.mindie.cindy.automapping.WiredCore;
+import co.mindie.cindy.component.ComponentMetadataManager;
 import org.apache.log4j.Logger;
 
-import co.mindie.cindy.resolver.builtin.ArrayToListResolver;
-import co.mindie.cindy.resolver.builtin.CollectionResolver;
-import co.mindie.cindy.resolver.builtin.RequestParameterToInputStreamResolver;
-import co.mindie.cindy.resolver.builtin.RequestParameterToStringResolver;
-import co.mindie.cindy.resolver.builtin.StringToBooleanArrayResolver;
-import co.mindie.cindy.resolver.builtin.StringToBooleanResolver;
-import co.mindie.cindy.resolver.builtin.StringToDateTimeArrayResolver;
-import co.mindie.cindy.resolver.builtin.StringToDateTimeResolver;
-import co.mindie.cindy.resolver.builtin.StringToDoubleArrayResolver;
-import co.mindie.cindy.resolver.builtin.StringToDoubleResolver;
-import co.mindie.cindy.resolver.builtin.StringToFloatArrayResolver;
-import co.mindie.cindy.resolver.builtin.StringToFloatResolver;
-import co.mindie.cindy.resolver.builtin.StringToIntArrayResolver;
-import co.mindie.cindy.resolver.builtin.StringToIntResolver;
-import co.mindie.cindy.resolver.builtin.StringToLongArrayResolver;
-import co.mindie.cindy.resolver.builtin.StringToLongResolver;
-import co.mindie.cindy.resolver.builtin.StringToStringArrayResolver;
-import co.mindie.cindy.resolver.builtin.StringToStringResolver;
-
+@Load
 public class ResolverManager {
 
 	////////////////////////
@@ -49,58 +34,21 @@ public class ResolverManager {
 	private static final Logger LOGGER = Logger.getLogger(ResolverManager.class);
 
 	private Map<Class<?>, ResolverEntry> resolverEntriesByInputClass;
-	private CindyApp application;
+
+	@WiredCore
+	private ComponentMetadataManager metadataManager;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ResolverManager(CindyApp application) {
-		super();
-
-		this.application = application;
+	public ResolverManager() {
 		this.resolverEntriesByInputClass = new HashMap<>();
-
-		this.addBuiltinConverters();
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
-
-	private void addBuiltinConverters() {
-		this.addBuiltin(CollectionResolver.class);
-		this.addBuiltin(ArrayToListResolver.class);
-		this.addBuiltin(StringToDoubleResolver.class);
-		this.addBuiltin(StringToFloatResolver.class);
-		this.addBuiltin(StringToIntResolver.class);
-		this.addBuiltin(StringToLongResolver.class);
-		this.addBuiltin(StringToBooleanResolver.class);
-		this.addBuiltin(StringToStringArrayResolver.class);
-		this.addBuiltin(StringToDoubleArrayResolver.class);
-		this.addBuiltin(StringToFloatArrayResolver.class);
-		this.addBuiltin(StringToIntArrayResolver.class);
-		this.addBuiltin(StringToLongArrayResolver.class);
-		this.addBuiltin(StringToBooleanArrayResolver.class);
-		this.addBuiltin(StringToStringResolver.class);
-		this.addBuiltin(StringToDateTimeResolver.class);
-		this.addBuiltin(StringToDateTimeArrayResolver.class);
-		this.addBuiltin(RequestParameterToInputStreamResolver.class);
-		this.addBuiltin(RequestParameterToStringResolver.class);
-	}
-
-	private void addBuiltin(Class<?> type) {
-		this.application.getComponentMetadataManager().loadComponent(type);
-		co.mindie.cindy.automapping.Resolver modelConverter = type.getAnnotation(co.mindie.cindy.automapping.Resolver.class);
-
-		if (modelConverter != null) {
-			for (Class<?> inputClass : modelConverter.managedInputClasses()) {
-				for (Class<?> outputClass : modelConverter.managedOutputClasses()) {
-					this.addConverter(type, inputClass, outputClass, modelConverter.isDefaultForInputTypes());
-				}
-			}
-		}
-	}
 
 	public void removeAllConverters() {
 		this.resolverEntriesByInputClass.clear();
@@ -111,7 +59,7 @@ public class ResolverManager {
 		ResolverEntry entry = this.resolverEntriesByInputClass.get(inputClass);
 
 		if (entry == null) {
-			entry = new ResolverEntry(this.application, inputClass);
+			entry = new ResolverEntry(this.metadataManager, inputClass);
 			this.resolverEntriesByInputClass.put(inputClass, entry);
 		}
 

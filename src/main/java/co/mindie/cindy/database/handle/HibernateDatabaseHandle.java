@@ -12,7 +12,7 @@ package co.mindie.cindy.database.handle;
 import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.database.Database;
 import co.mindie.cindy.database.HibernateDatabase;
-import co.mindie.cindy.utils.IFlushable;
+import co.mindie.cindy.utils.Flushable;
 import me.corsin.javatools.exception.StackTraceUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
@@ -22,7 +22,7 @@ import org.hibernate.exception.LockAcquisitionException;
 
 import java.io.Serializable;
 
-public abstract class HibernateDatabaseHandle implements IDatabaseHandle, IFlushable {
+public abstract class HibernateDatabaseHandle implements IDatabaseHandle, Flushable {
 
 	// //////////////////////
 	// VARIABLES

@@ -9,11 +9,13 @@
 
 package co.mindie.cindy.resolver.builtin;
 
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.resolver.IResolver;
 import org.joda.time.DateTime;
 
+@Load
 @Resolver(managedInputClasses = String.class, managedOutputClasses = DateTime[].class)
 public class StringToDateTimeArrayResolver implements IResolver<String, DateTime[]> {
 

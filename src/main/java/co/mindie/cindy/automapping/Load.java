@@ -9,21 +9,23 @@
 
 package co.mindie.cindy.automapping;
 
-import co.mindie.cindy.component.ComponentAspect;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Adding this annotation marks the type as loadable. It will be automatically scanned
+ * loaded when searching in packages.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Component {
+public @interface Load {
 
 	/**
- 	 * @return the ComponentAspect's that this component has. This gives insight on whether this component
-	 * can be added in a particular ComponentBox.
+	 * @return the priority for creating this component. If multiple component candidates are found for a
+	 * given type, this component that has the highest priority will be used.
 	 */
-	ComponentAspect[] aspects() default {};
+	int creationPriority() default 0;
 
 }

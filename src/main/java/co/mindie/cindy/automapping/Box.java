@@ -16,9 +16,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.TYPE })
 public @interface Box {
+
+	/**
+	 * @return
+	 */
+	String value() default "";
 
 	/**
 	 * @return the ComponentAspects that every component added in this box must have.
@@ -34,4 +42,10 @@ public @interface Box {
 	 */
 	ComponentAspect[] rejectAspects() default { ComponentAspect.SINGLETON };
 
+	/**
+	 * @return Whether the Box accepts insert operations after the initializing has been done.
+	 * Allowing write operations will make this box thread safe. Most of the time you typically
+	 * only need a read only box.
+	 */
+	boolean readOnly() default true;
 }

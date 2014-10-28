@@ -9,20 +9,21 @@
 
 package co.mindie.cindy.component;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreatedComponent {
+public class CreatedComponent<T> implements Closeable {
 
 	////////////////////////
 	// VARIABLES
 	////////////////
 
-	private Object instance;
+	private T instance;
 	private ComponentMetadata metadata;
 	private ComponentBox enclosingBox;
 	private ComponentBox innerBox;
-	private Class<?> cls;
+	private Class<T> cls;
 	private List<Object> dependencies;
 	private boolean initialized;
 
@@ -30,7 +31,7 @@ public class CreatedComponent {
 	// CONSTRUCTORS
 	////////////////
 
-	public CreatedComponent(Object instance, ComponentMetadata metadata, ComponentBox enclosingBox, ComponentBox innerBox, Class<?> cls) {
+	public CreatedComponent(T instance, ComponentMetadata metadata, ComponentBox enclosingBox, ComponentBox innerBox, Class<T> cls) {
 		this.instance = instance;
 		this.metadata = metadata;
 		this.enclosingBox = enclosingBox;
@@ -47,11 +48,18 @@ public class CreatedComponent {
 		this.dependencies.add(dependencies);
 	}
 
+	@Override
+	public void close() {
+		if (this.enclosingBox != null) {
+			this.enclosingBox.close();
+		}
+	}
+
 	////////////////////////
 	// GETTERS/SETTERS
 	////////////////
 
-	public Object getInstance() {
+	public T getInstance() {
 		return this.instance;
 	}
 
@@ -63,7 +71,7 @@ public class CreatedComponent {
 		return this.enclosingBox;
 	}
 
-	public Class<?> getCls() {
+	public Class<T> getCls() {
 		return this.cls;
 	}
 
@@ -91,5 +99,4 @@ public class CreatedComponent {
 		return this.innerBox != null ? this.innerBox : this.enclosingBox;
 
 	}
-
 }

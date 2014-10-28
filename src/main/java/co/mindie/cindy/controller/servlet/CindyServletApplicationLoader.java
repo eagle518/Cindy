@@ -13,8 +13,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration.Dynamic;
 
-import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.CindyAppCreator;
+import co.mindie.cindy.CindyWebApp;
+import co.mindie.cindy.CindyWebAppCreator;
 import org.apache.log4j.Logger;
 
 import co.mindie.cindy.component.ComponentMetadataManager;
@@ -25,8 +25,8 @@ public abstract class CindyServletApplicationLoader implements ServletContextLis
 	// VARIABLES
 	////////////////
 
-	private static final Logger LOGGER = Logger.getLogger(CindyApp.class);
-	private CindyApp application;
+	private static final Logger LOGGER = Logger.getLogger(CindyWebApp.class);
+	private CindyWebApp application;
 	private boolean shouldPreloadEndpoints;
 
 	////////////////////////
@@ -41,44 +41,23 @@ public abstract class CindyServletApplicationLoader implements ServletContextLis
 	// METHODS
 	////////////////
 
-	protected CindyApp createApplication(ComponentMetadataManager componentMetadataManager) {
-		return new CindyApp(componentMetadataManager);
-	}
-
-	abstract protected void configureApplication(CindyApp application);
-
-	abstract protected void onApplicationInitialized(CindyApp application);
+	abstract protected CindyWebAppCreator getAppCreator();
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		this.application = new CindyAppCreator() {
+		this.application = this.getAppCreator().createApplication();
 
-			@Override
-			protected void onLoad(CindyApp application) {
-				super.onLoad(application);
-				configureApplication(application);
-			}
-
-			@Override
-			protected CindyApp onCreate(ComponentMetadataManager metadataManager) {
-				return CindyServletApplicationLoader.this.createApplication(metadataManager);
-			}
-
-		}.createApplication(this.shouldPreloadEndpoints);
-
-		Dynamic dynamic = sce.getServletContext().addServlet("WSServlet", new ServletAdapter(this.application.getControllerManager()));
+		Dynamic dynamic = sce.getServletContext().addServlet("CindyServlet", new ServletAdapter(this.application.getControllerManager()));
 		dynamic.addMapping("/*");
-
-		this.onApplicationInitialized(this.application);
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		LOGGER.info("Closing CindyApp...");
+		LOGGER.info("Closing CindyWebApp...");
 		if (this.application != null) {
 			this.application.close();
 		}
-		LOGGER.info("CindyApp closed!");
+		LOGGER.info("CindyWebApp closed!");
 	}
 
 	////////////////////////

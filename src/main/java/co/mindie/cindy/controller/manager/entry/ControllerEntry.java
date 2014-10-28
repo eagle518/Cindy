@@ -12,7 +12,7 @@ package co.mindie.cindy.controller.manager.entry;
 import java.util.ArrayList;
 import java.util.List;
 
-import co.mindie.cindy.CindyApp;
+import co.mindie.cindy.CindyWebApp;
 
 public class ControllerEntry {
 
@@ -22,17 +22,15 @@ public class ControllerEntry {
 
 	private Class<?> controllerClass;
 	private String basePath;
-	private CindyApp application;
 	private List<EndpointEntry> endpoints;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ControllerEntry(Class<?> controllerClass, String basePath, CindyApp application) {
+	public ControllerEntry(Class<?> controllerClass, String basePath) {
 		this.controllerClass = controllerClass;
 		this.basePath = basePath;
-		this.application = application;
 		this.endpoints = new ArrayList<>();
 	}
 
@@ -54,10 +52,6 @@ public class ControllerEntry {
 
 	public String getBasePath() {
 		return this.basePath;
-	}
-
-	public CindyApp getApplication() {
-		return this.application;
 	}
 
 	public List<EndpointEntry> getEndpoints() {

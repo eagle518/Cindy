@@ -16,13 +16,11 @@ import java.util.Map;
 import co.mindie.cindy.automapping.*;
 import co.mindie.cindy.component.ComponentBoxListenerImpl;
 import co.mindie.cindy.controller.manager.HttpResponse;
-import co.mindie.cindy.utils.IFlushable;
-import co.mindie.cindy.controller.CindyController;
+import co.mindie.cindy.utils.Flushable;
 import co.mindie.cindy.controller.manager.HttpRequest;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 
-@Component(creationResolveMode = CreationResolveMode.FALLBACK)
-@Box
+@Load
 public class RequestContext extends ComponentBoxListenerImpl {
 
 	// //////////////////////
@@ -35,9 +33,11 @@ public class RequestContext extends ComponentBoxListenerImpl {
 	private boolean shouldWriteResponse;
 	private Boolean shouldResolveOutput;
 	private Integer outputResolverOptions;
+
+	@Wired
+	private List<Flushable> flushables;
+
 	@Wired(required = false) private IResponseWriter responseWriter;
-	@Wired(required = false, creationBox = CreationBox.NO_CREATION) private CindyController controller;
-	@Wired(fieldClass = IFlushable.class) List<IFlushable> flushables;
 
 	// //////////////////////
 	// CONSTRUCTORS
@@ -59,6 +59,14 @@ public class RequestContext extends ComponentBoxListenerImpl {
 
 	}
 
+	public void flush() {
+		this.flushables.forEach(Flushable::flush);
+	}
+
+	public void cancel() {
+		this.flushables.forEach(Flushable::cancel);
+	}
+
 	/**
 	 * Called after the request has been handled by the CindyController
 	 */
@@ -67,18 +75,6 @@ public class RequestContext extends ComponentBoxListenerImpl {
 			this.flush();
 		} else {
 			this.cancel();
-		}
-	}
-
-	public void cancel() {
-		for (IFlushable flushable : this.flushables) {
-			flushable.cancel();
-		}
-	}
-
-	public void flush() {
-		for (IFlushable flushable : this.flushables) {
-			flushable.flush();
 		}
 	}
 
@@ -121,10 +117,6 @@ public class RequestContext extends ComponentBoxListenerImpl {
 
 	public void setShouldWriteResponse(boolean shouldWriteResponse) {
 		this.shouldWriteResponse = shouldWriteResponse;
-	}
-
-	public CindyController getController() {
-		return this.controller;
 	}
 
 	public boolean isShouldWriteResponse() {

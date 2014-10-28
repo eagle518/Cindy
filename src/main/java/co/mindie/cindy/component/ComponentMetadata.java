@@ -16,8 +16,7 @@ import co.mindie.cindy.exception.CindyException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ComponentMetadata {
 
@@ -25,26 +24,31 @@ public class ComponentMetadata {
 	// VARIABLES
 	////////////////
 
-	private Class<?> componentClass;
-	private List<Wire> wires;
-	private List<ComponentDependency> dependencies;
-	private Component componentAnnotation;
-	private Singleton singletonAnnotation;
-	private Dependencies dependenciesAnnotation;
-	private Box boxAnnotation;
+	final private ComponentMetadataManager manager;
+	final private Class<?> componentClass;
+	final private List<Wire> wires;
+	final private List<Wire> wireCores;
+	final private List<ComponentDependency> dependencies;
+	final private Load loadAnnotation;
+	final private Component componentAnnotation;
+	final private Dependencies dependenciesAnnotation;
+	final private Box boxAnnotation;
+	final private Map<Class<?>, Annotation> annotations;
+
 	private Factory<Object> factory;
-	private CreationResolveMode creationResolveMode;
+	private ComponentAspect[] aspects;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentMetadata(Class<?> objectClass) {
+	public ComponentMetadata(ComponentMetadataManager manager, Class<?> objectClass) {
+		this.manager = manager;
 		this.dependencies = new ArrayList<>();
 		this.wires = new ArrayList<>();
+		this.wireCores = new ArrayList<>();
 		this.componentClass = objectClass;
-
-		this.parseAnnotations();
+		this.annotations = new HashMap<>();
 
 		this.factory = () -> {
 			try {
@@ -54,6 +58,13 @@ public class ComponentMetadata {
 			}
 		};
 
+		this.loadAnnotations();
+
+		this.loadAnnotation = this.getAnnotation(Load.class);
+		this.boxAnnotation = this.getAnnotation(Box.class);
+		this.dependenciesAnnotation = this.getAnnotation(Dependencies.class);
+		this.componentAnnotation = this.getAnnotation(Component.class);
+
 		if (this.dependenciesAnnotation != null) {
 			for (Class<?> dependencyClass : this.dependenciesAnnotation.dependenciesClasses()) {
 				this.addDependency(dependencyClass, true, false,
@@ -61,50 +72,6 @@ public class ComponentMetadata {
 						CreationBox.CURRENT_BOX);
 			}
 		}
-
-		this.load();
-	}
-
-	private void parseAnnotations() {
-		Class<?> objectClass = this.componentClass;
-		boolean foundComponentAnnotation = false;
-
-		while ((!foundComponentAnnotation || this.dependenciesAnnotation == null || this.boxAnnotation == null) &&  objectClass != null) {
-			if (!foundComponentAnnotation) {
-				Component component = objectClass.getAnnotation(Component.class);
-				if (component != null) {
-					this.componentAnnotation = component;
-					foundComponentAnnotation = true;
-				} else {
-					Singleton singleton = objectClass.getAnnotation(Singleton.class);
-					if (singleton != null) {
-						this.singletonAnnotation = singleton;
-						foundComponentAnnotation = true;
-					}
-				}
-			}
-
-			if (this.dependenciesAnnotation == null) {
-				this.dependenciesAnnotation = objectClass.getAnnotation(Dependencies.class);
-			}
-
-			if (this.boxAnnotation == null) {
-				this.boxAnnotation = objectClass.getAnnotation(Box.class);
-			}
-
-			objectClass = objectClass.getSuperclass();
-		}
-	}
-
-	private static <T extends Annotation> T getAnnotation(Class<?> objectClass, Class<T> annotationClass) {
-		T annotation = null;
-
-		while (annotation == null && objectClass != null) {
-			annotation = objectClass.getAnnotation(annotationClass);
-			objectClass = objectClass.getSuperclass();
-		}
-
-		return annotation;
 	}
 
 	////////////////////////
@@ -130,23 +97,30 @@ public class ComponentMetadata {
 		return (cls.getModifiers() & Modifier.ABSTRACT) == 0 && !cls.isInterface();
 	}
 
-	private void load() {
+	private void loadAnnotations() {
 		Class<?> currentClass = this.componentClass;
 
 		while (currentClass != null) {
+			for (Annotation annotation : currentClass.getAnnotations()) {
+				if (!this.annotations.containsKey(annotation.getClass())) {
+					this.annotations.put(annotation.getClass(), annotation);
+				}
+			}
+
 			Field[] fields = currentClass.getDeclaredFields();
 
 			for (Field field : fields) {
 				Wired wired = field.getAnnotation(Wired.class);
+				WiredCore wiredCore = field.getAnnotation(WiredCore.class);
 
 				if (wired != null) {
 					field.setAccessible(true);
 					Box box = field.getAnnotation(Box.class);
 
-					Wire wire = new Wire(field, box, wired);
+					Wire wire = new Wire(field, box, null);
 
 					Class<?> wireClass = wire.getFieldType();
-					ComponentDependency dependency = this.addDependency(wireClass, wire.isRequired(), wire.isList(),
+					ComponentDependency dependency = this.addDependency(wireClass, wired.required(), wire.isList(),
 							wired.searchScope(),
 							wired.creationBox()
 					);
@@ -154,68 +128,69 @@ public class ComponentMetadata {
 
 					this.wires.add(wire);
 				}
+
+				if (wiredCore != null) {
+					field.setAccessible(true);
+
+					Wire wire = new Wire(field, null, wiredCore.value());
+					this.wireCores.add(wire);
+				}
 			}
 
 			currentClass = currentClass.getSuperclass();
 		}
 	}
 
-	public void autowire(Object object, ComponentBox ctx) {
-		if (this.wires != null) {
-			for (Wire wire : this.wires) {
-				if (wire.getScope() != SearchScope.NO_SEARCH) {
-					List<Object> components = null;
-					Object component = null;
-
-					if (ctx != null) {
-						components = ctx.findComponents(wire.getFieldType(), wire.getScope());
-
-						if (wire.isList()) {
-							if (components == null) {
-								component = new ArrayList<>();
-							} else {
-								component = new ArrayList<>(components);
-							}
-						} else {
-							if (components != null) {
-								if (components.size() > 1) {
-									throw new CindyException("The class " + wire.getFieldType().getName() + " has more than one instance in this context");
-								}
-								component = components.get(0);
-							}
-						}
-					}
-
-					wire.set(object, component);
-				}
-			}
-		}
-	}
-
-	public void wire(Object object, Object otherComponent) {
-		if (otherComponent != null) {
-			if (this.wires != null) {
-				for (Wire wire : this.wires) {
-					Class<?> componentClass = otherComponent.getClass();
-					if (wire.canSet(componentClass)) {
-						wire.set(object, otherComponent);
-					}
-				}
-			}
-		}
-	}
-
-	public void unwire(Object component, Object otherComponent) {
-		if (otherComponent != null) {
-			if (this.wires != null) {
-				for (Wire wire : this.wires) {
-					if (wire.get(component) == otherComponent) {
-						wire.set(component, null);
-					}
-				}
-			}
-		}
-	}
+//	public void autowire(Object object, ComponentBox ctx) {
+//		for (Wire wire : this.wires) {
+//			if (wire.getScope() != SearchScope.NO_SEARCH) {
+//				List<Object> components = null;
+//				Object component = null;
+//
+//				if (ctx != null) {
+//					components = ctx.findComponents(wire.getFieldType(), wire.getScope());
+//
+//					if (wire.isList()) {
+//						if (components == null) {
+//							component = new ArrayList<>();
+//						} else {
+//							component = new ArrayList<>(components);
+//						}
+//					} else {
+//						if (components != null) {
+//							if (components.size() > 1) {
+//								throw new CindyException("The class " + wire.getFieldType().getName() + " has more than one instance in this context");
+//							}
+//							component = components.get(0);
+//						}
+//					}
+//				}
+//
+//				wire.set(object, component);
+//			}
+//		}
+//	}
+//
+//	public void wire(Object object, Object otherComponent) {
+//		if (otherComponent != null) {
+//			for (Wire wire : this.wires) {
+//				Class<?> componentClass = otherComponent.getClass();
+//				if (wire.canSet(componentClass)) {
+//					wire.set(object, otherComponent);
+//				}
+//			}
+//		}
+//	}
+//
+//	public void unwire(Object component, Object otherComponent) {
+//		if (otherComponent != null) {
+//			for (Wire wire : this.wires) {
+//					if (wire.get(component) == otherComponent) {
+//						wire.set(component, null);
+//					}
+//			}
+//		}
+//	}
 
 	public boolean hasDependency(Class<?> cls) {
 		for (ComponentDependency dependency : this.dependencies) {
@@ -242,19 +217,19 @@ public class ComponentMetadata {
 		return this.factory.createComponent();
 	}
 
+	/**
+	 * @return The first found annotation of the given annotationClass in the Component Java Object hierarchy, or null if not found.
+	 */
+	public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+		return (T)this.annotations.get(annotationClass);
+	}
+
 	////////////////////////
 	// GETTERS/SETTERS
 	////////////////
 
 	public Class<?> getComponentClass() {
 		return this.componentClass;
-	}
-
-	public Class<?> getDependentClass() {
-		if (this.dependenciesAnnotation != null) {
-			return this.dependenciesAnnotation.dependentClass() != void.class ? this.dependenciesAnnotation.dependentClass() : null;
-		}
-		return null;
 	}
 
 	public List<ComponentDependency> getDependencies() {
@@ -270,43 +245,35 @@ public class ComponentMetadata {
 		this.factory = (Factory<Object>) factory;
 	}
 
-	public CreationResolveMode getCreationResolveMode() {
-		if (this.creationResolveMode != null) {
-			return this.creationResolveMode;
-		}
-
-		if (this.singletonAnnotation != null) {
-			return this.singletonAnnotation.creationResolveMode();
-		}
-
-		if (this.componentAnnotation != null) {
-			return this.componentAnnotation.creationResolveMode();
-		}
-
-		return CreationResolveMode.FALLBACK;
-	}
-
-	public void setCreationResolveMode(CreationResolveMode creationResolveMode) {
-		this.creationResolveMode = creationResolveMode;
-	}
-
-	public boolean isSingleton() {
-		return this.singletonAnnotation != null;
-	}
-
 	public ComponentAspect[] getAspects() {
-		if (this.singletonAnnotation != null) {
-			return new ComponentAspect[] { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE };
-		}
-
 		if (this.componentAnnotation != null) {
 			return this.componentAnnotation.aspects();
 		}
 
-		return new ComponentAspect[0];
+		return this.aspects;
+	}
+
+	public void setAspects(ComponentAspect[] aspects) {
+		this.aspects = aspects;
 	}
 
 	public Box getBox() {
 		return this.boxAnnotation;
+	}
+
+	public Set<Class<?>> getAnnotationClasses() {
+		return this.annotations.keySet();
+	}
+
+	public int getCreationPriority() {
+		return this.loadAnnotation != null ? this.loadAnnotation.creationPriority() : 0;
+	}
+
+	public ComponentMetadataManager getManager() {
+		return manager;
+	}
+
+	public List<Wire> getWireCores() {
+		return wireCores;
 	}
 }

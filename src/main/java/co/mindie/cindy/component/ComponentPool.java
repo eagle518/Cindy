@@ -1,7 +1,5 @@
 package co.mindie.cindy.component;
 
-import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.exception.CindyException;
 import me.corsin.javatools.misc.SynchronizedPool;
 
 public class ComponentPool<T> extends SynchronizedPool<PoolableComponent<T>> {
@@ -10,7 +8,7 @@ public class ComponentPool<T> extends SynchronizedPool<PoolableComponent<T>> {
 	// VARIABLES
 	////////////////
 
-	private final CindyApp application;
+	final private ComponentMetadataManager metadataManager;
 	private final Class<T> componentClass;
 	private final ComponentBox parentComponentBox;
 
@@ -18,10 +16,10 @@ public class ComponentPool<T> extends SynchronizedPool<PoolableComponent<T>> {
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentPool(CindyApp application, Class<T> componentClass, ComponentBox parentComponentBox) {
-		this.application = application;
+	public ComponentPool(ComponentMetadataManager metadataManager, Class<T> componentClass, ComponentBox componentBox) {
+		this.metadataManager = metadataManager;
 		this.componentClass = componentClass;
-		this.parentComponentBox = parentComponentBox;
+		this.parentComponentBox = componentBox;
 	}
 
 	////////////////////////
@@ -32,8 +30,6 @@ public class ComponentPool<T> extends SynchronizedPool<PoolableComponent<T>> {
 	protected PoolableComponent<T> instantiate() {
 		ComponentBox componentBox = this.parentComponentBox;
 
-		// TODO NOT THREAD SAFE
-		T component = this.application.createComponent(componentBox, componentClass);
-		return new PoolableComponent<>(componentBox, component);
+		return new PoolableComponent<>(this.metadataManager.createComponent(componentClass, componentBox));
 	}
 }

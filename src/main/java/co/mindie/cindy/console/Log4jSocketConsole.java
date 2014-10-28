@@ -9,9 +9,8 @@
 
 package co.mindie.cindy.console;
 
-import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.automapping.Component;
-import co.mindie.cindy.automapping.CreationResolveMode;
+import co.mindie.cindy.CindyWebApp;
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.exception.CindyException;
@@ -28,7 +27,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component(creationResolveMode = CreationResolveMode.FALLBACK)
+@Load
 public class Log4jSocketConsole extends AbstractAppender implements IConnectionListener, Initializable {
 
 	////////////////////////
@@ -39,9 +38,9 @@ public class Log4jSocketConsole extends AbstractAppender implements IConnectionL
 	private ServerSocket serverSocket;
 	private final List<Connection> connections;
 	private boolean closed;
-	@Wired
-	private Configuration configuration;
-	@Wired private CindyApp application;
+
+	@Wired private Configuration configuration;
+	@Wired private CindyWebApp application;
 
 	////////////////////////
 	// CONSTRUCTORS

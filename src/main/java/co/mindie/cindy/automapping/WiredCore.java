@@ -9,21 +9,26 @@
 
 package co.mindie.cindy.automapping;
 
-import co.mindie.cindy.component.ComponentAspect;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Wire an object from the core of Cindy.
+ * You can currently wire a ComponentMetadataManager and a ComponentBox.
+ */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Component {
+@Target(ElementType.FIELD)
+public @interface WiredCore {
 
 	/**
- 	 * @return the ComponentAspect's that this component has. This gives insight on whether this component
-	 * can be added in a particular ComponentBox.
+	 * The context on where the core can be found.
+	 * On a ComponentBox, it can be "this" to wire the inner box,
+	 * "super" to wire the enclosing box, or a property name to wire
+	 * the enclosing box of a specific property.
+	 * @return the context on where the core can be found.
 	 */
-	ComponentAspect[] aspects() default {};
+	String value() default "this";
 
 }

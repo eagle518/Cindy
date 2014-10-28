@@ -9,21 +9,16 @@
 
 package co.mindie.cindy.component;
 
-import co.mindie.cindy.CindyApp;
-import co.mindie.cindy.automapping.CreationResolveMode;
-import co.mindie.cindy.automapping.CreationBox;
-import co.mindie.cindy.automapping.SearchScope;
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.exception.CindyException;
+import co.mindie.cindy.misc.ComponentScanner;
 import me.corsin.javatools.dynamictext.DynamicText;
 import me.corsin.javatools.reflect.ClassIndexer;
 import me.corsin.javatools.string.Strings;
 import org.apache.log4j.Logger;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.lang.annotation.Annotation;
+import java.util.*;
 
 public class ComponentMetadataManager {
 
@@ -36,10 +31,9 @@ public class ComponentMetadataManager {
 	private IComponentFactoryListener listener;
 	private Map<Class<?>, ComponentMetadata> metadatas;
 	private ClassIndexer<ComponentMetadata> componentIndexer;
+	private Map<String, ComponentScanner> scanners;
+	private Map<Class<?>, List<ComponentMetadata>> metadatasByAnnotation;
 	private int currentRecursionCallCount;
-	private CindyApp application;
-	private boolean onlyChainLoadIfRequired;
-	private boolean selfInjectionDisabledOnAutoLoad;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -48,12 +42,17 @@ public class ComponentMetadataManager {
 	public ComponentMetadataManager() {
 		this.metadatas = new HashMap<>();
 		this.componentIndexer = new ClassIndexer<>();
-		this.selfInjectionDisabledOnAutoLoad = true;
+		this.scanners = new HashMap<>();
+		this.metadatasByAnnotation = new HashMap<>();
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
+
+	public void clearClassIndexing() {
+		this.scanners.clear();
+	}
 
 	public ComponentMetadata getComponentMetadata(Class<?> objectClass) {
 		return this.metadatas.get(objectClass);
@@ -63,22 +62,74 @@ public class ComponentMetadataManager {
 		return this.componentIndexer.find(objectClass);
 	}
 
-	@Deprecated
-	public ComponentMetadata loadComponent(Class<?> cls, boolean isWeak) {
-		ComponentMetadata metadata = this.loadComponent(cls);
+	/**
+	 *
+	 * @param classPath Which classPath to search
+	 * @param cacheClassIndexing Whether the classPath indexing should be saved in memory for a more efficient query the next
+	 *                           time the same classPath is asked.
+	 * @return
+	 */
+	public List<ComponentMetadata> autoloadComponents(String classPath, boolean cacheClassIndexing) {
+		ComponentScanner scanner =  this.scanners.get(classPath);
 
-		if (!isWeak && metadata.getCreationResolveMode() != CreationResolveMode.DEFAULT) {
-			metadata.setCreationResolveMode(CreationResolveMode.DEFAULT);
+		if (scanner == null) {
+			scanner = new ComponentScanner(classPath);
+			if (cacheClassIndexing) {
+				this.scanners.put(classPath, scanner);
+			}
 		}
 
-		return metadata;
+		final List<ComponentMetadata> metadatas = new ArrayList<>();
+		for (Class<?> type : scanner.findAnnotedTypes(Load.class)) {
+			metadatas.add(this.loadComponent(type));
+		}
+
+		return metadatas;
+ 	}
+
+	/**
+	 * Ensure that each loaded component can effectively be created correctly and is therefore useable.
+	 */
+	public void ensureIntegrity() {
+		for (ComponentMetadata metadata : this.metadatas.values()) {
+
+			for (ComponentDependency dependency : metadata.getDependencies()) {
+				CindyException exception = null;
+				ComponentMetadata compatibleMetadata = null;
+				try {
+					compatibleMetadata = this.getCompatibleMetadata(dependency.getComponentClass());
+				} catch (CindyException e) {
+					exception = e;
+				}
+
+				if (exception != null || (compatibleMetadata == null && dependency.isRequired())) {
+					String message = "" +
+							"On " + metadata.getComponentClass() + " and dependency " + dependency.getComponentClass() + " " +
+							(dependency.getWire() != null ? "(wire on property " + dependency.getWire().getField() + ") " : "") +
+							":\n" + (exception == null ? "No compatible loaded candidate was found" : exception.getMessage())
+							;
+					throw new CindyException(message);
+				}
+			}
+
+		}
+	}
+
+	/**
+	 * @param annotationType The annotation type to search
+	 * @return A list containing all the component metadata that has the annotationType
+	 */
+	public <T extends Annotation> List<ComponentMetadata> getLoadedComponentsWithAnnotation(Class<T> annotationType) {
+		List<ComponentMetadata> metadatas = this.metadatasByAnnotation.get(annotationType);
+
+		if (metadatas == null) {
+			metadatas = new ArrayList<>();
+		}
+
+		return metadatas;
 	}
 
 	public ComponentMetadata loadComponent(Class<?> cls) {
-		return this.loadComponentInternal(cls, false);
-	}
-
-	private ComponentMetadata loadComponentInternal(Class<?> cls, boolean disableSelfInjection) {
 		if (!ComponentMetadata.isLoadable(cls)) {
 			throw new CindyException("The " + cls + " is not loadable (is abstract or an interface)");
 		}
@@ -88,34 +139,26 @@ public class ComponentMetadataManager {
 			ComponentMetadata componentMetadata = this.getComponentMetadata(cls);
 
 			if (componentMetadata == null) {
-				componentMetadata = new ComponentMetadata(cls);
+				componentMetadata = new ComponentMetadata(this, cls);
 				this.metadatas.put(cls, componentMetadata);
 				this.componentIndexer.add(componentMetadata, cls);
 
 				this.log("Loaded component {#0}", cls.getSimpleName());
 				for (ComponentDependency e : componentMetadata.getDependencies()) {
-					if (ComponentMetadata.isLoadable(e.getComponentClass())) {
-						if (e.isRequired() || !this.onlyChainLoadIfRequired) {
-							this.loadComponentInternal(e.getComponentClass(), this.selfInjectionDisabledOnAutoLoad);
-						}
+					if (ComponentMetadata.isLoadable(e.getComponentClass()) && e.getComponentClass().getAnnotation(Load.class) != null) {
+						this.loadComponent(e.getComponentClass());
 					}
 				}
-			}
 
-			Class<?> dependentClass = componentMetadata.getDependentClass();
-			if (componentMetadata.isSingleton()) {
-				if (this.application == null) {
-					throw new CindyException("Unable to find application metadata.");
-				}
-				dependentClass = this.application.getClass();
-			}
-			if (dependentClass != null && !disableSelfInjection) {
-				ComponentMetadata dependentClassMetadata = this.loadComponentInternal(dependentClass,
-						this.selfInjectionDisabledOnAutoLoad);
-				this.log("Added {#0} to dependency of {#1}", cls, dependentClassMetadata.getComponentClass());
+				for (Class<?> annotationClass : componentMetadata.getAnnotationClasses()) {
+					List<ComponentMetadata> associatedMetadatas = this.metadatasByAnnotation.get(annotationClass);
 
-				if (!dependentClassMetadata.hasDependency(cls)) {
-					dependentClassMetadata.addDependency(cls, true, false, SearchScope.UNDEFINED, CreationBox.CURRENT_BOX);
+					if (associatedMetadatas == null) {
+						associatedMetadatas = new ArrayList<>();
+						this.metadatasByAnnotation.put(annotationClass, associatedMetadatas);
+					}
+
+					associatedMetadatas.add(componentMetadata);
 				}
 			}
 
@@ -137,32 +180,6 @@ public class ComponentMetadataManager {
 		LOGGER.trace(Strings.format(sb.toString(), params));
 	}
 
-	private void throwUnableToFindCandidate(List<ComponentMetadata> components, Class<?> objectClass) {
-		List<ComponentMetadata> weakCandidates = components.stream().filter(e -> e.getCreationResolveMode() == CreationResolveMode.FALLBACK)
-				.collect(Collectors.toList());
-		List<ComponentMetadata> strongCandidates = components.stream().filter(e -> e.getCreationResolveMode() == CreationResolveMode.DEFAULT)
-				.collect(Collectors.toList());
-
-		DynamicText dt = new DynamicText(
-				""
-						+ "Too many component candidates found for {objectClass}\n"
-						+ "Default candidates:\n"
-						+ "[strongCandidates-> candidate:"
-						+ "{candidate.componentClass}\n"
-						+ "]\n"
-						+ "Fallback candidates:\n"
-						+ "[weakCandidates-> candidate:"
-						+ "{candidate.componentClass}\n"
-						+ "]"
-		);
-
-		dt.put("objectClass", objectClass);
-		dt.put("weakCandidates", weakCandidates);
-		dt.put("strongCandidates", strongCandidates);
-
-		throw new CindyException(dt.toString());
-	}
-
 	public ComponentMetadata getCompatibleMetadata(Class<?> objectClass) {
 		List<ComponentMetadata> compatibleComponents = this.findCompatibleComponentForClass(objectClass);
 
@@ -170,38 +187,34 @@ public class ComponentMetadataManager {
 			return null;
 		}
 
-		int weakCandidateCount = 0;
-		ComponentMetadata fallbackCandidate = null;
-		ComponentMetadata defaultCandidate = null;
+		ComponentMetadata highest = null;
+		boolean highestIsNotAlone = false;
 
 		for (ComponentMetadata metadata : compatibleComponents) {
-			if (metadata.getCreationResolveMode() == CreationResolveMode.FALLBACK) {
-				fallbackCandidate = metadata;
-				weakCandidateCount++;
-			} else {
-				if (defaultCandidate == null) {
-					defaultCandidate = metadata;
-				} else {
-					this.throwUnableToFindCandidate(compatibleComponents, objectClass);
-				}
+			if (highest == null || highest.getCreationPriority() < metadata.getCreationPriority()) {
+				highest = metadata;
+				highestIsNotAlone = false;
+			} else if (highest.getCreationPriority() == metadata.getCreationPriority()) {
+				highestIsNotAlone = true;
 			}
+//			metadata.getCreationPriority()
 		}
 
-		ComponentMetadata metadata = null;
-		if (defaultCandidate == null) {
-			if (weakCandidateCount != 1) {
-				this.throwUnableToFindCandidate(compatibleComponents, objectClass);
-			}
-			metadata = fallbackCandidate;
-		} else {
-			metadata = defaultCandidate;
+		if (highestIsNotAlone) {
+			DynamicText dt = new DynamicText(
+					""
+							+ "Too many component candidates found with same priority found for {objectClass}\n"
+							+ "Candidates:\n"
+							+ "[candidates-> candidate:"
+							+ "{candidate.componentClass}\n"
+							+ "]"
+			);
+			dt.put("objectClass", objectClass);
+
+			throw new CindyException(dt.toString());
 		}
 
-		return metadata;
-	}
-
-	public void setFactory(Factory<?> factory, Class<?> managedClass) {
-		this.loadComponent(managedClass).setFactory(factory);
+		return highest;
 	}
 
 	public void signalComponentCreated(Object objectInstance) {
@@ -225,8 +238,25 @@ public class ComponentMetadataManager {
 		}
 	}
 
+	/**
+	 * Creates a ComponentInitializer that can create and initialize components
+	 */
 	public ComponentInitializer createInitializer() {
 		return new ComponentInitializer(this);
+	}
+
+	/**
+	 * Create a single component.
+	 * @param componentClass The class of the component to create
+	 * @param enclosingBox The box to which the component must be added, or null if it should be orphan.
+	 */
+	public <T> CreatedComponent<T> createComponent(Class<T> componentClass, ComponentBox enclosingBox) {
+		ComponentInitializer initializer = this.createInitializer();
+		CreatedComponent<T> createdComponent = initializer.createComponent(enclosingBox, componentClass);
+
+		initializer.init();
+
+		return createdComponent;
 	}
 
 	////////////////////////
@@ -245,33 +275,4 @@ public class ComponentMetadataManager {
 		this.listener = listener;
 	}
 
-	public CindyApp getApplication() {
-		return this.application;
-	}
-
-	public void setApplication(CindyApp application) {
-		this.application = application;
-	}
-
-	/**
-	 * Defines whether the ComponentMetadataManager should auto load a dependency only when required or everytime
-	 * a dependency is detected
-	 *
-	 * @return
-	 */
-	public boolean isOnlyChainLoadIfRequired() {
-		return onlyChainLoadIfRequired;
-	}
-
-	public void setOnlyChainLoadIfRequired(boolean onlyChainLoadIfRequired) {
-		this.onlyChainLoadIfRequired = onlyChainLoadIfRequired;
-	}
-
-	public boolean isSelfInjectionDisabledOnAutoLoad() {
-		return selfInjectionDisabledOnAutoLoad;
-	}
-
-	public void setSelfInjectionDisabledOnAutoLoad(boolean selfInjectionDisabledOnAutoLoad) {
-		this.selfInjectionDisabledOnAutoLoad = selfInjectionDisabledOnAutoLoad;
-	}
 }
