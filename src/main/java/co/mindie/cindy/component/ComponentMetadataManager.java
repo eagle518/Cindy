@@ -10,6 +10,7 @@
 package co.mindie.cindy.component;
 
 import co.mindie.cindy.automapping.Load;
+import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.misc.ComponentScanner;
 import me.corsin.javatools.dynamictext.DynamicText;
@@ -177,7 +178,6 @@ public class ComponentMetadataManager {
 			} else if (highest.getCreationPriority() == metadata.getCreationPriority()) {
 				highestIsNotAlone = true;
 			}
-//			metadata.getCreationPriority()
 		}
 
 		if (highestIsNotAlone) {

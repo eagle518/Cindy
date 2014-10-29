@@ -2,9 +2,8 @@ package co.mindie.cindy;
 
 import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.WiredCore;
-import co.mindie.cindy.component.ComponentBox;
+import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.component.ComponentInitializer;
-import co.mindie.cindy.component.ComponentMetadata;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
@@ -34,7 +33,7 @@ public abstract class AbstractCindyTest {
 
 		ComponentInitializer initializer =  this.metadataManager.createInitializer();
 
-		initializer.addCreatedComponent(this, new ComponentBox());
+		initializer.addCreatedComponent(this, ComponentBox.create(true));
 
 		initializer.init();
 	}

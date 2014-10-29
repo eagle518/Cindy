@@ -12,7 +12,7 @@ package co.mindie.cindy.component;
 import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.automapping.SearchScope;
-import co.mindie.cindy.component.debugger.DebuggerJsonGenerator;
+import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.utils.Initializable;
 import me.corsin.javatools.misc.NullArgumentException;
@@ -34,6 +34,7 @@ public class ComponentInitializer implements Initializable {
 
 	private Map<Object, CreatedComponent<?>> components;
 	private List<CreatedComponent> createdComponents;
+	private List<ComponentBox> createdBoxes;
 	private ComponentMetadataManager metadataManager;
 	private int currentRecursionCallCount;
 
@@ -45,6 +46,7 @@ public class ComponentInitializer implements Initializable {
 		this.metadataManager = metadataManager;
 		this.components = new HashMap<>();
 		this.createdComponents = new ArrayList<>();
+		this.createdBoxes = new ArrayList<>();
 	}
 
 	////////////////////////
@@ -106,11 +108,13 @@ public class ComponentInitializer implements Initializable {
 
 		if (boxAnnotation != null) {
 			if (enclosingBox != null) {
-				innerBox = enclosingBox.createChildBox(boxAnnotation.needAspects(), boxAnnotation.rejectAspects(), objectInstance);
+				innerBox = enclosingBox.createChildBox(boxAnnotation.needAspects(), boxAnnotation.rejectAspects(), objectInstance, boxAnnotation.readOnly());
 			} else {
-				innerBox = new ComponentBox(boxAnnotation.needAspects(), boxAnnotation.rejectAspects(), null);
+				innerBox = ComponentBox.create(boxAnnotation.needAspects(), boxAnnotation.rejectAspects(), null, boxAnnotation.readOnly());
 				innerBox.setOwner(objectInstance);
 			}
+
+			this.createdBoxes.add(innerBox);
 		}
 
 		CreatedComponent<T> createdComponent = new CreatedComponent<T>(objectInstance, metadata, enclosingBox, innerBox, cls);
@@ -176,7 +180,8 @@ public class ComponentInitializer implements Initializable {
 			if (dependency.getWire() != null && dependency.getWire().getBox() != null) {
 				Box box = dependency.getWire().getBox();
 
-				currentBox = currentBox.createChildBox(box.needAspects(), box.rejectAspects(), objectInstance);
+				currentBox = currentBox.createChildBox(box.needAspects(), box.rejectAspects(), objectInstance, box.readOnly());
+				this.createdBoxes.add(currentBox);
 			}
 
 			Class<?> dependencyClass = dependency.getComponentClass();
@@ -298,6 +303,10 @@ public class ComponentInitializer implements Initializable {
 
 		for (CreatedComponent createdComponent : this.createdComponents) {
 			this.init(createdComponent);
+		}
+
+		for (ComponentBox componentBox : this.createdBoxes) {
+			componentBox.init();
 		}
 	}
 

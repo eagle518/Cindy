@@ -11,6 +11,7 @@ package co.mindie.cindy;
 
 import co.mindie.cindy.automapping.*;
 import co.mindie.cindy.component.*;
+import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.controller.manager.ControllerManager;
 import co.mindie.cindy.resolver.ResolverManager;
@@ -20,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTimeZone;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.List;
 
 @Load(creationPriority = -1)

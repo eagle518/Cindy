@@ -9,7 +9,7 @@
 
 package co.mindie.cindy.database.handle;
 
-import co.mindie.cindy.component.ComponentBox;
+import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.database.Database;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.utils.Flushable;

@@ -9,6 +9,8 @@
 
 package co.mindie.cindy.component;
 
+import co.mindie.cindy.component.box.ComponentBox;
+
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;

@@ -13,12 +13,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.automapping.WiredCore;
-import co.mindie.cindy.component.ComponentBox;
+import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.resolver.IResolver;
 import co.mindie.cindy.resolver.IResolverOutput;

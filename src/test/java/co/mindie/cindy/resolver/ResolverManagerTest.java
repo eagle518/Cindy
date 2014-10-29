@@ -1,16 +1,12 @@
 package co.mindie.cindy.resolver;
 
 import co.mindie.cindy.AbstractCindyTest;
-import co.mindie.cindy.CindyWebApp;
-import co.mindie.cindy.CindyWebAppCreator;
+import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.automapping.WiredCore;
-import co.mindie.cindy.component.ComponentBox;
+import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.component.ComponentMetadataManager;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.util.List;
 
@@ -18,6 +14,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+@Box(rejectAspects = {}, readOnly = false)
 public class ResolverManagerTest extends AbstractCindyTest {
 
 	@Wired private ResolverManager resolverManager;

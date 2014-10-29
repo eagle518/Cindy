@@ -1,6 +1,6 @@
 package co.mindie.cindy.component.debugger;
 
-import co.mindie.cindy.component.ComponentBox;
+import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.responseserializer.JsonResponseWriter;
 import org.apache.log4j.Logger;

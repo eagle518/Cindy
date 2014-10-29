@@ -3,6 +3,7 @@ package co.mindie.cindy.queue;
 import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.WiredCore;
 import co.mindie.cindy.component.*;
+import co.mindie.cindy.component.box.ComponentBox;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.task.ThreadedConcurrentTaskQueue;
 import me.corsin.javatools.timer.TimeSpan;

@@ -9,7 +9,7 @@
 
 package co.mindie.cindy.resolver;
 
-import co.mindie.cindy.component.ComponentBox;
+import co.mindie.cindy.component.box.ComponentBox;
 
 public interface IResolverOutput {
 

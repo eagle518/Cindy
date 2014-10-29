@@ -9,6 +9,8 @@
 
 package co.mindie.cindy.component;
 
+import co.mindie.cindy.component.box.ComponentBox;
+
 public interface ITempComponentContextHandler<T> {
 
 	void handle(ComponentBox ctx, T object);

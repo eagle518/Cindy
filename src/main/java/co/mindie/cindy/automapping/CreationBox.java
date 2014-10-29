@@ -13,13 +13,13 @@ public enum CreationBox {
 
 	/**
 	 * If not found while following the {@link SearchScope} rule,
-	 * the dependency will be created in the current {@link co.mindie.cindy.component.ComponentBox}
+	 * the dependency will be created in the current {@link co.mindie.cindy.component.box.ComponentBox}
 	 */
 	CURRENT_BOX,
 
 	/**
 	 * If not found while following the {@link SearchScope} rule,
-	 * the dependency will be created in the parent of the current {@link co.mindie.cindy.component.ComponentBox}.
+	 * the dependency will be created in the parent of the current {@link co.mindie.cindy.component.box.ComponentBox}.
 	 */
 	PARENT_BOX,
 

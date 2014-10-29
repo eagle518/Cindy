@@ -7,10 +7,12 @@
 // File created on Jun 10, 2014 at 6:05:55 PM
 ////////
 
-package co.mindie.cindy.component;
+package co.mindie.cindy.component.box;
 
 import co.mindie.cindy.automapping.SearchScope;
+import co.mindie.cindy.component.ComponentAspect;
 import co.mindie.cindy.exception.CindyException;
+import co.mindie.cindy.utils.Initializable;
 import me.corsin.javatools.array.ArrayUtils;
 import me.corsin.javatools.misc.NullArgumentException;
 import me.corsin.javatools.misc.Pair;
@@ -25,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ComponentBox implements Closeable {
+public abstract class ComponentBox implements Closeable, Initializable {
 
 	////////////////////////
 	// VARIABLES
@@ -193,8 +195,20 @@ public class ComponentBox implements Closeable {
 		}
 	}
 
-	public ComponentBox createChildBox() {
-		return this.createChildBox(new ComponentAspect[0], new ComponentAspect[0], null);
+	public ComponentBox createChildBox(boolean readOnly) {
+		return this.createChildBox(new ComponentAspect[0], new ComponentAspect[0], null, readOnly);
+	}
+
+	public static ComponentBox create(boolean readOnly) {
+		return create(new ComponentAspect[0], new ComponentAspect[0], null, readOnly);
+	}
+
+	public static ComponentBox create(ComponentAspect[] neededAspects, ComponentAspect[] rejectedAspects, ComponentBox superBox, boolean readOnly) {
+		if (readOnly) {
+			return new ReadOnlyComponentBox(neededAspects, rejectedAspects, superBox);
+		} else {
+			return new ThreadSafeComponentBox(neededAspects, rejectedAspects, superBox);
+		}
 	}
 
 	/**
@@ -202,8 +216,8 @@ public class ComponentBox implements Closeable {
 	 * @param owner the owner of the new created ComponentBox
 	 * @return the new created ComponentBox.
 	 */
-	public ComponentBox createChildBox(ComponentAspect[] neededAspects, ComponentAspect[] rejectedAspects, Object owner) {
-		ComponentBox box = new ComponentBox(neededAspects, rejectedAspects, this);
+	public ComponentBox createChildBox(ComponentAspect[] neededAspects, ComponentAspect[] rejectedAspects, Object owner, boolean readOnly) {
+		ComponentBox box = create(neededAspects, rejectedAspects, this, readOnly);
 		box.setOwner(owner);
 
 		this.addChildBox(box);

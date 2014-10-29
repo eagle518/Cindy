@@ -1,5 +1,6 @@
 package co.mindie.cindy.component;
 
+import co.mindie.cindy.component.box.ComponentBox;
 import me.corsin.javatools.misc.SynchronizedPool;
 
 public class ComponentPool<T> extends SynchronizedPool<PoolableComponent<T>> {

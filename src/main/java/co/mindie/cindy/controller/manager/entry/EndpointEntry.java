@@ -11,10 +11,8 @@ package co.mindie.cindy.controller.manager.entry;
 
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.Param;
-import co.mindie.cindy.component.ComponentBox;
-import co.mindie.cindy.component.ComponentInitializer;
+import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.component.ComponentMetadataManager;
-import co.mindie.cindy.component.CreatedComponent;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.CindyController;
 import co.mindie.cindy.controller.manager.IParameterNameResolver;

@@ -11,7 +11,7 @@ package co.mindie.cindy.resolver;
 
 import java.util.List;
 
-import co.mindie.cindy.component.ComponentBox;
+import co.mindie.cindy.component.box.ComponentBox;
 
 public class ChainedResolverOutput implements IResolverOutput {
 

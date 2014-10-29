@@ -11,12 +11,12 @@ package co.mindie.cindy.automapping;
 
 public enum SearchScope {
 	/**
-	 * The dependency will be searched in the current {@link co.mindie.cindy.component.ComponentBox} and its parents.
+	 * The dependency will be searched in the current {@link co.mindie.cindy.component.box.ComponentBox} and its parents.
 	 */
 	GLOBAL,
 
 	/**
-	 * The dependency will be searched in the current {@link co.mindie.cindy.component.ComponentBox} only.
+	 * The dependency will be searched in the current {@link co.mindie.cindy.component.box.ComponentBox} only.
 	 */
 	LOCAL,
 
