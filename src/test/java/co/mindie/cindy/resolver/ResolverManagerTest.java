@@ -4,6 +4,7 @@ import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.automapping.WiredCore;
+import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import org.junit.Test;
@@ -27,22 +28,37 @@ public class ResolverManagerTest extends AbstractCindyTest {
 		metadataManager.loadComponents("co.mindie.cindy");
 	}
 
+	private <Input, Output> Output resolve(Input input, Class<Output> outputClass) {
+		return this.resolve(input, outputClass, (Class<Input>)input.getClass());
+	}
+
+	private <Input, Output> Output resolve(Input input, Class<Output> outputClass, Class<Input> inputClass) {
+		IResolverBuilder output =  this.resolverManager.getResolverOutput(inputClass, outputClass);
+
+		ComponentInitializer initializer = this.metadataManager.createInitializer();
+
+		IResolver resolver = output.findOrCreateResolver(initializer, this.componentBox);
+
+		initializer.init();
+
+		return (Output)resolver.resolve(input, outputClass, 0);
+	}
+
 	@Test
 	public void resolve_string_to_int() {
-		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, int.class);
-		int nb = (int) output.createResolversAndResolve(this.componentBox, "42", 0);
+		int nb = this.resolve("42", int.class);
 
 		assertTrue(nb == 42);
 	}
 
 	@Test
 	public void resolve_nullstring_to_int() {
-		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, int.class);
+		IResolverBuilder output = this.resolverManager.getResolverOutput(String.class, int.class);
 
 
 		Exception ex = null;
 		try {
-			output.createResolversAndResolve(this.componentBox, null, 0);
+			this.resolve(null, int.class, String.class);
 		} catch (Exception e) {
 			ex = e;
 		}
@@ -52,18 +68,14 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 	@Test
 	public void resolve_nullstring_to_integer() {
-		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, Integer.class);
-
-		Integer it = (Integer) output.createResolversAndResolve(this.componentBox, null, 0);
+		Integer it = this.resolve(null, Integer.class, String.class);
 
 		assertNull(it);
 	}
 
 	@Test
 	public void resolve_string_to_longarray() {
-		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, long[].class);
-
-		long[] array = (long[]) output.createResolversAndResolve(this.componentBox, "1;2;3;4;5;6;7;8", 0);
+		long[] array = this.resolve("1;2;3;4;5;6;7;8", long[].class);
 
 		assertNotNull(array);
 		assertTrue(array.length == 8);
@@ -71,9 +83,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 	@Test
 	public void resolve_string_to_longarray_with_commas() {
-		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, long[].class);
-
-		long[] array = (long[]) output.createResolversAndResolve(this.componentBox, "1,2,3,4,5,6", 0);
+		long[] array = this.resolve("1,2,3,4,5,6", long[].class);
 
 		assertNotNull(array);
 		assertTrue(array.length == 6);
@@ -81,7 +91,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 	@Test
 	public void resolve_chained_simple() {
-		IResolverOutput output = this.resolverManager.getResolverOutput(String.class, MyObject.class);
+		IResolverBuilder output = this.resolverManager.getResolverOutput(String.class, MyObject.class);
 
 		assertNull(output);
 
@@ -92,7 +102,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 		assertNotNull(output);
 
-		MyObject obj = (MyObject) output.createResolversAndResolve(this.componentBox, "1337", 0);
+		MyObject obj = this.resolve("1337", MyObject.class);
 
 		assertTrue(obj.value == 1337);
 	}
@@ -100,7 +110,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void resolve_chained() {
-		IResolverOutput output = this.resolverManager.getResolverOutput(Boolean.class, List.class);
+		IResolverBuilder output = this.resolverManager.getResolverOutput(Boolean.class, List.class);
 
 		assertNull(output);
 
@@ -111,7 +121,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 		assertNotNull(output);
 
-		List<Object> list = (List<Object>) output.createResolversAndResolve(this.componentBox, true, 0);
+		List<Object> list = this.resolve(true, List.class, Boolean.class);
 
 		assertTrue(list.size() == 1);
 	}

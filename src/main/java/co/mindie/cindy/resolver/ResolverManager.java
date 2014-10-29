@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.automapping.*;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.component.ComponentMetadata;
@@ -72,7 +71,7 @@ public class ResolverManager implements Initializable {
 		ResolverEntry entry = this.resolverEntriesByInputClass.get(inputClass);
 
 		if (entry == null) {
-			entry = new ResolverEntry(this.metadataManager, inputClass);
+			entry = new ResolverEntry(inputClass);
 			this.resolverEntriesByInputClass.put(inputClass, entry);
 		}
 
@@ -83,14 +82,18 @@ public class ResolverManager implements Initializable {
 	// GETTERS/SETTERS
 	////////////////
 
-	public IResolverOutput getDefaultResolverOutputForInput(Object inputObject) {
+	public IResolverBuilder getDefaultResolverOutputForInputClass(Class<?> inputClass) {
+		ResolverEntry entry = this.getResolverEntry(inputClass);
+
+		return entry != null ? entry.getDefaultConverterOutput() : null;
+	}
+
+	public IResolverBuilder getDefaultResolverOutputForInput(Object inputObject) {
 		if (inputObject == null) {
 			return null;
 		}
 
-		ResolverEntry entry = this.getResolverEntry(inputObject.getClass());
-
-		return entry != null ? entry.getDefaultConverterOutput() : null;
+		return this.getDefaultResolverOutputForInputClass(inputObject.getClass());
 	}
 
 	private ResolverEntry getResolverEntry(Class<?> inputClass) {
@@ -106,7 +109,7 @@ public class ResolverManager implements Initializable {
 		return entry;
 	}
 
-	public IResolverOutput getResolverOutput(Class<?> inputClass, Class<?> outputClass) {
+	public IResolverBuilder getResolverOutput(Class<?> inputClass, Class<?> outputClass) {
 		ResolverEntry firstEntry = this.getResolverEntry(inputClass);
 
 		if (firstEntry == null) {
@@ -148,7 +151,7 @@ public class ResolverManager implements Initializable {
 		}
 
 		Class<?> currentOutputClass = outputClass;
-		List<IResolverOutput> outputs = new ArrayList<>();
+		List<IResolverBuilder> outputs = new ArrayList<>();
 		while (outputEntry != null) {
 			outputs.add(0, outputEntry.getConverterOutput(currentOutputClass));
 
@@ -160,12 +163,12 @@ public class ResolverManager implements Initializable {
 			}
 		}
 
-		IResolverOutput output = null;
+		IResolverBuilder output = null;
 
 		if (outputs.size() == 1) {
 			output = outputs.get(0);
 		} else {
-			output = new ChainedResolverOutput(outputs);
+			output = new ChainedResolverBuilder(outputs);
 		}
 
 		return output;

@@ -11,69 +11,47 @@ package co.mindie.cindy.resolver.builtin;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-
-import co.mindie.cindy.automapping.Load;
-import co.mindie.cindy.automapping.Resolver;
-import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.automapping.WiredCore;
-import co.mindie.cindy.component.box.ComponentBox;
-import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.resolver.IResolver;
-import co.mindie.cindy.resolver.IResolverOutput;
-import co.mindie.cindy.resolver.ResolverManager;
 
-@Load(creationPriority = -1)
-@Resolver(managedInputClasses = { ArrayList.class, List.class, Collection.class }, managedOutputClasses = { ArrayList.class, List.class, Collection.class },
-isDefaultForInputTypes = true)
-@SuppressWarnings({ "rawtypes" })
-public class CollectionResolver implements IResolver<Collection, Collection> {
+public class CollectionResolver<Input, Output> implements IResolver<Collection<Input>, Collection<Output>> {
 
-	// //////////////////////
+	////////////////////////
 	// VARIABLES
-	// //////////////
+	////////////////
 
-	@Wired private ResolverManager resolverManager;
-	@WiredCore
-	private ComponentBox componentBox;
+	final private IResolver<Input, Output> singleResolver;
+	final private Class<Output> outputClass;
 
-	// //////////////////////
+	////////////////////////
 	// CONSTRUCTORS
-	// //////////////
+	////////////////
 
-	// //////////////////////
+	public CollectionResolver(Class<Output> outputClass, IResolver<Input, Output> singleResolver) {
+		this.singleResolver = singleResolver;
+		this.outputClass = outputClass;
+	}
+
+	////////////////////////
 	// METHODS
-	// //////////////
+	////////////////
 
 	@Override
-	public Collection resolve(Collection input, Class<?> expectedOutputType, int options) {
-		if (input == null) {
+	public Collection<Output> resolve(Collection<Input> inputs, Class<?> expectedOutputType, int options) {
+		if (inputs == null) {
 			return null;
 		}
 
-		Collection<Object> output = new ArrayList<>(input.size());
+		Collection<Output> outputs = new ArrayList<>();
 
-		IResolverOutput resolverOutput = null;
-
-		for (Object obj : input) {
-			if (obj == null) {
-				output.add(null);
-			} else {
-				if (resolverOutput == null) {
-					resolverOutput = this.resolverManager.getDefaultResolverOutputForInput(obj);
-					if (resolverOutput == null) {
-						throw new CindyException("No Resolver found for input type " + obj.getClass());
-					}
-				}
-
-				output.add(resolverOutput.createResolversAndResolve(this.componentBox, obj, options));
-			}
+		for (Input input : inputs) {
+			this.singleResolver.resolve(input, expectedOutputType, options);
 		}
 
-		return output;
+		return outputs;
 	}
 
-	// //////////////////////
+	////////////////////////
 	// GETTERS/SETTERS
-	// //////////////
+	////////////////
+
 }

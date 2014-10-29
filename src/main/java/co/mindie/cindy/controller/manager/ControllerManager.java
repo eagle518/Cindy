@@ -19,7 +19,8 @@ import co.mindie.cindy.controller.manager.entry.EndpointEntry;
 import co.mindie.cindy.controller.manager.entry.EndpointPathResult;
 import co.mindie.cindy.controller.manager.entry.RequestHandler;
 import co.mindie.cindy.exception.CindyException;
-import co.mindie.cindy.resolver.IResolverOutput;
+import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.IResolverBuilder;
 import co.mindie.cindy.resolver.ResolverManager;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 import co.mindie.cindy.responseserializer.StringResponseWriter;
@@ -413,10 +414,10 @@ public class ControllerManager implements Initializable {
 
 		if (shouldResolveOutput && response != null) {
 			try {
-				IResolverOutput resolverOutput = this.resolverManager.getDefaultResolverOutputForInput(response);
+				IResolver outputResolver = requestHandler.getOutputResolver();
 
-				if (resolverOutput != null) {
-					response = resolverOutput.createResolversAndResolve(requestHandler.getComponentBox(), response, options);
+				if (outputResolver != null) {
+					response = outputResolver.resolve(response, null, endpointEntry.getOutputResolverOptions());
 				} else if (this.failOnResolverNotFound) {
 					throw new CindyException("No resolver output found for " + response.getClass().getName());
 				}

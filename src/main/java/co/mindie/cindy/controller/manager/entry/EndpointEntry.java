@@ -11,6 +11,7 @@ package co.mindie.cindy.controller.manager.entry;
 
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.Param;
+import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.context.RequestContext;
@@ -19,8 +20,12 @@ import co.mindie.cindy.controller.manager.IParameterNameResolver;
 import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.exception.BadParameterException;
 import co.mindie.cindy.exception.CindyException;
-import co.mindie.cindy.resolver.IResolverOutput;
+import co.mindie.cindy.resolver.ChainedResolverBuilder;
+import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.IResolverBuilder;
 import co.mindie.cindy.resolver.ResolverManager;
+import co.mindie.cindy.resolver.builtin.ArrayToArrayResolver;
+import co.mindie.cindy.resolver.builtin.ArrayToListResolver;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.string.Strings;
 import org.apache.commons.fileupload.FileItem;
@@ -49,12 +54,14 @@ public class EndpointEntry {
 	final private ControllerEntry controllerEntry;
 	final private Method method;
 	final private Endpoint mapped;
-	final private List<IParameterResolver> parameterResolvers;
+	final private List<RequestParameterCreator> parameterResolvers;
+	final private List<IResolverBuilder> parameterResolverBuilders;
 	final private List<String> pathIdentifierForIndex;
 	final private String path;
 	final private boolean shouldResolveOutput;
 	final private Deque<RequestHandler> pool;
 	final private Class<?> requestHandlerType;
+	private IResolverBuilder outputResolverBuilder;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -67,6 +74,7 @@ public class EndpointEntry {
 		this.path = path;
 		this.pool = new ArrayDeque<>();
 		this.shouldResolveOutput = method.getReturnType() != void.class && mapped.resolveOutput();
+		this.parameterResolverBuilders = new ArrayList<>();
 		this.parameterResolvers = new ArrayList<>();
 		this.pathIdentifierForIndex = new ArrayList<>();
 		this.requestHandlerType = requestHandlerType;
@@ -88,6 +96,10 @@ public class EndpointEntry {
 		this.createRequestHandler(metadataManager, box, true).release(true);
 	}
 
+	private IResolver createResolver(IResolverBuilder resolverBuilder, ComponentInitializer initializer, ComponentBox box) {
+		return resolverBuilder.findOrCreateResolver(initializer, box);
+	}
+
 	public RequestHandler<?> createRequestHandler(ComponentMetadataManager metadataManager, ComponentBox box, boolean useReusePool) {
 		RequestHandler<?> requestHandler = null;
 
@@ -100,8 +112,24 @@ public class EndpointEntry {
 		}
 
 		if (requestHandler == null) {
-			requestHandler = (RequestHandler<?>)metadataManager.createComponent(this.requestHandlerType, box).getInstance();
+			ComponentInitializer initializer = metadataManager.createInitializer();
+
+			requestHandler = (RequestHandler<?>)initializer.createComponent(this.requestHandlerType, box).getInstance();
 			requestHandler.setEndpointEntry(this);
+
+			List<IResolver> parameterResolvers = new ArrayList<>();
+			ComponentBox resolverBox = box.createChildBox(true);
+
+			for (IResolverBuilder resolverBuilder : this.parameterResolverBuilders) {
+				parameterResolvers.add(this.createResolver(resolverBuilder, initializer, resolverBox));
+			}
+			requestHandler.setParametersResolver(parameterResolvers);
+
+			if (this.outputResolverBuilder != null) {
+				requestHandler.setOutputResolver(this.createResolver(this.outputResolverBuilder, initializer, resolverBox));
+			}
+
+			initializer.init();
 		}
 
 		return requestHandler;
@@ -121,77 +149,50 @@ public class EndpointEntry {
 		throw new CindyException(Strings.format("On controller {#0}, method {#1} and parameter {#2}: {#3}", this.controllerEntry.getControllerClass(), this.method, parameter.getName(), error));
 	}
 
-	private IResolverOutput getConverter(ResolverManager resolverManager, Parameter parameter, Type genericParameterType, String name, boolean required) {
-		IResolverOutput converter = null;
+	private IResolverBuilder getResolverBuilder(ResolverManager resolverManager, Parameter parameter, Type genericParameterType, String name, boolean required) {
+		IResolverBuilder converter = null;
 		Class<?> type = parameter.getType();
 
 		if (type == List.class) {
-			IResolverOutput stringToStringArray = resolverManager.getResolverOutput(RequestParameter.class, String[].class);
+			// RequestParameter -> String[]
+			IResolverBuilder requestParameterToStringArray = resolverManager.getResolverOutput(RequestParameter.class, String[].class);
 
-			if (stringToStringArray == null) {
+			if (requestParameterToStringArray == null) {
 				this.throwParameterError(parameter, "For a using List parameter, a RequestParameter to String[] resolver must be available");
 			}
 
 			ParameterizedType aType = (ParameterizedType) genericParameterType;
 			Class<?> listType = (Class<?>) aType.getActualTypeArguments()[0];
-			IResolverOutput batchedConverter = null;
+
+			// String[] -> Object[]
+			IResolverBuilder stringArrayToObjectArrayResolver = null;
+
 			try {
 				Class<?> arrayType = Class.forName("[L" + listType.getName() + ";");
-				batchedConverter = resolverManager.getResolverOutput(String[].class, arrayType);
+				stringArrayToObjectArrayResolver = resolverManager.getResolverOutput(String[].class, arrayType);
 			} catch (ClassNotFoundException ignored) {
 			}
 
-			if (batchedConverter == null) {
-				final IResolverOutput singleConverter = resolverManager.getResolverOutput(String.class, listType);
+			if (stringArrayToObjectArrayResolver == null) {
+				// Generating one String[] -> Object[]
+				final IResolverBuilder singleConverter = resolverManager.getResolverOutput(String.class, listType);
 
 				if (singleConverter == null) {
 					this.throwParameterError(parameter, "No resolver exists for input String to output " + listType);
 				}
 
-				batchedConverter = (cc, inputObject, options) -> {
-					if (inputObject == null) {
-						return null;
-					}
+				stringArrayToObjectArrayResolver = (initializer, box) -> {
+					final IResolver resolver = singleConverter.findOrCreateResolver(initializer, box);
 
-					String[] inputArray = (String[]) inputObject;
-					Object[] outputArray = new Object[inputArray.length];
-
-					for (int j = 0; j < inputArray.length; j++) {
-						Object obj = singleConverter.createResolversAndResolve(cc, inputArray[j], options);
-
-						if (obj == null) {
-							BadParameterException ex = new BadParameterException(name);
-							LOGGER.debug(Strings.format("BadParameter on {#0} {#1}\n{#2}",
-									this.mapped.httpMethod().toString(),
-									this.path,
-									StackTraceUtils.stackTraceToString(ex)
-							));
-							throw ex;
-						}
-
-						outputArray[j] = obj;
-					}
-
-					return outputArray;
+					return new ArrayToArrayResolver<>(listType, resolver);
 				};
 			}
 
-			final IResolverOutput fBatchedConverter = batchedConverter;
-			converter = (cc, inputObject, options) -> {
-				if (inputObject == null) {
-					return null;
-				}
+			// Object[] -> List
+			IResolverBuilder arrayToListResolverBuilder = (initializer, box) -> new ArrayToListResolver();
 
-				Object[] array = (Object[]) fBatchedConverter.createResolversAndResolve(cc,
-						stringToStringArray.createResolversAndResolve(cc, inputObject, 0), options);
-
-				if (array == null) {
-					return null;
-				}
-
-				return Arrays.asList(array);
-			};
-
+			// RequestParameter -> String[] -> Object[] -> List
+			converter = new ChainedResolverBuilder(Arrays.asList(requestParameterToStringArray, stringArrayToObjectArrayResolver, arrayToListResolverBuilder));
 		} else {
 			converter = resolverManager.getResolverOutput(RequestParameter.class, type);
 		}
@@ -206,6 +207,11 @@ public class EndpointEntry {
 	public void init(IParameterNameResolver parameterNameResolver, ResolverManager resolverManager) {
 		Parameter[] parameters = this.method.getParameters();
 		this.parameterResolvers.clear();
+		this.parameterResolverBuilders.clear();
+
+		if (this.shouldResolveOutput) {
+			this.outputResolverBuilder = resolverManager.getDefaultResolverOutputForInputClass(this.method.getReturnType());
+		}
 
 		Type[] genericParameterTypes = this.method.getGenericParameterTypes();
 		int i = 0;
@@ -245,10 +251,13 @@ public class EndpointEntry {
 			final int fResolverOptions = resolverOptions;
 			final boolean fRequired = required;
 			final boolean fShouldFetchFromResource = shouldFetchFromResource;
-			final IResolverOutput fConverter = this.getConverter(resolverManager, parameter, genericParameterType, name, required);
-			IParameterResolver resolver;
+			final IResolverBuilder fConverter = this.getResolverBuilder(resolverManager, parameter, genericParameterType, name, required);
 
-			resolver = (e) -> {
+			this.parameterResolverBuilders.add(fConverter);
+
+			RequestParameterCreator requestParameterCreator;
+
+			requestParameterCreator = (e) -> {
 				RequestContext requestContext = e.getRequestContext();
 				String stringValue = null;
 				InputStream inputStreamValue = null;
@@ -275,26 +284,15 @@ public class EndpointEntry {
 					}
 				}
 
-				RequestParameter requestParameter = new RequestParameter(name);
+				RequestParameter requestParameter = new RequestParameter(name, fResolverOptions, fRequired);
 				requestParameter.setStringValue(stringValue);
 				requestParameter.setInputStream(inputStreamValue);
 
-				Object output;
-				try {
-					output = fConverter.createResolversAndResolve(e.getComponentBox(), requestParameter, fResolverOptions);
-				} catch (Exception ex) {
-					throw new CindyException("Error while resolving the parameter: " + name, ex);
-				}
-
-				if (fRequired && output == null) {
-					throw new BadParameterException(name, this.mapped.httpMethod(), this.getPath());
-				}
-
-				return output;
+				return requestParameter;
 			};
 
 
-			this.parameterResolvers.add(resolver);
+			this.parameterResolvers.add(requestParameterCreator);
 			i++;
 		}
 	}
@@ -303,7 +301,21 @@ public class EndpointEntry {
 		Object[] parameters = new Object[this.parameterResolvers.size()];
 
 		for (int i = 0, length = this.parameterResolvers.size(); i < length; i++) {
-			parameters[i] = this.parameterResolvers.get(i).resolveParameter(requestHandler);
+			RequestParameter requestParameter = this.parameterResolvers.get(i).createParameter(requestHandler);
+
+			Object output = null;
+			try {
+				IResolver<RequestParameter, ?> resolver =  requestHandler.getParametersResolver().get(i);
+				output = resolver.resolve(requestParameter, null, requestParameter.getResolverOptions());
+			} catch (Exception ex) {
+				throw new CindyException("Error while resolving the parameter: " + requestParameter.getName(), ex);
+			}
+
+			if (requestParameter.isRequired() && output == null) {
+				throw new BadParameterException(requestParameter.getName(), this.mapped.httpMethod(), this.getPath());
+			}
+
+			parameters[i] = output;
 		}
 
 		return parameters;

@@ -9,16 +9,16 @@
 
 package co.mindie.cindy.resolver;
 
+import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.component.ComponentMetadataManager;
 
-public class ResolverOutput implements IResolverOutput {
+public class ResolverBuilder implements IResolverBuilder {
 
 	////////////////////////
 	// VARIABLES
 	////////////////
 
-	final private ComponentMetadataManager metadataManager;
 	final private Class<?> converterClass;
 	final private Class<?> inputClass;
 	final private Class<?> outputClass;
@@ -27,8 +27,7 @@ public class ResolverOutput implements IResolverOutput {
 	// CONSTRUCTORS
 	////////////////
 
-	public ResolverOutput(ComponentMetadataManager metadataManager, Class<?> converterClass, Class<?> inputClass, Class<?> outputClass) {
-		this.metadataManager = metadataManager;
+	public ResolverBuilder(Class<?> converterClass, Class<?> inputClass, Class<?> outputClass) {
 		this.converterClass = converterClass;
 		this.inputClass = inputClass;
 		this.outputClass = outputClass;
@@ -39,20 +38,19 @@ public class ResolverOutput implements IResolverOutput {
 	////////////////
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public Object createResolversAndResolve(ComponentBox cc, Object inputObject, int options) {
-		IResolver resolver =  (IResolver)cc.findComponent(this.converterClass);
-
-		if (resolver == null) {
-			resolver = (IResolver)this.metadataManager.createComponent(this.converterClass, cc).getInstance();
-		}
-
-		return resolver.resolve(inputObject, this.outputClass, options);
+	public String toString() {
+		return this.inputClass + " -> " + this.outputClass;
 	}
 
 	@Override
-	public String toString() {
-		return this.inputClass + " -> " + this.outputClass;
+	public IResolver findOrCreateResolver(ComponentInitializer initializer, ComponentBox enclosingBox) {
+		IResolver resolver = (IResolver)enclosingBox.findComponent(this.converterClass);
+
+		if (resolver == null) {
+			resolver = (IResolver)initializer.createComponent(this.converterClass, enclosingBox).getInstance();
+		}
+
+		return resolver;
 	}
 
 	////////////////////////
@@ -70,4 +68,5 @@ public class ResolverOutput implements IResolverOutput {
 	public Class<?> getInputClass() {
 		return this.inputClass;
 	}
+
 }

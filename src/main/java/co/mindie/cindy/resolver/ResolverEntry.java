@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.exception.CindyException;
 import me.corsin.javatools.string.Strings;
@@ -25,18 +24,16 @@ public class ResolverEntry {
 	// VARIABLES
 	////////////////
 
-	final private ComponentMetadataManager metadataManager;
 	final private Class<?> inputClass;
-	final private List<ResolverOutput> outputs;
-	final private Map<Class<?>, ResolverOutput> outputsByOutputClass;
-	private ResolverOutput defaultConverterOutput;
+	final private List<ResolverBuilder> outputs;
+	final private Map<Class<?>, ResolverBuilder> outputsByOutputClass;
+	private ResolverBuilder defaultConverterOutput;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ResolverEntry(ComponentMetadataManager metadataManager, Class<?> inputClass) {
-		this.metadataManager = metadataManager;
+	public ResolverEntry(Class<?> inputClass) {
 		this.inputClass = inputClass;
 		this.outputs = new ArrayList<>();
 		this.outputsByOutputClass = new HashMap<>();
@@ -47,7 +44,7 @@ public class ResolverEntry {
 	////////////////
 
 	public void addConverter(Class<?> converterClass, Class<?> outputClass, boolean isDefault) {
-		ResolverOutput output = this.outputsByOutputClass.get(outputClass);
+		ResolverBuilder output = this.outputsByOutputClass.get(outputClass);
 
 		if (output != null) {
 			if (output.getConverterClass() != converterClass) {
@@ -60,7 +57,7 @@ public class ResolverEntry {
 							+ " has been already added set as default", converterClass, this.inputClass, this.defaultConverterOutput.getConverterClass()));
 			}
 
-			output = new ResolverOutput(this.metadataManager, converterClass, this.inputClass, outputClass);
+			output = new ResolverBuilder(converterClass, this.inputClass, outputClass);
 			if (isDefault) {
 				this.defaultConverterOutput = output;
 			}
@@ -73,15 +70,15 @@ public class ResolverEntry {
 	// GETTERS/SETTERS
 	////////////////
 
-	public ResolverOutput getConverterOutput(Class<?> outputClass) {
+	public ResolverBuilder getConverterOutput(Class<?> outputClass) {
 		return this.outputsByOutputClass.get(outputClass);
 	}
 
-	public ResolverOutput getDefaultConverterOutput() {
+	public ResolverBuilder getDefaultConverterOutput() {
 		return this.defaultConverterOutput;
 	}
 
-	public void setDefaultConverter(ResolverOutput defaultConverter) {
+	public void setDefaultConverter(ResolverBuilder defaultConverter) {
 		this.defaultConverterOutput = defaultConverter;
 	}
 
@@ -98,7 +95,7 @@ public class ResolverEntry {
 		return outputClasses;
 	}
 
-	public List<ResolverOutput> getOutputs() {
+	public List<ResolverBuilder> getOutputs() {
 		return this.outputs;
 	}
 }

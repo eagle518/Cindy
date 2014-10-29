@@ -18,6 +18,8 @@ public class RequestParameter {
 	////////////////
 
 	final private String name;
+	final private int resolverOptions;
+	final private boolean required;
 	private String stringValue;
 	private InputStream inputStream;
 
@@ -25,8 +27,10 @@ public class RequestParameter {
 	// CONSTRUCTORS
 	////////////////
 
-	public RequestParameter(String name) {
+	public RequestParameter(String name, int resolverOptions, boolean required) {
 		this.name = name;
+		this.resolverOptions = resolverOptions;
+		this.required = required;
 	}
 
 	////////////////////////
@@ -55,5 +59,13 @@ public class RequestParameter {
 
 	public void setInputStream(InputStream inputStream) {
 		this.inputStream = inputStream;
+	}
+
+	public int getResolverOptions() {
+		return resolverOptions;
+	}
+
+	public boolean isRequired() {
+		return required;
 	}
 }
