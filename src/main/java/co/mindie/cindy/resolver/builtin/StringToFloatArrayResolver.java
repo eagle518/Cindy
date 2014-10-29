@@ -14,7 +14,7 @@ import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.resolver.IResolver;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = { String.class }, managedOutputClasses = { float[].class })
 public class StringToFloatArrayResolver implements IResolver<String, float[]> {
 

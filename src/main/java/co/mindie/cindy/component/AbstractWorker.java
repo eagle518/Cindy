@@ -9,7 +9,7 @@ import org.joda.time.DateTimeUtils;
 
 import java.io.Closeable;
 
-public abstract class AbstractWorker extends ComponentBoxListenerImpl implements Worker, Closeable, Initializable {
+public abstract class AbstractWorker implements Worker, Closeable, Initializable {
 
     ///////////////////
     // VARIABLES

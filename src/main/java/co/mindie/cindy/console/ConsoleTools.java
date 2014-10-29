@@ -10,12 +10,9 @@
 package co.mindie.cindy.console;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import co.mindie.cindy.component.ComponentBoxListener;
-import co.mindie.cindy.exception.CindyException;
 import me.corsin.javatools.string.Strings;
 
 public class ConsoleTools {
@@ -132,53 +129,53 @@ public class ConsoleTools {
 
 	}
 
-	public static class Component extends ConsoleTools {
-
-		public Component(InterpreterProtocol protocol) {
-			super(protocol);
-		}
-
-		public Object find(Object obj, String componentKind) {
-			if (obj instanceof ComponentBoxListener) {
-				ComponentBoxListener component = (ComponentBoxListener) obj;
-				List<Object> objs = new ArrayList<>();
-				if (component.getInnerBox() != null) {
-					for (Object childComponent : component.getInnerBox().getComponents()) {
-						if (childComponent.getClass().getSimpleName().contains(componentKind)) {
-							objs.add(childComponent);
-						}
-					}
-				}
-
-				if (objs.size() == 0) {
-					return null;
-				}
-				if (objs.size() == 1) {
-					return objs.get(0);
-				}
-				return objs;
-			} else {
-				throw new CindyException("This object " + obj + " needs to be a CindyComponent in order to use findComponent on it.");
-			}
-		}
-
-		public Object find(Object obj, java.lang.Class<?> componentClass) {
-			if (obj instanceof ComponentBoxListener) {
-				ComponentBoxListener component = (ComponentBoxListener) obj;
-				return component.getInnerBox().findComponent(componentClass);
-			} else {
-				throw new CindyException("This object " + obj + " needs to be a CindyComponent in order to use findComponent on it.");
-			}
-		}
-
-		public Object show(Object obj) {
-			if (obj instanceof ComponentBoxListener) {
-				ComponentBoxListener component = (ComponentBoxListener) obj;
-				return component.getInnerBox().getComponents();
-			} else {
-				throw new CindyException("This object " + obj + " needs to be a CindyComponent in order to use findComponent on it.");
-			}
-		}
-
-	}
+//	public static class Component extends ConsoleTools {
+//
+//		public Component(InterpreterProtocol protocol) {
+//			super(protocol);
+//		}
+//
+//		public Object find(Object obj, String componentKind) {
+//			if (obj instanceof ComponentBoxListener) {
+//				ComponentBoxListener component = (ComponentBoxListener) obj;
+//				List<Object> objs = new ArrayList<>();
+//				if (component.getInnerBox() != null) {
+//					for (Object childComponent : component.getInnerBox().getComponents()) {
+//						if (childComponent.getClass().getSimpleName().contains(componentKind)) {
+//							objs.add(childComponent);
+//						}
+//					}
+//				}
+//
+//				if (objs.size() == 0) {
+//					return null;
+//				}
+//				if (objs.size() == 1) {
+//					return objs.get(0);
+//				}
+//				return objs;
+//			} else {
+//				throw new CindyException("This object " + obj + " needs to be a CindyComponent in order to use findComponent on it.");
+//			}
+//		}
+//
+//		public Object find(Object obj, java.lang.Class<?> componentClass) {
+//			if (obj instanceof ComponentBoxListener) {
+//				ComponentBoxListener component = (ComponentBoxListener) obj;
+//				return component.getInnerBox().findComponent(componentClass);
+//			} else {
+//				throw new CindyException("This object " + obj + " needs to be a CindyComponent in order to use findComponent on it.");
+//			}
+//		}
+//
+//		public Object show(Object obj) {
+//			if (obj instanceof ComponentBoxListener) {
+//				ComponentBoxListener component = (ComponentBoxListener) obj;
+//				return component.getInnerBox().getComponents();
+//			} else {
+//				throw new CindyException("This object " + obj + " needs to be a CindyComponent in order to use findComponent on it.");
+//			}
+//		}
+//
+//	}
 }

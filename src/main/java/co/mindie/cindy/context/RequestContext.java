@@ -14,14 +14,13 @@ import java.util.List;
 import java.util.Map;
 
 import co.mindie.cindy.automapping.*;
-import co.mindie.cindy.component.ComponentBoxListenerImpl;
 import co.mindie.cindy.controller.manager.HttpResponse;
 import co.mindie.cindy.utils.Flushable;
 import co.mindie.cindy.controller.manager.HttpRequest;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 
-@Load
-public class RequestContext extends ComponentBoxListenerImpl {
+@Load(creationPriority = -1)
+public class RequestContext {
 
 	// //////////////////////
 	// VARIABLES

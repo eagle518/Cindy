@@ -16,7 +16,7 @@ import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = Object[].class, managedOutputClasses = List.class)
 public class ArrayToListResolver implements IResolver<Object[], List<Object>> {
 

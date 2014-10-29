@@ -2,10 +2,7 @@ package co.mindie.cindy.queue;
 
 import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.WiredCore;
-import co.mindie.cindy.component.AbstractWorker;
-import co.mindie.cindy.component.ComponentMetadataManager;
-import co.mindie.cindy.component.ComponentPool;
-import co.mindie.cindy.component.PoolableComponent;
+import co.mindie.cindy.component.*;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.task.ThreadedConcurrentTaskQueue;
 import me.corsin.javatools.timer.TimeSpan;
@@ -35,6 +32,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	private final String workerName;
 
 	@WiredCore private ComponentMetadataManager metadataManager;
+	@WiredCore private ComponentBox box;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -55,7 +53,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 
 	@Override
 	public void init() {
-		this.componentPool = new ComponentPool<>(this.metadataManager, this.workContextTypeClass, this.getInnerBox());
+		this.componentPool = new ComponentPool<>(this.metadataManager, this.workContextTypeClass, this.box);
 		this.workTaskQueue = new ThreadedConcurrentTaskQueue(this.maxNumberOfThreads);
 		this.maxPendingTasks = this.maxNumberOfThreads * DEFAULT_PENDING_TASKS_TO_THREAD_RATIO;
 

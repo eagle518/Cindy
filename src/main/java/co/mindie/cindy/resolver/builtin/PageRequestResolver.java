@@ -6,7 +6,7 @@ import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.dao.domain.PageRequest;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = RequestParameter.class, managedOutputClasses = PageRequest.class)
 public class PageRequestResolver extends AbstractListRequestResolver<PageRequest> {
 

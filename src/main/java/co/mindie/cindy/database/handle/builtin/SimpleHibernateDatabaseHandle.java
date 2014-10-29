@@ -14,7 +14,7 @@ import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 
-@Load
+@Load(creationPriority = -1)
 public class SimpleHibernateDatabaseHandle extends HibernateDatabaseHandle {
 
 	////////////////////////

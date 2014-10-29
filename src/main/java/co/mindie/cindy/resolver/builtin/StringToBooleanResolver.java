@@ -14,7 +14,7 @@ import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
 import me.corsin.javatools.misc.NullArgumentException;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = {String.class}, managedOutputClasses = {Boolean.class, boolean.class})
 public class StringToBooleanResolver implements IResolver<String, Boolean> {
 

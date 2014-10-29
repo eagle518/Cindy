@@ -44,7 +44,7 @@ public class ResolverOutput implements IResolverOutput {
 		IResolver resolver =  (IResolver)cc.findComponent(this.converterClass);
 
 		if (resolver == null) {
-			resolver = (IResolver)this.metadataManager.createComponent(this.converterClass, cc);
+			resolver = (IResolver)this.metadataManager.createComponent(this.converterClass, cc).getInstance();
 		}
 
 		return resolver.resolve(inputObject, this.outputClass, options);

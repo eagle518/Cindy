@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Load(creationPriority = -1)
 @Box(readOnly = false)
 public class ControllerManager implements Initializable {
 
@@ -112,15 +113,23 @@ public class ControllerManager implements Initializable {
 
 	private Class<?> makeEndpointType(Class<?> controllerClass, Method method) {
 		try {
-			ClassPool pool = ClassPool.getDefault();
-			CtClass requestHandlerClass = pool.get(RequestHandler.class.getName());
-			CtClass cls = pool.makeClass("co.mindie.cindy.controller.manager.entry.RequestHandler$" + controllerClass.getSimpleName() + "$" + method.getName(), requestHandlerClass);
-			Class createdClass = cls.toClass();
+			String newClassName = "co.mindie.cindy.controller.manager.entry.RequestHandler$" + controllerClass.getSimpleName() + "$" + method.getName();
+			Class<?> createdClass;
+
+			try {
+				createdClass = Class.forName(newClassName);
+			} catch (ClassNotFoundException e) {
+				ClassPool pool = ClassPool.getDefault();
+				CtClass requestHandlerClass = pool.get(RequestHandler.class.getName());
+
+				CtClass cls = pool.makeClass(newClassName, requestHandlerClass);
+				createdClass = cls.toClass();
+			}
 
 			ComponentMetadata metadata = this.metadataManager.loadComponent(createdClass);
 
 			ComponentDependency dependency = metadata.addDependency(controllerClass, true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
-			dependency.setWire(new Wire(createdClass.getField("controller"), null, null));
+			dependency.setWire(new Wire(createdClass.getSuperclass().getDeclaredField("controller"), null, null));
 
 			return createdClass;
 		} catch (Exception e) {
@@ -383,7 +392,7 @@ public class ControllerManager implements Initializable {
 
 			this.checkAuthorization(context, endpointEntry.getRequiredAuthorizations());
 
-			response = endpointEntry.invoke(requestHandler.getController(), context);
+			response = endpointEntry.invoke(requestHandler);
 			context.willEnd(null);
 
 			if (context.shouldResolveOutput() != null) {
@@ -407,7 +416,7 @@ public class ControllerManager implements Initializable {
 				IResolverOutput resolverOutput = this.resolverManager.getDefaultResolverOutputForInput(response);
 
 				if (resolverOutput != null) {
-					response = resolverOutput.createResolversAndResolve(context.getInnerBox(), response, options);
+					response = resolverOutput.createResolversAndResolve(requestHandler.getComponentBox(), response, options);
 				} else if (this.failOnResolverNotFound) {
 					throw new CindyException("No resolver output found for " + response.getClass().getName());
 				}

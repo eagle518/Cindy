@@ -9,6 +9,7 @@
 
 package co.mindie.cindy.configuration;
 
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.utils.Initializable;
 import org.apache.log4j.Logger;
 
@@ -18,6 +19,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.Set;
 
+@Load(creationPriority = -1)
 public class Configuration implements Initializable {
 
 	// //////////////////////

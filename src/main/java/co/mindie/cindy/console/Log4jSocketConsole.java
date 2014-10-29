@@ -27,7 +27,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-@Load
+@Load(creationPriority = -1)
 public class Log4jSocketConsole extends AbstractAppender implements IConnectionListener, Initializable {
 
 	////////////////////////

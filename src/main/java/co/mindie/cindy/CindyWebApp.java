@@ -23,7 +23,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-@Load
+@Load(creationPriority = -1)
 @Component(aspects = { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE })
 @Box(needAspects = { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE })
 public class CindyWebApp implements Pausable, Closeable {

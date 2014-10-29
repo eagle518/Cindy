@@ -15,7 +15,7 @@ import org.joda.time.DateTime;
 
 import co.mindie.cindy.resolver.IResolver;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = String.class, managedOutputClasses = DateTime.class)
 public class StringToDateTimeResolver implements IResolver<String, DateTime> {
 

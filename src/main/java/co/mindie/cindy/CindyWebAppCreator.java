@@ -9,6 +9,7 @@
 
 package co.mindie.cindy;
 
+import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.component.ComponentInitializer;
 import org.apache.log4j.Logger;
@@ -53,12 +54,12 @@ public class CindyWebAppCreator {
 		this.onLoad(metadataManager);
 
 		if (this.shouldLoadBuiltinComponents) {
-			metadataManager.autoloadComponents("co.mindie.cindy", false);
+			metadataManager.loadComponents("co.mindie.cindy");
 		}
 
 		this.onCreate(initializer);
 
-		CindyWebApp webApp = initializer.createComponent(null, CindyWebApp.class).getInstance();
+		CindyWebApp webApp = initializer.createComponent(CindyWebApp.class, new ComponentBox()).getInstance();
 
 		initializer.init();
 

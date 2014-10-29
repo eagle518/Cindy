@@ -15,7 +15,7 @@ import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.resolver.IResolver;
 import org.joda.time.DateTime;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = String.class, managedOutputClasses = DateTime[].class)
 public class StringToDateTimeArrayResolver implements IResolver<String, DateTime[]> {
 

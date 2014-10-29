@@ -34,7 +34,6 @@ public class InterpreterProtocol implements IConsoleProtocol {
 		this.context.put("App", connection.getApplication());
 		this.context.put("Class", new ConsoleTools.Class(this));
 		this.context.put("Collection", new ConsoleTools.Collection(this));
-		this.context.put("Component", new ConsoleTools.Component(this));
 		this.context.put("help", new ConsoleTools.Help(this));
 		this.connection = connection;
 	}

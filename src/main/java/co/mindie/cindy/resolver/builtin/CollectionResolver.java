@@ -17,23 +17,26 @@ import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.component.ComponentBoxListenerImpl;
+import co.mindie.cindy.automapping.WiredCore;
+import co.mindie.cindy.component.ComponentBox;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.resolver.IResolver;
 import co.mindie.cindy.resolver.IResolverOutput;
+import co.mindie.cindy.resolver.ResolverManager;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = { ArrayList.class, List.class, Collection.class }, managedOutputClasses = { ArrayList.class, List.class, Collection.class },
 isDefaultForInputTypes = true)
 @SuppressWarnings({ "rawtypes" })
-public class CollectionResolver extends ComponentBoxListenerImpl implements IResolver<Collection, Collection> {
+public class CollectionResolver implements IResolver<Collection, Collection> {
 
 	// //////////////////////
 	// VARIABLES
 	// //////////////
 
-	@Wired
-	private CindyWebApp application;
+	@Wired private ResolverManager resolverManager;
+	@WiredCore
+	private ComponentBox componentBox;
 
 	// //////////////////////
 	// CONSTRUCTORS
@@ -58,13 +61,13 @@ public class CollectionResolver extends ComponentBoxListenerImpl implements IRes
 				output.add(null);
 			} else {
 				if (resolverOutput == null) {
-					resolverOutput = this.application.getResolverManager().getDefaultResolverOutputForInput(obj);
+					resolverOutput = this.resolverManager.getDefaultResolverOutputForInput(obj);
 					if (resolverOutput == null) {
 						throw new CindyException("No Resolver found for input type " + obj.getClass());
 					}
 				}
 
-				output.add(resolverOutput.createResolversAndResolve(this.getEnclosingBox(), obj, options));
+				output.add(resolverOutput.createResolversAndResolve(this.componentBox, obj, options));
 			}
 		}
 

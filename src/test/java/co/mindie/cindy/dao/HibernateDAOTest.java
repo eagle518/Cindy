@@ -3,6 +3,7 @@ package co.mindie.cindy.dao;
 import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.automapping.Component;
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Singleton;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.component.ComponentInitializer;
@@ -43,8 +44,8 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-@Component
 public class HibernateDAOTest extends AbstractCindyTest {
+
 	// //////////////////////
 	// VARIABLES
 	// //////////////
@@ -55,35 +56,13 @@ public class HibernateDAOTest extends AbstractCindyTest {
 
 	@Wired private FakeDAO dao;
 
-	private CindyWebApp application;
-
 	// //////////////////////
 	// TESTS LIFECYCLE
 	// //////////////
 
-	@Before
-	public void setUp() throws IllegalAccessException, InstantiationException {
-		ComponentMetadataManager metadataManager = new ComponentMetadataManager();
-		ComponentInitializer initializer = metadataManager.createInitializer();
-		this.application = new CindyWebApp(metadataManager);
-
-		initializer.addCreatedComponent(this.application, null);
-
-		this.application.getComponentMetadataManager().loadComponent(FakeDatabase.class);
-		this.application.getComponentMetadataManager().loadComponent(FakeDatabaseHandle.class);
-		// TODO we should provide a default implementation weakly loaded
-		this.application.getComponentMetadataManager().loadComponent(FakeCriteriaBuilderFactory.class);
-		this.application.getComponentMetadataManager().loadComponent(this.getClass());
-
-		initializer.addCreatedComponent(this, this.application.getInnerBox().createChildBox());
-
-		initializer.init();
-	}
-
 	@After
 	public void tearDown() {
 		this.emptyDatabase();
-		this.application.close();
 	}
 
 	private void emptyDatabase() {
@@ -218,7 +197,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		}
 	}
 
-	@Component
+	@Load
 	public static class FakeDAO extends HibernateDAO<FakeObject, Integer> implements Initializable {
 		@Wired private FakeDatabaseHandle databaseHandle;
 
@@ -232,7 +211,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		}
 	}
 
-	@Component
+	@Load
 	public static class FakeDatabaseHandle extends HibernateDatabaseHandle {
 		@Wired private FakeDatabase database;
 
@@ -242,7 +221,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		}
 	}
 
-	@Component
+	@Load
 	public static class FakeDatabase extends HibernateDatabase {
 		@Override
 		protected org.hibernate.cfg.Configuration getHibernateConfiguration() {
@@ -256,8 +235,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		}
 	}
 
-	@Singleton
-	@Component(creationResolveMode = CreationResolveMode.DEFAULT)
+	@Load
 	public static class FakeCriteriaBuilderFactory extends SynchronizedPool<CriteriaBuilder> implements CriteriaBuilderFactory {
 		@Override
 		public CriteriaBuilder createCriteria(Session session, Class<?> managedClass) {

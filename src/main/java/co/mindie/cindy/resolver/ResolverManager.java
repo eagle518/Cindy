@@ -19,13 +19,15 @@ import java.util.Map;
 import java.util.Set;
 
 import co.mindie.cindy.CindyWebApp;
-import co.mindie.cindy.automapping.Load;
-import co.mindie.cindy.automapping.WiredCore;
+import co.mindie.cindy.automapping.*;
+import co.mindie.cindy.automapping.Resolver;
+import co.mindie.cindy.component.ComponentMetadata;
 import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.utils.Initializable;
 import org.apache.log4j.Logger;
 
-@Load
-public class ResolverManager {
+@Load(creationPriority = -1)
+public class ResolverManager implements Initializable {
 
 	////////////////////////
 	// VARIABLES
@@ -50,12 +52,23 @@ public class ResolverManager {
 	// METHODS
 	////////////////
 
+	public void init() {
+		for (ComponentMetadata metadata : this.metadataManager.getLoadedComponentsWithAnnotation(Resolver.class)) {
+			Resolver annotation = metadata.getAnnotation(Resolver.class);
+			for (Class<?> inputClass : annotation.managedInputClasses()) {
+				for (Class<?> outputClass : annotation.managedOutputClasses()) {
+					this.addConverter(metadata.getComponentClass(), inputClass, outputClass, annotation.isDefaultForInputTypes());
+				}
+			}
+		}
+	}
+
 	public void removeAllConverters() {
 		this.resolverEntriesByInputClass.clear();
 	}
 
 	public void addConverter(Class<?> modelConverterClass, Class<?> inputClass, Class<?> outputClass, boolean isDefault) {
-		LOGGER.trace("Registering model converter with class=" + modelConverterClass + " for input type=" + inputClass + " and output type=" + outputClass);
+		LOGGER.trace("Registering resolver with class=" + modelConverterClass + " for input type=" + inputClass + " and output type=" + outputClass);
 		ResolverEntry entry = this.resolverEntriesByInputClass.get(inputClass);
 
 		if (entry == null) {

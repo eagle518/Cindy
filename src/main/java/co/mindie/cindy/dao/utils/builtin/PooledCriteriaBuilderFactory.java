@@ -9,7 +9,7 @@ import org.hibernate.Session;
 /**
  * Pooled implementation of the criteria builder factory
  */
-@Load
+@Load(creationPriority = -1)
 public class PooledCriteriaBuilderFactory extends SynchronizedPool<CriteriaBuilder> implements CriteriaBuilderFactory {
 	@Override
 	public CriteriaBuilder createCriteria(Session session, Class<?> managedClass) {

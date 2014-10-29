@@ -199,7 +199,7 @@ public class EndpointEntry {
 		}
 
 		if (converter == null) {
-			this.throwParameterError(parameter, "No resolver exists for input String to output " + type);
+			this.throwParameterError(parameter, "No resolver exists for input RequestParameter to output " + type);
 		}
 
 		return converter;
@@ -251,19 +251,20 @@ public class EndpointEntry {
 			IParameterResolver resolver;
 
 			resolver = (e) -> {
+				RequestContext requestContext = e.getRequestContext();
 				String stringValue = null;
 				InputStream inputStreamValue = null;
 
 				if (fShouldFetchFromResource) {
-					stringValue = e.getUrlResources().get(name);
+					stringValue = requestContext.getUrlResources().get(name);
 				} else {
-					String[] queryParameters = e.getHttpRequest().getQueryParameters().get(name);
+					String[] queryParameters = requestContext.getHttpRequest().getQueryParameters().get(name);
 					if (queryParameters != null && queryParameters.length > 0) {
 						stringValue = queryParameters[0];
 					}
 
-					if (stringValue == null && e.getHttpRequest().getBodyParameters() != null) {
-						List<FileItem> items = e.getHttpRequest().getBodyParameters().get(name);
+					if (stringValue == null && requestContext.getHttpRequest().getBodyParameters() != null) {
+						List<FileItem> items = requestContext.getHttpRequest().getBodyParameters().get(name);
 
 						if (items != null && items.size() > 0) {
 							FileItem item = items.get(0);
@@ -282,7 +283,7 @@ public class EndpointEntry {
 
 				Object output;
 				try {
-					output = fConverter.createResolversAndResolve(e.getInnerBox(), requestParameter, fResolverOptions);
+					output = fConverter.createResolversAndResolve(e.getComponentBox(), requestParameter, fResolverOptions);
 				} catch (Exception ex) {
 					throw new CindyException("Error while resolving the parameter: " + name, ex);
 				}
@@ -300,17 +301,18 @@ public class EndpointEntry {
 		}
 	}
 
-	private Object[] generateParameters(RequestContext context) throws Throwable {
+	private Object[] generateParameters(RequestHandler<?> requestHandler) throws Throwable {
 		Object[] parameters = new Object[this.parameterResolvers.size()];
 
 		for (int i = 0, length = this.parameterResolvers.size(); i < length; i++) {
-			parameters[i] = this.parameterResolvers.get(i).resolveParameter(context);
+			parameters[i] = this.parameterResolvers.get(i).resolveParameter(requestHandler);
 		}
 
 		return parameters;
 	}
 
-	public Object invoke(Object controller, RequestContext context) throws Throwable {
+	public Object invoke(RequestHandler<?> requestHandler) throws Throwable {
+		Object controller = requestHandler.getController();
 		CindyController theController = controller instanceof CindyController ? (CindyController) controller : null;
 
 		if (theController != null) {
@@ -319,7 +321,7 @@ public class EndpointEntry {
 
 		try {
 			try {
-				final Object[] arguments = this.generateParameters(context);
+				final Object[] arguments = this.generateParameters(requestHandler);
 
 				return this.method.invoke(controller, arguments);
 			} catch (InvocationTargetException e) {

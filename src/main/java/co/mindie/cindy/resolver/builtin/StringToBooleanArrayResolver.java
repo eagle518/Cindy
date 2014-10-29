@@ -14,7 +14,7 @@ import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.resolver.IResolver;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = { String.class }, managedOutputClasses = { boolean[].class })
 public class StringToBooleanArrayResolver implements IResolver<String, boolean[]> {
 

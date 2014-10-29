@@ -28,10 +28,8 @@ public class ComponentMetadataManager {
 
 	private static final Logger LOGGER = Logger.getLogger(ComponentMetadataManager.class);
 
-	private IComponentFactoryListener listener;
 	private Map<Class<?>, ComponentMetadata> metadatas;
 	private ClassIndexer<ComponentMetadata> componentIndexer;
-	private Map<String, ComponentScanner> scanners;
 	private Map<Class<?>, List<ComponentMetadata>> metadatasByAnnotation;
 	private int currentRecursionCallCount;
 
@@ -42,17 +40,12 @@ public class ComponentMetadataManager {
 	public ComponentMetadataManager() {
 		this.metadatas = new HashMap<>();
 		this.componentIndexer = new ClassIndexer<>();
-		this.scanners = new HashMap<>();
 		this.metadatasByAnnotation = new HashMap<>();
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
-
-	public void clearClassIndexing() {
-		this.scanners.clear();
-	}
 
 	public ComponentMetadata getComponentMetadata(Class<?> objectClass) {
 		return this.metadatas.get(objectClass);
@@ -62,24 +55,11 @@ public class ComponentMetadataManager {
 		return this.componentIndexer.find(objectClass);
 	}
 
-	/**
-	 *
-	 * @param classPath Which classPath to search
-	 * @param cacheClassIndexing Whether the classPath indexing should be saved in memory for a more efficient query the next
-	 *                           time the same classPath is asked.
-	 * @return
-	 */
-	public List<ComponentMetadata> autoloadComponents(String classPath, boolean cacheClassIndexing) {
-		ComponentScanner scanner =  this.scanners.get(classPath);
-
-		if (scanner == null) {
-			scanner = new ComponentScanner(classPath);
-			if (cacheClassIndexing) {
-				this.scanners.put(classPath, scanner);
-			}
-		}
+	public List<ComponentMetadata> loadComponents(String classPath) {
+		ComponentScanner scanner = new ComponentScanner(classPath);
 
 		final List<ComponentMetadata> metadatas = new ArrayList<>();
+
 		for (Class<?> type : scanner.findAnnotedTypes(Load.class)) {
 			metadatas.add(this.loadComponent(type));
 		}
@@ -206,36 +186,15 @@ public class ComponentMetadataManager {
 							+ "Too many component candidates found with same priority found for {objectClass}\n"
 							+ "Candidates:\n"
 							+ "[candidates-> candidate:"
-							+ "{candidate.componentClass}\n"
+							+ "{candidate.componentClass} (priority: {candidate.creationPriority})\n"
 							+ "]"
 			);
-			dt.put("objectClass", objectClass);
+			dt.put("candidates", compatibleComponents);
 
 			throw new CindyException(dt.toString());
 		}
 
 		return highest;
-	}
-
-	public void signalComponentCreated(Object objectInstance) {
-		IComponentFactoryListener listener = this.listener;
-		if (listener != null) {
-			listener.onComponentCreated(objectInstance);
-		}
-	}
-
-	public void signalComponentInitialized(Object objectInstance) {
-		IComponentFactoryListener listener = this.listener;
-		if (listener != null) {
-			listener.onComponentInitialized(objectInstance);
-		}
-	}
-
-	public void signalComponentInitializationFailed(Object objectInstance, Exception e) {
-		IComponentFactoryListener listener = this.listener;
-		if (listener != null) {
-			listener.onComponentInitializationFailed(objectInstance, e);
-		}
 	}
 
 	/**
@@ -252,7 +211,7 @@ public class ComponentMetadataManager {
 	 */
 	public <T> CreatedComponent<T> createComponent(Class<T> componentClass, ComponentBox enclosingBox) {
 		ComponentInitializer initializer = this.createInitializer();
-		CreatedComponent<T> createdComponent = initializer.createComponent(enclosingBox, componentClass);
+		CreatedComponent<T> createdComponent = initializer.createComponent(componentClass, enclosingBox);
 
 		initializer.init();
 
@@ -265,14 +224,6 @@ public class ComponentMetadataManager {
 
 	public Collection<ComponentMetadata> getLoadedComponentMetadatas() {
 		return this.metadatas.values();
-	}
-
-	public IComponentFactoryListener getListener() {
-		return this.listener;
-	}
-
-	public void setListener(IComponentFactoryListener listener) {
-		this.listener = listener;
 	}
 
 }

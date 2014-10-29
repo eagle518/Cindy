@@ -17,7 +17,7 @@ import co.mindie.cindy.controller.manager.IRequestErrorHandler;
 import co.mindie.cindy.controller.manager.HttpResponse;
 import co.mindie.cindy.controller.manager.HttpRequest;
 
-@Load
+@Load(creationPriority = -1)
 public class DefaultRequestErrorHandler implements IRequestErrorHandler {
 
 	////////////////////////

@@ -72,6 +72,10 @@ public class ComponentMetadata {
 						CreationBox.CURRENT_BOX);
 			}
 		}
+
+		if (this.componentAnnotation == null) {
+			this.aspects = new ComponentAspect[0];
+		}
 	}
 
 	////////////////////////
@@ -102,8 +106,9 @@ public class ComponentMetadata {
 
 		while (currentClass != null) {
 			for (Annotation annotation : currentClass.getAnnotations()) {
-				if (!this.annotations.containsKey(annotation.getClass())) {
-					this.annotations.put(annotation.getClass(), annotation);
+				Class<?> annotationClass = annotation.annotationType();
+				if (!this.annotations.containsKey(annotationClass)) {
+					this.annotations.put(annotationClass, annotation);
 				}
 			}
 

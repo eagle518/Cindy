@@ -24,8 +24,9 @@ public @interface WiredCore {
 
 	/**
 	 * The context on where the core can be found.
-	 * On a ComponentBox, it can be "this" to wire the inner box,
-	 * "super" to wire the enclosing box, or a property name to wire
+	 * On a ComponentBox, it can be "this" to wire the current box (which can be either
+	 *  the inner box if the current component has one, or the enclosing box otherwise),
+	 * "super" to wire the enclosing box (null if the component doesn't have one), or a property name to wire
 	 * the enclosing box of a specific property.
 	 * @return the context on where the core can be found.
 	 */

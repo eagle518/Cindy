@@ -14,7 +14,7 @@ import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
 import me.corsin.javatools.string.Strings;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = {String.class}, managedOutputClasses = {String[].class})
 public class StringToStringArrayResolver implements IResolver<String, String[]> {
 

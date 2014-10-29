@@ -13,7 +13,7 @@ import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = { String.class }, managedOutputClasses = { String.class })
 public class StringToStringResolver implements IResolver<String, String> {
 

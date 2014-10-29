@@ -9,10 +9,8 @@
 
 package co.mindie.cindy.controller.manager.entry;
 
-import co.mindie.cindy.context.RequestContext;
-
 public interface IParameterResolver {
 
-	Object resolveParameter(RequestContext requestContext) throws Throwable;
+	Object resolveParameter(RequestHandler<?> requestHandler) throws Throwable;
 
 }

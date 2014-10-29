@@ -6,17 +6,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.CindyWebAppCreator;
+import co.mindie.cindy.automapping.*;
+import co.mindie.cindy.component.ComponentMetadataManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import co.mindie.cindy.automapping.Endpoint;
-import co.mindie.cindy.automapping.HttpMethod;
-import co.mindie.cindy.automapping.Param;
 import co.mindie.cindy.controller.builtin.RequestErrorResponse;
 import co.mindie.cindy.controller.dummy.DummyHttpRequest;
 import co.mindie.cindy.controller.dummy.DummyHttpResponse;
@@ -24,9 +24,10 @@ import co.mindie.cindy.responseserializer.JsonResponseWriter;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-@RunWith(JUnit4.class)
-public class ControllerManagerTest {
+public class ControllerManagerTest extends AbstractCindyTest {
 
+	@Controller(basePath = "")
+	@Load
 	public static class ControllerTest {
 
 		@Endpoint(httpMethod = HttpMethod.GET, path = "parameters")
@@ -41,21 +42,13 @@ public class ControllerManagerTest {
 
 	}
 
-	private CindyWebApp application;
+	@Wired private CindyWebApp webApp;
 
-	@Before
-	public void setUp() {
-		CindyWebAppCreator creator = new CindyWebAppCreator() {
+	@Override
+	protected void onLoad(ComponentMetadataManager metadataManager) {
+		super.onLoad(metadataManager);
 
-			@Override
-			protected void onLoad(CindyWebApp application) {
-				application.getControllerManager().setUseReusePool(false);
-				application.addController(ControllerTest.class, "");
-			}
-
-
-		};
-		this.application = creator.createApplication();
+		metadataManager.loadComponent(ControllerTest.class);
 	}
 
 	private DummyHttpRequest createRequest(HttpMethod method) {
@@ -83,7 +76,7 @@ public class ControllerManagerTest {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		response.setOutputStream(outputStream);
 
-		this.application.getControllerManager().handle(request, response);
+		this.webApp.getControllerManager().handle(request, response);
 
 		JsonResponseWriter responseWriter = new JsonResponseWriter();
 		try {

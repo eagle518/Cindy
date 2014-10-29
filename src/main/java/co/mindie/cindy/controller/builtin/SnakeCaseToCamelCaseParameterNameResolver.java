@@ -12,7 +12,7 @@ package co.mindie.cindy.controller.builtin;
 import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.controller.manager.IParameterNameResolver;
 
-@Load
+@Load(creationPriority = -1)
 public class SnakeCaseToCamelCaseParameterNameResolver implements IParameterNameResolver {
 
 	////////////////////////

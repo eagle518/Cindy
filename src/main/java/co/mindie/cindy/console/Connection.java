@@ -12,8 +12,8 @@ package co.mindie.cindy.console;
 import co.mindie.cindy.CindyWebApp;
 import com.google.common.collect.Lists;
 import me.corsin.javatools.io.IOUtils;
-import me.corsin.javatools.task.SingleThreadedTaskQueue;
 import me.corsin.javatools.task.TaskQueue;
+import me.corsin.javatools.task.ThreadedSequentialTaskQueue;
 import org.apache.log4j.Level;
 
 import java.io.Closeable;
@@ -56,7 +56,7 @@ public class Connection implements Closeable, Runnable {
 	public Connection(CindyWebApp application, Socket socket) {
 		this.application = application;
 		this.socket = socket;
-		this.writeQueue = new SingleThreadedTaskQueue();
+		this.writeQueue = new ThreadedSequentialTaskQueue();
 		this.logLevel = Level.OFF;
 
 		Thread thread = new Thread(this);

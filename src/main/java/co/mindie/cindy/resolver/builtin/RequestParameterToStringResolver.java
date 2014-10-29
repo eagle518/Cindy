@@ -14,7 +14,7 @@ import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.resolver.IResolver;
 
-@Load
+@Load(creationPriority = -1)
 @Resolver(managedInputClasses = RequestParameter.class, managedOutputClasses = String.class)
 public class RequestParameterToStringResolver implements IResolver<RequestParameter, String> {
 
