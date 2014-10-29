@@ -99,20 +99,13 @@ public class ComponentInitializer implements Initializable {
 	}
 
 	private <T> CreatedComponent<T> addCreatedComponent(T objectInstance, ComponentMetadata metadata, ComponentBox enclosingBox, Class<T> cls) {
-		if (enclosingBox != null) {
-			enclosingBox.addComponent(objectInstance, metadata.getAspects());
-		}
+		enclosingBox.addComponent(objectInstance, metadata.getAspects());
 
 		Box boxAnnotation = metadata.getBox();
 		ComponentBox innerBox = null;
 
 		if (boxAnnotation != null) {
-			if (enclosingBox != null) {
-				innerBox = enclosingBox.createChildBox(boxAnnotation.needAspects(), boxAnnotation.rejectAspects(), objectInstance, boxAnnotation.readOnly());
-			} else {
-				innerBox = ComponentBox.create(boxAnnotation.needAspects(), boxAnnotation.rejectAspects(), null, boxAnnotation.readOnly());
-				innerBox.setOwner(objectInstance);
-			}
+			innerBox = enclosingBox.createChildBox(boxAnnotation.needAspects(), boxAnnotation.rejectAspects(), objectInstance, boxAnnotation.readOnly());
 
 			this.createdBoxes.add(innerBox);
 		}
@@ -170,7 +163,7 @@ public class ComponentInitializer implements Initializable {
 		}
 
 		if (objectInstanceAsInitializerListener != null) {
-			objectInstanceAsInitializerListener.onWillWire();
+			objectInstanceAsInitializerListener.onWillWire(this);
 		}
 
 		for (ComponentDependency dependency : componentMetadata.getDependencies()) {
@@ -274,7 +267,7 @@ public class ComponentInitializer implements Initializable {
 		this.currentRecursionCallCount--;
 
 		if (objectInstanceAsInitializerListener != null) {
-			objectInstanceAsInitializerListener.onWired();
+			objectInstanceAsInitializerListener.onWired(this);
 		}
 
 	}

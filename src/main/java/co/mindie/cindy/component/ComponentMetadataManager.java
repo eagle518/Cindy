@@ -190,6 +190,7 @@ public class ComponentMetadataManager {
 							+ "]"
 			);
 			dt.put("candidates", compatibleComponents);
+			dt.put("objectClass", objectClass);
 
 			throw new CindyException(dt.toString());
 		}

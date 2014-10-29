@@ -37,6 +37,7 @@ public class ComponentMetadata {
 
 	private Factory<Object> factory;
 	private ComponentAspect[] aspects;
+	private int creationPriority;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -73,7 +74,11 @@ public class ComponentMetadata {
 			}
 		}
 
-		if (this.componentAnnotation == null) {
+		this.creationPriority = this.loadAnnotation != null ? this.loadAnnotation.creationPriority() : 0;
+
+		if (this.componentAnnotation != null) {
+			this.aspects = this.componentAnnotation.aspects();
+		} else {
 			this.aspects = new ComponentAspect[0];
 		}
 	}
@@ -199,7 +204,7 @@ public class ComponentMetadata {
 
 	public boolean hasDependency(Class<?> cls) {
 		for (ComponentDependency dependency : this.dependencies) {
-			if (dependency.getComponentClass() == cls) {
+			if (dependency.getComponentClass().isAssignableFrom(cls)) {
 				return true;
 			}
 		}
@@ -251,10 +256,6 @@ public class ComponentMetadata {
 	}
 
 	public ComponentAspect[] getAspects() {
-		if (this.componentAnnotation != null) {
-			return this.componentAnnotation.aspects();
-		}
-
 		return this.aspects;
 	}
 
@@ -271,7 +272,11 @@ public class ComponentMetadata {
 	}
 
 	public int getCreationPriority() {
-		return this.loadAnnotation != null ? this.loadAnnotation.creationPriority() : 0;
+		return creationPriority;
+	}
+
+	public void setCreationPriority(int creationPriority) {
+		this.creationPriority = creationPriority;
 	}
 
 	public ComponentMetadataManager getManager() {

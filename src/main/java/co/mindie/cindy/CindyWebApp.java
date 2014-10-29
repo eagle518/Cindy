@@ -16,6 +16,7 @@ import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.controller.manager.ControllerManager;
 import co.mindie.cindy.resolver.ResolverManager;
 import co.mindie.cindy.utils.Pausable;
+import me.corsin.javatools.array.ArrayUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTimeZone;
@@ -25,8 +26,8 @@ import java.util.List;
 
 @Load(creationPriority = -1)
 @Component(aspects = { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE })
-@Box(needAspects = { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE })
-public class CindyWebApp implements Pausable, Closeable {
+@Box(needAspects = { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE }, rejectAspects = {})
+public class CindyWebApp implements Pausable, Closeable, WireListener {
 
 	// //////////////////////
 	// VARIABLES
@@ -53,6 +54,29 @@ public class CindyWebApp implements Pausable, Closeable {
 	// //////////////////////
 	// METHODS
 	// //////////////
+
+	@Override
+	public void onWillWire(ComponentInitializer initializer) {
+		ComponentMetadata myMetadata = initializer.getMetadataManager().getComponentMetadata(this.getClass());
+
+		for (ComponentMetadata metadata : initializer.getMetadataManager().getLoadedComponentsWithAnnotation(Singleton.class)) {
+			if (!ArrayUtils.arrayContains(metadata.getAspects(), ComponentAspect.SINGLETON)) {
+				metadata.setAspects(ArrayUtils.addItem(metadata.getAspects(), ComponentAspect.SINGLETON));
+			}
+			if (!ArrayUtils.arrayContains(metadata.getAspects(), ComponentAspect.THREAD_SAFE)) {
+				metadata.setAspects(ArrayUtils.addItem(metadata.getAspects(), ComponentAspect.THREAD_SAFE));
+			}
+
+			if (!myMetadata.hasDependency(metadata.getComponentClass())) {
+				myMetadata.addDependency(metadata.getComponentClass(), true, false, SearchScope.LOCAL, CreationBox.CURRENT_BOX);
+			}
+		}
+	}
+
+	@Override
+	public void onWired(ComponentInitializer initializer) {
+
+	}
 
 	public void init() {
 		if (this.rootLogAppender != null) {

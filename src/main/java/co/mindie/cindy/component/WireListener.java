@@ -11,13 +11,13 @@ public interface WireListener {
 	 * The component is free to add/remove any dependency from its loaded
 	 * metadata during this time.
 	 */
-	void onWillWire();
+	void onWillWire(ComponentInitializer initializer);
 
 	/**
 	 * Called after the Component has its dependencies wired.
 	 * Note that the Component is not ready to use yet, if you
 	 * want to know when it is, implement the Initializable interface.
 	 */
-	void onWired();
+	void onWired(ComponentInitializer initializer);
 
 }
