@@ -60,7 +60,7 @@ public class Wire {
 				this.field.set(object, value);
 			}
 		} catch (Exception e) {
-			throw new CindyException("Unable to set wire " + this.field.getName() + " of type " + this.field.getType().getName() + " to " + object.getClass().getSimpleName(), e);
+			throw new CindyException("Unable to set wire \"" + this.field.getName() + "\" of type " + this.field.getType().getName() + " to " + object.getClass().getSimpleName(), e);
 		}
 	}
 

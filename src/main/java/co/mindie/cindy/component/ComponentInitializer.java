@@ -88,7 +88,7 @@ public class ComponentInitializer implements Initializable {
 
 			T objectInstance = (T)metadata.createInstance();
 
-			this.log("+ Created instance of " + objectClass.getSimpleName() + " resolved to " + metadata.getComponentClass().getSimpleName() + " in context " + enclosingBox);
+			this.log("+ Created instance of " + objectClass.getSimpleName() + " resolved to " + metadata.getComponentClass().getSimpleName() + " in box " + enclosingBox);
 
 			CreatedComponent<T> createdComponent =  this.addCreatedComponent(objectInstance, metadata, enclosingBox, objectClass);
 
@@ -179,13 +179,11 @@ public class ComponentInitializer implements Initializable {
 
 			Class<?> dependencyClass = dependency.getComponentClass();
 
-			this.log("- Injecting dependency " + dependencyClass.getSimpleName() + " in creationScope " + dependency.getCreationBox() + " with searchScope " + dependency.getSearchScope());
+			this.log("- Injecting dependency " + dependencyClass.getSimpleName() + " in box " + dependency.getCreationBox() + " with searchScope " + dependency.getSearchScope());
 
 			Object dependencyInstance = null;
 
-			if (dependencyClass == ComponentMetadataManager.class) {
-				dependencyInstance = componentMetadata.getManager();
-			} else if (dependency.isList()) {
+			if (dependency.isList()) {
 				List<?> list = currentBox.findComponents(dependencyClass, dependency.getSearchScope());
 				if (list == null) {
 					list = new ArrayList<>();
@@ -272,6 +270,27 @@ public class ComponentInitializer implements Initializable {
 
 	}
 
+	private <T> void injectListDependencies(CreatedComponent<T> createdComponent) {
+		Object objectInstance = createdComponent.getInstance();
+
+		for (ComponentDependency dependency : createdComponent.getMetadata().getListDependencies()) {
+			ComponentBox currentBox = createdComponent.getCurrentBox();
+
+			Class<?> dependencyClass = dependency.getComponentClass();
+
+			List<?> list = currentBox.findComponents(dependencyClass, dependency.getSearchScope());
+			if (list == null) {
+				list = new ArrayList<>();
+			} else {
+				list = new ArrayList<>(list);
+			}
+
+			if (dependency.getWire() != null) {
+				dependency.getWire().set(objectInstance, list);
+			}
+		}
+	}
+
 	private <T> void init(CreatedComponent<T> createdComponent) {
 		if (!createdComponent.isInitialized()) {
 			createdComponent.setInitialized(true);
@@ -292,6 +311,10 @@ public class ComponentInitializer implements Initializable {
 	public void init() {
 		for (int i = 0; i < this.createdComponents.size(); i++) {
 			this.injectDependencies(this.createdComponents.get(i));
+		}
+
+		for (CreatedComponent createdComponent : this.createdComponents) {
+			this.injectListDependencies(createdComponent);
 		}
 
 		for (CreatedComponent createdComponent : this.createdComponents) {

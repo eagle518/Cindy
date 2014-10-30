@@ -29,6 +29,7 @@ public class ComponentMetadata {
 	final private List<Wire> wires;
 	final private List<Wire> wireCores;
 	final private List<ComponentDependency> dependencies;
+	final private List<ComponentDependency> listDependencies;
 	final private Load loadAnnotation;
 	final private Component componentAnnotation;
 	final private Dependencies dependenciesAnnotation;
@@ -48,6 +49,7 @@ public class ComponentMetadata {
 		this.dependencies = new ArrayList<>();
 		this.wires = new ArrayList<>();
 		this.wireCores = new ArrayList<>();
+		this.listDependencies = new ArrayList<>();
 		this.componentClass = objectClass;
 		this.annotations = new HashMap<>();
 
@@ -151,60 +153,9 @@ public class ComponentMetadata {
 		}
 	}
 
-//	public void autowire(Object object, ComponentBox ctx) {
-//		for (Wire wire : this.wires) {
-//			if (wire.getScope() != SearchScope.NO_SEARCH) {
-//				List<Object> components = null;
-//				Object component = null;
-//
-//				if (ctx != null) {
-//					components = ctx.findComponents(wire.getFieldType(), wire.getScope());
-//
-//					if (wire.isList()) {
-//						if (components == null) {
-//							component = new ArrayList<>();
-//						} else {
-//							component = new ArrayList<>(components);
-//						}
-//					} else {
-//						if (components != null) {
-//							if (components.size() > 1) {
-//								throw new CindyException("The class " + wire.getFieldType().getName() + " has more than one instance in this context");
-//							}
-//							component = components.get(0);
-//						}
-//					}
-//				}
-//
-//				wire.set(object, component);
-//			}
-//		}
-//	}
-//
-//	public void wire(Object object, Object otherComponent) {
-//		if (otherComponent != null) {
-//			for (Wire wire : this.wires) {
-//				Class<?> componentClass = otherComponent.getClass();
-//				if (wire.canSet(componentClass)) {
-//					wire.set(object, otherComponent);
-//				}
-//			}
-//		}
-//	}
-//
-//	public void unwire(Object component, Object otherComponent) {
-//		if (otherComponent != null) {
-//			for (Wire wire : this.wires) {
-//					if (wire.get(component) == otherComponent) {
-//						wire.set(component, null);
-//					}
-//			}
-//		}
-//	}
-
 	public boolean hasDependency(Class<?> cls) {
 		for (ComponentDependency dependency : this.dependencies) {
-			if (dependency.getComponentClass().isAssignableFrom(cls)) {
+			if (!dependency.isList() && dependency.getComponentClass() == cls) {
 				return true;
 			}
 		}
@@ -216,7 +167,12 @@ public class ComponentMetadata {
 		searchScope = this.resolveSearchScope(dependencyClass, searchScope);
 
 		ComponentDependency dependency = new ComponentDependency(dependencyClass, isList, searchScope, creationBox);
-		this.dependencies.add(dependency);
+
+		if (isList) {
+			this.listDependencies.add(dependency);
+		} else {
+			this.dependencies.add(dependency);
+		}
 
 		dependency.setRequired(required);
 
@@ -285,5 +241,9 @@ public class ComponentMetadata {
 
 	public List<Wire> getWireCores() {
 		return wireCores;
+	}
+
+	public List<ComponentDependency> getListDependencies() {
+		return listDependencies;
 	}
 }
