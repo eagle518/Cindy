@@ -20,10 +20,7 @@ import co.mindie.cindy.controller.manager.IParameterNameResolver;
 import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.exception.BadParameterException;
 import co.mindie.cindy.exception.CindyException;
-import co.mindie.cindy.resolver.ChainedResolverBuilder;
-import co.mindie.cindy.resolver.IResolver;
-import co.mindie.cindy.resolver.IResolverBuilder;
-import co.mindie.cindy.resolver.ResolverManager;
+import co.mindie.cindy.resolver.*;
 import co.mindie.cindy.resolver.builtin.ArrayToArrayResolver;
 import co.mindie.cindy.resolver.builtin.ArrayToListResolver;
 import me.corsin.javatools.exception.StackTraceUtils;
@@ -145,6 +142,10 @@ public class EndpointEntry {
 		}
 	}
 
+	private void throwMethodError(String error) {
+		throw new CindyException(Strings.format("On controller {#0} and method {#1}: {#2}", this.controllerEntry.getControllerClass(), this.method, error));
+	}
+
 	private void throwParameterError(Parameter parameter, String error) {
 		throw new CindyException(Strings.format("On controller {#0}, method {#1} and parameter {#2}: {#3}", this.controllerEntry.getControllerClass(), this.method, parameter.getName(), error));
 	}
@@ -204,13 +205,52 @@ public class EndpointEntry {
 		return converter;
 	}
 
+	private void appendSubResolverBuilder(ResolverManager resolverManager, Class<?> componentType, List<IResolverBuilder> subResolverBuilders) {
+		final IResolverBuilder subResolverBuilder = resolverManager.getDefaultResolverOutputForInputClass(componentType);
+
+		if (subResolverBuilder == null) {
+			this.throwMethodError("Return type is dynamic and no default resolver found for type " + componentType);
+		}
+
+		subResolverBuilders.add(subResolverBuilder);
+	}
 	public void init(IParameterNameResolver parameterNameResolver, ResolverManager resolverManager) {
 		Parameter[] parameters = this.method.getParameters();
 		this.parameterResolvers.clear();
 		this.parameterResolverBuilders.clear();
 
 		if (this.shouldResolveOutput) {
-			this.outputResolverBuilder = resolverManager.getDefaultResolverOutputForInputClass(this.method.getReturnType());
+			ResolverBuilder defaultBuilder = resolverManager.getDefaultResolverOutputForInputClass(this.method.getReturnType());
+
+			if (defaultBuilder != null && defaultBuilder.isDynamic()) {
+				final List<IResolverBuilder> subResolverBuilders = new ArrayList<>();
+
+				if (this.method.getReturnType().getComponentType() != null) {
+					this.appendSubResolverBuilder(resolverManager, this.method.getReturnType().getComponentType(), subResolverBuilders);
+				} else if (this.method.getGenericReturnType() instanceof ParameterizedType) {
+					ParameterizedType aType = (ParameterizedType)this.method.getGenericReturnType();
+
+					for (Type type : aType.getActualTypeArguments()) {
+						this.appendSubResolverBuilder(resolverManager, (Class<?>)type, subResolverBuilders);
+					}
+				} else {
+					this.throwMethodError("Return type is dynamic but the returned type is not generic nor an array");
+				}
+
+				this.outputResolverBuilder = (initializer, box) -> {
+					IDynamicResolver baseResolver = (IDynamicResolver)defaultBuilder.findOrCreateResolver(initializer, box);
+
+					for (IResolverBuilder subResolverBuilder : subResolverBuilders) {
+						baseResolver.appendSubResolver(subResolverBuilder.findOrCreateResolver(initializer, box));
+					}
+
+					return baseResolver;
+				};
+
+
+			} else {
+				this.outputResolverBuilder = defaultBuilder;
+			}
 		}
 
 		Type[] genericParameterTypes = this.method.getGenericParameterTypes();

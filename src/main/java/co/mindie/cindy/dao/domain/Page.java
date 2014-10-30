@@ -10,6 +10,7 @@ import java.util.List;
  * in the full list.
  */
 public class Page<T> implements Iterable<T> {
+
 	// //////////////////////
 	// VARIABLES
 	// //////////////

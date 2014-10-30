@@ -69,4 +69,8 @@ public class ResolverBuilder implements IResolverBuilder {
 		return this.inputClass;
 	}
 
+	public boolean isDynamic() {
+		return IDynamicResolver.class.isAssignableFrom(this.converterClass);
+	}
+
 }

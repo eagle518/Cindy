@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 import co.mindie.cindy.component.ComponentMetadataManager;
 
-public abstract class CindyServletApplicationLoader implements ServletContextListener {
+public abstract class CindyServletWebAppLoader implements ServletContextListener {
 
 	////////////////////////
 	// VARIABLES
@@ -33,7 +33,7 @@ public abstract class CindyServletApplicationLoader implements ServletContextLis
 	// CONSTRUCTORS
 	////////////////
 
-	public CindyServletApplicationLoader() {
+	public CindyServletWebAppLoader() {
 		this.shouldPreloadEndpoints = true;
 	}
 
@@ -43,12 +43,18 @@ public abstract class CindyServletApplicationLoader implements ServletContextLis
 
 	abstract protected CindyWebAppCreator getAppCreator();
 
+	protected void onReady() {
+		LOGGER.info("CindyWebApp running.");
+	}
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		this.application = this.getAppCreator().createApplication();
 
 		Dynamic dynamic = sce.getServletContext().addServlet("CindyServlet", new ServletAdapter(this.application.getControllerManager()));
 		dynamic.addMapping("/*");
+
+		this.onReady();
 	}
 
 	@Override

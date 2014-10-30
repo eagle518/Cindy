@@ -82,7 +82,7 @@ public class ResolverManager implements Initializable {
 	// GETTERS/SETTERS
 	////////////////
 
-	public IResolverBuilder getDefaultResolverOutputForInputClass(Class<?> inputClass) {
+	public ResolverBuilder getDefaultResolverOutputForInputClass(Class<?> inputClass) {
 		ResolverEntry entry = this.getResolverEntry(inputClass);
 
 		return entry != null ? entry.getDefaultConverterOutput() : null;

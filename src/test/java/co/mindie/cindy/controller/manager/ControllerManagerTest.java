@@ -2,7 +2,9 @@ package co.mindie.cindy.controller.manager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -11,6 +13,9 @@ import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.CindyWebAppCreator;
 import co.mindie.cindy.automapping.*;
 import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.resolver.IDynamicResolver;
+import co.mindie.cindy.resolver.IResolver;
+import me.corsin.javatools.string.Strings;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +31,43 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class ControllerManagerTest extends AbstractCindyTest {
 
+	public static class Wololo {
+
+		public int value;
+
+	}
+
+	@Resolver(managedInputClasses = Wololo.class, managedOutputClasses = { Integer.class, int.class }, isDefaultForInputTypes = true)
+	public static class WololoResolver implements IResolver<Wololo, Integer> {
+
+		@Override
+		public Integer resolve(Wololo wololo, Class<?> expectedOutputType, int options) {
+			return wololo.value;
+		}
+	}
+
+	@Resolver(managedInputClasses = List.class, managedOutputClasses = List.class, isDefaultForInputTypes = true)
+	public static class DynamicResolver implements IDynamicResolver<List, List> {
+
+		private IResolver subResolver;
+
+		@Override
+		public void appendSubResolver(IResolver resolver) {
+			this.subResolver = resolver;
+		}
+
+		@Override
+		public List resolve(List list, Class<?> expectedOutputType, int options) {
+			List output = new ArrayList<>();
+
+			for (Object obj : list) {
+				output.add(this.subResolver.resolve(obj, expectedOutputType, options));
+			}
+
+			return output;
+		}
+	}
+
 	@Controller(basePath = "")
 	@Load
 	public static class ControllerTest {
@@ -35,11 +77,24 @@ public class ControllerManagerTest extends AbstractCindyTest {
 
 		}
 
-		@Endpoint(httpMethod = HttpMethod.POST, path = "add", resolveOutput = false)
+		@Endpoint(httpMethod = HttpMethod.POST, path = "add")
 		public int testReturnValue(int number, int number2) {
 			return number + number2;
 		}
 
+		@Endpoint(httpMethod = HttpMethod.PUT, path = "dynamic")
+		public List<Wololo> dynamicResolver(int[] values) {
+
+			List<Wololo> list = new ArrayList<>();
+
+			for (int value : values) {
+				Wololo wololo = new Wololo();
+				wololo.value = value;
+				list.add(wololo);
+			}
+
+			return list;
+		}
 	}
 
 	@Wired private CindyWebApp webApp;
@@ -49,6 +104,8 @@ public class ControllerManagerTest extends AbstractCindyTest {
 		super.onLoad(metadataManager);
 
 		metadataManager.loadComponent(ControllerTest.class);
+		metadataManager.loadComponent(WololoResolver.class);
+		metadataManager.loadComponent(DynamicResolver.class);
 	}
 
 	private DummyHttpRequest createRequest(HttpMethod method) {
@@ -112,6 +169,15 @@ public class ControllerManagerTest extends AbstractCindyTest {
 
 		Integer response = this.getResponse(HttpMethod.POST, "add", parameters, Integer.class);
 		Assert.assertEquals(response.longValue(), 1042L);
+	}
+
+	@Test
+	public void test_dynamic_resolve() throws IOException {
+		Map<String, String> parameters = new HashMap<>();
+		parameters.put("values", "1,2,3,4,5,6,7,8,9");
+
+		int[] response = this.getResponse(HttpMethod.PUT, "dynamic", parameters, int[].class);
+		Assert.assertArrayEquals(new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, response);
 	}
 
 }
