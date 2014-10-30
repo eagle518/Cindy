@@ -97,8 +97,8 @@ public class EndpointEntry {
 		return resolverBuilder.findOrCreateResolver(initializer, box);
 	}
 
-	public RequestHandler<?> createRequestHandler(ComponentMetadataManager metadataManager, ComponentBox box, boolean useReusePool) {
-		RequestHandler<?> requestHandler = null;
+	public RequestHandler createRequestHandler(ComponentMetadataManager metadataManager, ComponentBox box, boolean useReusePool) {
+		RequestHandler requestHandler = null;
 
 		if (useReusePool) {
 			synchronized (this.pool) {
@@ -111,7 +111,7 @@ public class EndpointEntry {
 		if (requestHandler == null) {
 			ComponentInitializer initializer = metadataManager.createInitializer();
 
-			requestHandler = (RequestHandler<?>)initializer.createComponent(this.requestHandlerType, box).getInstance();
+			requestHandler = (RequestHandler)initializer.createComponent(this.requestHandlerType, box).getInstance();
 			requestHandler.setEndpointEntry(this);
 
 			List<IResolver> parameterResolvers = new ArrayList<>();
@@ -337,7 +337,7 @@ public class EndpointEntry {
 		}
 	}
 
-	private Object[] generateParameters(RequestHandler<?> requestHandler) throws Throwable {
+	private Object[] generateParameters(RequestHandler requestHandler) throws Throwable {
 		Object[] parameters = new Object[this.parameterResolvers.size()];
 
 		for (int i = 0, length = this.parameterResolvers.size(); i < length; i++) {
@@ -361,7 +361,7 @@ public class EndpointEntry {
 		return parameters;
 	}
 
-	public Object invoke(RequestHandler<?> requestHandler) throws Throwable {
+	public Object invoke(RequestHandler requestHandler) throws Throwable {
 		Object controller = requestHandler.getController();
 		CindyController theController = controller instanceof CindyController ? (CindyController) controller : null;
 

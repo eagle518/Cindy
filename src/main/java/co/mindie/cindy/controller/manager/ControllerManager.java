@@ -28,6 +28,7 @@ import co.mindie.cindy.utils.EndpointIndexer;
 import co.mindie.cindy.utils.Initializable;
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.LoaderClassPath;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.io.IOUtils;
 import me.corsin.javatools.misc.ValueHolder;
@@ -89,6 +90,9 @@ public class ControllerManager implements Initializable {
 
 	@Override
 	public void init() {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		ClassPool.getDefault().insertClassPath(new LoaderClassPath(cl));
+
 		for (ComponentMetadata controllerMetadata : this.metadataManager.getLoadedComponentsWithAnnotation(Controller.class)) {
 			Controller controllerAnnotation = controllerMetadata.getAnnotation(Controller.class);
 
@@ -121,6 +125,7 @@ public class ControllerManager implements Initializable {
 				createdClass = Class.forName(newClassName);
 			} catch (ClassNotFoundException e) {
 				ClassPool pool = ClassPool.getDefault();
+
 				CtClass requestHandlerClass = pool.get(RequestHandler.class.getName());
 
 				CtClass cls = pool.makeClass(newClassName, requestHandlerClass);

@@ -13,6 +13,6 @@ import co.mindie.cindy.controller.manager.RequestParameter;
 
 public interface RequestParameterCreator {
 
-	RequestParameter createParameter(RequestHandler<?> requestHandler) throws Throwable;
+	RequestParameter createParameter(RequestHandler requestHandler) throws Throwable;
 
 }

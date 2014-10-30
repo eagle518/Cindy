@@ -21,7 +21,7 @@ import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.resolver.IResolver;
 
 @Box(rejectAspects = ComponentAspect.SINGLETON)
-public class RequestHandler<T> implements Closeable {
+public class RequestHandler implements Closeable {
 
 	////////////////////////
 	// VARIABLES
@@ -32,7 +32,7 @@ public class RequestHandler<T> implements Closeable {
 	@Wired
 	private RequestContext requestContext;
 
-	private T controller;
+	private Object controller;
 
 	private EndpointEntry endpointEntry;
 
@@ -70,7 +70,7 @@ public class RequestHandler<T> implements Closeable {
 	// GETTERS/SETTERS
 	////////////////
 
-	public T getController() {
+	public Object getController() {
 		return controller;
 	}
 
