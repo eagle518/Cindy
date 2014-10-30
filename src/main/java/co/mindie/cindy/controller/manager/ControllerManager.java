@@ -20,7 +20,6 @@ import co.mindie.cindy.controller.manager.entry.EndpointPathResult;
 import co.mindie.cindy.controller.manager.entry.RequestHandler;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.resolver.IResolver;
-import co.mindie.cindy.resolver.IResolverBuilder;
 import co.mindie.cindy.resolver.ResolverManager;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 import co.mindie.cindy.responseserializer.StringResponseWriter;
@@ -222,6 +221,8 @@ public class ControllerManager implements Initializable {
 
 		context.setHttpResponse(httpResponse);
 		context.setHttpRequest(httpRequest);
+
+		System.out.println("Request: " + httpRequest + " (" + context + ")");
 
 		return requestHandler;
 	}

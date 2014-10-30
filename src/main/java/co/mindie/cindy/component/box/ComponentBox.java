@@ -195,8 +195,8 @@ public abstract class ComponentBox implements Closeable, Initializable {
 		}
 	}
 
-	public ComponentBox createChildBox(boolean readOnly) {
-		return this.createChildBox(new ComponentAspect[0], new ComponentAspect[0], null, readOnly);
+	public ComponentBox createChildBox(boolean readOnly, Object owner) {
+		return this.createChildBox(new ComponentAspect[0], new ComponentAspect[0], owner, readOnly);
 	}
 
 	public static ComponentBox create(boolean readOnly) {

@@ -1,5 +1,6 @@
 package co.mindie.cindy.resolver.builtin;
 
+import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.manager.HttpRequest;
@@ -20,7 +21,7 @@ public abstract class AbstractListRequestResolver<T extends AbstractListRequest>
 
 	public static int DEFAULT_LIMIT = 50;
 
-	@Wired private RequestContext context;
+	@Wired(creationBox = CreationBox.NO_CREATION) private RequestContext context;
 	@Wired private StringToBooleanResolver booleanResolver;
 
 	////////////////////////
@@ -58,6 +59,7 @@ public abstract class AbstractListRequestResolver<T extends AbstractListRequest>
 	}
 
 	protected String getRequestParameter(String key) {
+		System.out.println("CONTEXT:  " + this.context);
 		HttpRequest httpRequest = this.context.getHttpRequest();
 		String[] values = httpRequest.getQueryParameters().get(key);
 		String value = null;

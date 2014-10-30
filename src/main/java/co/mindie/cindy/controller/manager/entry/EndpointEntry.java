@@ -12,6 +12,7 @@ package co.mindie.cindy.controller.manager.entry;
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.Param;
 import co.mindie.cindy.component.ComponentInitializer;
+import co.mindie.cindy.component.CreatedComponent;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.context.RequestContext;
@@ -111,11 +112,13 @@ public class EndpointEntry {
 		if (requestHandler == null) {
 			ComponentInitializer initializer = metadataManager.createInitializer();
 
-			requestHandler = (RequestHandler)initializer.createComponent(this.requestHandlerType, box).getInstance();
+			CreatedComponent<RequestHandler> createdComponent = initializer.createComponent((Class)this.requestHandlerType, box);
+			requestHandler = createdComponent.getInstance();
 			requestHandler.setEndpointEntry(this);
 
 			List<IResolver> parameterResolvers = new ArrayList<>();
-			ComponentBox resolverBox = box.createChildBox(true);
+			// TODO Uses a separate box
+			ComponentBox resolverBox = createdComponent.getInnerBox();
 
 			for (IResolverBuilder resolverBuilder : this.parameterResolverBuilders) {
 				parameterResolvers.add(this.createResolver(resolverBuilder, initializer, resolverBox));

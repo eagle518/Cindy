@@ -179,7 +179,7 @@ public class ComponentInitializer implements Initializable {
 
 			Class<?> dependencyClass = dependency.getComponentClass();
 
-			this.log("- Injecting dependency " + dependencyClass.getSimpleName() + " in box " + dependency.getCreationBox() + " with searchScope " + dependency.getSearchScope());
+			this.log("- Injecting dependency " + dependencyClass.getSimpleName() + " in box " + currentBox + " with searchScope " + dependency.getSearchScope());
 
 			Object dependencyInstance = null;
 
@@ -210,13 +210,14 @@ public class ComponentInitializer implements Initializable {
 					if (createdDependencyComponent != null) {
 						dependencyInstance = createdDependencyComponent.getInstance();
 					}
-
-					if (dependencyInstance == null && dependency.isRequired()) {
-						throw new Exception("Unable to find candidate on a required dependency");
-					}
 				} catch (Exception e) {
 					throw new CindyException("Failed to create dependency " + dependencyClass + " for " + objectClass + " using creationScope " + dependency.getCreationBox(), e);
 				}
+			}
+
+			if (dependencyInstance == null && dependency.isRequired()) {
+				throw new CindyException("On component " + objectClass + " and dependency " + dependencyClass +
+						": Failed to create or find a component in ComponentBox using creationBox " + dependency.getCreationBox() + " and searchScope " + dependency.getSearchScope());
 			}
 
 			if (dependency.getWire() != null) {
