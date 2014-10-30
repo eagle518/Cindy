@@ -126,4 +126,7 @@ public class CindyWebApp implements Pausable, Closeable, WireListener {
 		return this.paused;
 	}
 
+	public ComponentBox getInnerBox() {
+		return innerBox;
+	}
 }

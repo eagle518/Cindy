@@ -17,9 +17,10 @@ import me.corsin.javatools.task.TaskQueue;
 import org.apache.log4j.Logger;
 
 import java.io.Closeable;
+import java.io.Flushable;
 import java.util.List;
 
-public abstract class Notifier<T extends MobileNotification> implements BatchProcessorListener<T>, Closeable {
+public abstract class Notifier<T extends MobileNotification> implements BatchProcessorListener<T>, Closeable, Flushable {
 
 	////////////////////////
 	// VARIABLES
@@ -89,6 +90,10 @@ public abstract class Notifier<T extends MobileNotification> implements BatchPro
 				listenerTaskQueue.executeAsync(() -> callback.run(listener));
 			}
 		}
+	}
+
+	public void flush() {
+		this.batchProcessor.flush();
 	}
 
 	////////////////////////

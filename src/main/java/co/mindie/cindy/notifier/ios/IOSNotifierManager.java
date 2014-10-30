@@ -10,6 +10,7 @@
 package co.mindie.cindy.notifier.ios;
 
 import java.io.Closeable;
+import java.io.Flushable;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,7 +22,7 @@ import co.mindie.cindy.notifier.NotifierListener;
 import me.corsin.javatools.misc.Pair;
 import me.corsin.javatools.task.TaskQueue;
 
-public class IOSNotifierManager implements Closeable {
+public class IOSNotifierManager implements Closeable, Flushable {
 
 	////////////////////////
 	// VARIABLES
@@ -42,6 +43,12 @@ public class IOSNotifierManager implements Closeable {
 	////////////////////////
 	// METHODS
 	////////////////
+
+	public void flush() {
+		for (IOSNotifier notifier : this.notifiers.values()) {
+			notifier.flush();
+		}
+	}
 
 	public IOSNotifier addNotifier(String bundleId, boolean useProduction, String keyFileName, String keyPassword) throws IOException {
 		IOSNotifier notifier = this.addNotifier(bundleId, useProduction);
