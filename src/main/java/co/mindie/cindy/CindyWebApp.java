@@ -15,9 +15,11 @@ import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.controller.manager.ControllerManager;
 import co.mindie.cindy.resolver.ResolverManager;
+import co.mindie.cindy.utils.Initializable;
 import co.mindie.cindy.utils.Pausable;
 import me.corsin.javatools.array.ArrayUtils;
 import org.apache.log4j.Appender;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTimeZone;
 
@@ -27,7 +29,7 @@ import java.util.List;
 @Load(creationPriority = -1)
 @Component(aspects = { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE })
 @Box(needAspects = { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE }, rejectAspects = {})
-public class CindyWebApp implements Pausable, Closeable, WireListener {
+public class CindyWebApp implements Pausable, Closeable, WireListener, Initializable {
 
 	// //////////////////////
 	// VARIABLES
@@ -103,6 +105,10 @@ public class CindyWebApp implements Pausable, Closeable, WireListener {
 	@Override
 	public void close() {
 		this.innerBox.close();
+
+		if (this.rootLogAppender != null) {
+			Logger.getRootLogger().removeAppender(this.rootLogAppender);
+		}
 	}
 
 	// //////////////////////

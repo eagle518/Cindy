@@ -222,8 +222,6 @@ public class ControllerManager implements Initializable {
 		context.setHttpResponse(httpResponse);
 		context.setHttpRequest(httpRequest);
 
-		System.out.println("Request: " + httpRequest + " (" + context + ")");
-
 		return requestHandler;
 	}
 

@@ -59,7 +59,6 @@ public abstract class AbstractListRequestResolver<T extends AbstractListRequest>
 	}
 
 	protected String getRequestParameter(String key) {
-		System.out.println("CONTEXT:  " + this.context);
 		HttpRequest httpRequest = this.context.getHttpRequest();
 		String[] values = httpRequest.getQueryParameters().get(key);
 		String value = null;

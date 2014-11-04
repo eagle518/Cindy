@@ -78,17 +78,18 @@ public class ComponentInitializer implements Initializable {
 	}
 
 	public <T> CreatedComponent<T> createComponent(Class<T> objectClass, ComponentBox enclosingBox) {
-		this.currentRecursionCallCount++;
+		ComponentMetadata metadata = this.metadataManager.getCompatibleMetadata(objectClass);
+
+		if (metadata == null) {
+			return null;
+		}
+
+		T objectInstance = (T)metadata.createInstance();
+
+		this.log("+ Created instance of " + objectClass.getSimpleName() + " resolved to " + metadata.getComponentClass().getSimpleName() + " in box " + enclosingBox);
+
 		try {
-			ComponentMetadata metadata = this.metadataManager.getCompatibleMetadata(objectClass);
-
-			if (metadata == null) {
-				return null;
-			}
-
-			T objectInstance = (T)metadata.createInstance();
-
-			this.log("+ Created instance of " + objectClass.getSimpleName() + " resolved to " + metadata.getComponentClass().getSimpleName() + " in box " + enclosingBox);
+			this.currentRecursionCallCount++;
 
 			CreatedComponent<T> createdComponent =  this.addCreatedComponent(objectInstance, metadata, enclosingBox, objectClass);
 
@@ -127,7 +128,7 @@ public class ComponentInitializer implements Initializable {
 
 		sb.append(format);
 
-		LOGGER.trace(Strings.format(sb.toString(), params));
+		LOGGER.debug(Strings.format(sb.toString(), params));
 	}
 
 	private void initComponent(ComponentBox componentBox, ComponentMetadata componentMetadata, Class<?> objectClass, Object objectInstance) {

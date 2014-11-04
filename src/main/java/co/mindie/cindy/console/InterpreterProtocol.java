@@ -14,6 +14,7 @@ import java.io.IOException;
 import me.corsin.javatools.dynamictext.Context;
 import me.corsin.javatools.dynamictext.ContextObjectResolver;
 import me.corsin.javatools.string.Strings;
+import org.apache.log4j.Logger;
 
 public class InterpreterProtocol implements IConsoleProtocol {
 
@@ -21,6 +22,7 @@ public class InterpreterProtocol implements IConsoleProtocol {
 	// VARIABLES
 	////////////////
 
+	private static final Logger LOGGER = Logger.getLogger(InterpreterProtocol.class);
 	private Context context;
 	private Connection connection;
 
@@ -64,6 +66,8 @@ public class InterpreterProtocol implements IConsoleProtocol {
 
 	@Override
 	public void handleCommand(Connection connection, String command) {
+		LOGGER.info(this.connection.getSocket().getRemoteSocketAddress() + " entered: " + command);
+
 		command = command.trim();
 
 		if (!command.isEmpty()) {

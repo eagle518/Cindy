@@ -84,7 +84,7 @@ public class Log4jSocketConsole extends AbstractAppender implements IConnectionL
 				connection.setListener(this);
 				connection.setProtocol(this.createProtocol(connection));
 
-				System.out.println(socket.getRemoteSocketAddress() + " is now listening to console"); // TODO sysou
+				LOGGER.info(socket.getRemoteSocketAddress() + " is now listening to console");
 
 				this.addConnection(connection);
 			} catch (IOException ignored) {
@@ -107,7 +107,7 @@ public class Log4jSocketConsole extends AbstractAppender implements IConnectionL
 	}
 
 	private void closeConnection(Connection connection) {
-		System.out.println(connection.getSocket().getRemoteSocketAddress() + " is now disconnected from console");
+		LOGGER.info(connection.getSocket().getRemoteSocketAddress() + " is now disconnected from console");
 
 		synchronized (this.connections) {
 			this.connections.remove(connection);
