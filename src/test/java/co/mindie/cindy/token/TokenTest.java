@@ -32,23 +32,23 @@ public class TokenTest {
 	@Test
 	public void token_is_serializable_and_deserializable() {
 		int id = new Random().nextInt();
-		int bytesEntropy = 32;
+		int bitsEntropy = 2048;
 
-		String key = new Token(id, bytesEntropy).toString();
+		String key = new Token(id, bitsEntropy).toString();
 
 		Token token = new Token(key);
 
 		assertEquals(token.getId(), id);
 		assertEquals(token.toString(), key);
-		assertEquals(token.getKeyBytesEntropy(), bytesEntropy);
+		assertEquals(token.getEntropy(), bitsEntropy);
 	}
 
 	@Test
 	public void token_detects_invalid_key() {
 		int id = new Random().nextInt();
-		int bytesEntropy = 32;
+		int bitsEntropy = 256;
 
-		String key = new Token(id, bytesEntropy).toString();
+		String key = new Token(id, bitsEntropy).toString();
 
 		this.expectedException.expect(IllegalArgumentException.class);
 

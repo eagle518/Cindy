@@ -14,7 +14,7 @@ public class Token {
 	private static Random random = new SecureRandom();
 
 	private byte[] randomBytes;
-	private int keyBytesEntropy;
+	private int entropy;
 	private int id;
 	private int saltHashCode;
 	private String stringRepresentation;
@@ -23,25 +23,25 @@ public class Token {
 	// CONSTRUCTORS
 	////////////////
 
-	public Token(int id, int keyBytesEntropy) {
-		if (keyBytesEntropy % 4 != 0) {
-			throw new IllegalArgumentException("The keyBytesEntropy must be a multiple of 4");
+	public Token(int id, int entropy) {
+		if (entropy % 8 != 0) {
+			throw new IllegalArgumentException("The entropy must be a multiple of 8");
 		}
 
-		byte[] randomBytes = new byte[keyBytesEntropy];
+		byte[] randomBytes = new byte[entropy / 8];
 		random.nextBytes(randomBytes);
 
 		this.saltHashCode = Arrays.hashCode(randomBytes);
 		this.randomBytes = randomBytes;
 		this.id = id;
-		this.keyBytesEntropy = keyBytesEntropy;
+		this.entropy = entropy;
 		this.stringRepresentation = generateTokenString(id, saltHashCode, randomBytes);
 	}
 
 	public Token(String stringRepresentation) {
 		byte[] bytes = Base58.decode(stringRepresentation);
 
-		if (bytes.length < 8 || bytes.length % 4 != 0) {
+		if (bytes.length < 8) {
 			throw new IllegalArgumentException("Invalid stringRepresentation");
 		}
 
@@ -62,7 +62,7 @@ public class Token {
 
 		this.randomBytes = randomSalt;
 		this.stringRepresentation = stringRepresentation;
-		this.keyBytesEntropy = bytes.length - 8;
+		this.entropy = (bytes.length - 8) * 8;
 	}
 
 	////////////////////////
@@ -95,8 +95,8 @@ public class Token {
 		return id;
 	}
 
-	public int getKeyBytesEntropy() {
-		return keyBytesEntropy;
+	public int getEntropy() {
+		return entropy;
 	}
 
 	public int getSaltHashCode() {
