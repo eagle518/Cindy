@@ -46,7 +46,7 @@ public class TokenTest {
 	@Test
 	public void token_detects_invalid_key() {
 		int id = new Random().nextInt();
-		int bitsEntropy = 256;
+		int bitsEntropy = 512;
 
 		String key = new Token(id, bitsEntropy).toString();
 

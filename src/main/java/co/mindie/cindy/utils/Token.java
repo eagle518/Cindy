@@ -2,7 +2,6 @@ package co.mindie.cindy.utils;
 
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.Random;
 
 public class Token {
@@ -16,7 +15,7 @@ public class Token {
 	private byte[] randomBytes;
 	private int entropy;
 	private int id;
-	private int saltHashCode;
+	private int randomBytesHashCode;
 	private String stringRepresentation;
 
 	////////////////////////
@@ -31,11 +30,11 @@ public class Token {
 		byte[] randomBytes = new byte[entropy / 8];
 		random.nextBytes(randomBytes);
 
-		this.saltHashCode = Arrays.hashCode(randomBytes);
+		this.randomBytesHashCode = computeHashCode(randomBytes);
 		this.randomBytes = randomBytes;
 		this.id = id;
 		this.entropy = entropy;
-		this.stringRepresentation = generateTokenString(id, saltHashCode, randomBytes);
+		this.stringRepresentation = generateTokenString(id, randomBytesHashCode, randomBytes);
 	}
 
 	public Token(String stringRepresentation) {
@@ -48,15 +47,15 @@ public class Token {
 		ByteBuffer buffer =  ByteBuffer.wrap(bytes);
 
 		this.id =  buffer.getInt();
-		this.saltHashCode = buffer.getInt();
+		this.randomBytesHashCode = buffer.getInt();
 
 		byte[] randomSalt = new byte[bytes.length - 8];
 		buffer.get(randomSalt);
 
 
-		int actualHashCode = Arrays.hashCode(randomSalt);
+		int actualHashCode = computeHashCode(randomSalt);
 
-		if (this.saltHashCode != actualHashCode) {
+		if (this.randomBytesHashCode != actualHashCode) {
 			throw new IllegalArgumentException("Invalid stringRepresentation (hashcode does not match)");
 		}
 
@@ -68,6 +67,16 @@ public class Token {
 	////////////////////////
 	// METHODS
 	////////////////
+
+	private static int computeHashCode(byte a[]) {
+		int result = 1;
+
+		for (int i = 0; i < a.length; i++) {
+			result = 31 * result + a[i];
+		}
+
+		return result;
+	}
 
 	public static String generateTokenString(int id, int randomBytesHashCode, byte[] randomBytes) {
 		ByteBuffer buffer = ByteBuffer.allocate(8 + randomBytes.length);
@@ -99,8 +108,8 @@ public class Token {
 		return entropy;
 	}
 
-	public int getSaltHashCode() {
-		return saltHashCode;
+	public int getRandomBytesHashCode() {
+		return randomBytesHashCode;
 	}
 
 	public byte[] getRandomBytes() {
