@@ -12,6 +12,7 @@ package co.mindie.cindy.resolver.builtin;
 import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 import me.corsin.javatools.string.Strings;
 
 @Load(creationPriority = -1)
@@ -35,7 +36,7 @@ public class StringToStringArrayResolver implements IResolver<String, String[]> 
 	////////////////
 
 	@Override
-	public String[] resolve(String input, Class<?> expectedOutputType, int options) {
+	public String[] resolve(String input, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		if (input == null) {
 			return null;
 		}

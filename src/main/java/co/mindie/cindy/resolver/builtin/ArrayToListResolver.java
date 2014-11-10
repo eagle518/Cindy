@@ -15,6 +15,7 @@ import java.util.List;
 import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 
 @Load(creationPriority = -1)
 @Resolver(managedInputClasses = Object[].class, managedOutputClasses = List.class)
@@ -37,7 +38,7 @@ public class ArrayToListResolver implements IResolver<Object[], List<Object>> {
 	////////////////
 
 	@Override
-	public List<Object> resolve(Object[] input, Class<?> expectedOutputType, int options) {
+	public List<Object> resolve(Object[] input, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		if (input == null) {
 			return null;
 		}

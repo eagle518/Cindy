@@ -15,6 +15,8 @@ import co.mindie.cindy.automapping.*;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.resolver.IDynamicResolver;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
+import co.mindie.cindy.resolver.builtin.RequestContextToStringResolver;
 import me.corsin.javatools.string.Strings;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,7 +43,7 @@ public class ControllerManagerTest extends AbstractCindyTest {
 	public static class WololoResolver implements IResolver<Wololo, Integer> {
 
 		@Override
-		public Integer resolve(Wololo wololo, Class<?> expectedOutputType, int options) {
+		public Integer resolve(Wololo wololo, Class<?> expectedOutputType, ResolverContext options) {
 			return wololo.value;
 		}
 	}
@@ -57,7 +59,7 @@ public class ControllerManagerTest extends AbstractCindyTest {
 		}
 
 		@Override
-		public List resolve(List list, Class<?> expectedOutputType, int options) {
+		public List resolve(List list, Class<?> expectedOutputType, ResolverContext options) {
 			List output = new ArrayList<>();
 
 			for (Object obj : list) {
@@ -103,6 +105,7 @@ public class ControllerManagerTest extends AbstractCindyTest {
 	protected void onLoad(ComponentMetadataManager metadataManager) {
 		super.onLoad(metadataManager);
 
+		metadataManager.loadComponent(RequestContextToStringResolver.class);
 		metadataManager.loadComponent(ControllerTest.class);
 		metadataManager.loadComponent(WololoResolver.class);
 		metadataManager.loadComponent(DynamicResolver.class);

@@ -9,7 +9,9 @@
 
 package co.mindie.cindy.controller.manager;
 
-import java.io.InputStream;
+import co.mindie.cindy.controller.manager.entry.RequestParameterResolverOption;
+
+import java.util.List;
 
 public class RequestParameter {
 
@@ -18,19 +20,17 @@ public class RequestParameter {
 	////////////////
 
 	final private String name;
-	final private int resolverOptions;
 	final private boolean required;
-	private String stringValue;
-	private InputStream inputStream;
+	final private List<RequestParameterResolverOption> resolverOptions;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public RequestParameter(String name, int resolverOptions, boolean required) {
+	public RequestParameter(String name, boolean required, List<RequestParameterResolverOption> resolverOptions) {
 		this.name = name;
-		this.resolverOptions = resolverOptions;
 		this.required = required;
+		this.resolverOptions = resolverOptions;
 	}
 
 	////////////////////////
@@ -42,26 +42,10 @@ public class RequestParameter {
 	////////////////
 
 	public String getName() {
-		return this.name;
+		return name;
 	}
 
-	public String getStringValue() {
-		return this.stringValue;
-	}
-
-	public InputStream getInputStream() {
-		return this.inputStream;
-	}
-
-	public void setStringValue(String stringValue) {
-		this.stringValue = stringValue;
-	}
-
-	public void setInputStream(InputStream inputStream) {
-		this.inputStream = inputStream;
-	}
-
-	public int getResolverOptions() {
+	public List<RequestParameterResolverOption> getResolverOptions() {
 		return resolverOptions;
 	}
 

@@ -14,14 +14,22 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-public @interface Param {
+@Target({ ElementType.FIELD, ElementType.TYPE })
+public @interface ResolverOption {
 
-	boolean required() default true;
+	/**
+	 * @return the key for this resolver option
+	 */
+	String key();
 
-	String name() default "";
-
-	ResolverOption[] resolverOptions() default {};
+	/**
+	 * @return the value for this resolver option. The type is assumed to be
+	 * String unless specified on the valueCls() method.
+	 */
+	String value();
 
 }

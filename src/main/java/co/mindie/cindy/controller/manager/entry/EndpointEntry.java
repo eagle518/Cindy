@@ -11,6 +11,7 @@ package co.mindie.cindy.controller.manager.entry;
 
 import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.Param;
+import co.mindie.cindy.automapping.ResolverOption;
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.CreatedComponent;
 import co.mindie.cindy.component.box.ComponentBox;
@@ -22,8 +23,10 @@ import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.exception.BadParameterException;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.resolver.*;
+import co.mindie.cindy.resolver.builtin.AbstractRequestContextParameterResolver;
 import co.mindie.cindy.resolver.builtin.ArrayToArrayResolver;
 import co.mindie.cindy.resolver.builtin.ArrayToListResolver;
+import co.mindie.cindy.resolver.builtin.RequestContextToStringResolver;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.string.Strings;
 import org.apache.commons.fileupload.FileItem;
@@ -35,11 +38,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 
 public class EndpointEntry {
 
@@ -52,8 +51,8 @@ public class EndpointEntry {
 	final private ControllerEntry controllerEntry;
 	final private Method method;
 	final private Endpoint mapped;
-	final private List<RequestParameterCreator> parameterResolvers;
 	final private List<IResolverBuilder> parameterResolverBuilders;
+	final private List<RequestParameter> requestParameters;
 	final private List<String> pathIdentifierForIndex;
 	final private String path;
 	final private boolean shouldResolveOutput;
@@ -73,7 +72,7 @@ public class EndpointEntry {
 		this.pool = new ArrayDeque<>();
 		this.shouldResolveOutput = method.getReturnType() != void.class && mapped.resolveOutput();
 		this.parameterResolverBuilders = new ArrayList<>();
-		this.parameterResolvers = new ArrayList<>();
+		this.requestParameters = new ArrayList<>();
 		this.pathIdentifierForIndex = new ArrayList<>();
 		this.requestHandlerType = requestHandlerType;
 	}
@@ -112,7 +111,7 @@ public class EndpointEntry {
 		if (requestHandler == null) {
 			ComponentInitializer initializer = metadataManager.createInitializer();
 
-			CreatedComponent<RequestHandler> createdComponent = initializer.createComponent((Class)this.requestHandlerType, box);
+			CreatedComponent<RequestHandler> createdComponent = initializer.createComponent((Class<RequestHandler>)this.requestHandlerType, box);
 			requestHandler = createdComponent.getInstance();
 			requestHandler.setEndpointEntry(this);
 
@@ -125,8 +124,28 @@ public class EndpointEntry {
 			}
 			requestHandler.setParametersResolver(parameterResolvers);
 
+			List<ResolverContext> resolverContexts = new ArrayList<>();
+			for (RequestParameter requestParameter : this.requestParameters) {
+				Map<String, String> options = new HashMap<>();
+
+				for (RequestParameterResolverOption option : requestParameter.getResolverOptions()) {
+					options.put(option.getKey(), option.getValue());
+				}
+
+				resolverContexts.add(new ResolverContext(new ResolverOptions(options)));
+			}
+
+			requestHandler.setParametersResolverContexts(resolverContexts);
+
 			if (this.outputResolverBuilder != null) {
 				requestHandler.setOutputResolver(this.createResolver(this.outputResolverBuilder, initializer, resolverBox));
+
+				Map<String, String> options = new HashMap<>();
+				for (ResolverOption option : this.mapped.outputResolverOptions()) {
+					options.put(option.key(), option.value());
+				}
+
+				requestHandler.setOutputResolverContext(new ResolverContext(new ResolverOptions(options)));
 			}
 
 			initializer.init();
@@ -153,13 +172,13 @@ public class EndpointEntry {
 		throw new CindyException(Strings.format("On controller {#0}, method {#1} and parameter {#2}: {#3}", this.controllerEntry.getControllerClass(), this.method, parameter.getName(), error));
 	}
 
-	private IResolverBuilder getResolverBuilder(ResolverManager resolverManager, Parameter parameter, Type genericParameterType, String name, boolean required) {
+	private IResolverBuilder getResolverBuilder(ResolverManager resolverManager, Parameter parameter, Type genericParameterType) {
 		IResolverBuilder converter = null;
 		Class<?> type = parameter.getType();
 
 		if (type == List.class) {
-			// RequestParameter -> String[]
-			IResolverBuilder requestParameterToStringArray = resolverManager.getResolverOutput(RequestParameter.class, String[].class);
+			// RequestContext -> String[]
+			IResolverBuilder requestParameterToStringArray = resolverManager.getResolverOutput(RequestContext.class, String[].class);
 
 			if (requestParameterToStringArray == null) {
 				this.throwParameterError(parameter, "For a using List parameter, a RequestParameter to String[] resolver must be available");
@@ -198,11 +217,11 @@ public class EndpointEntry {
 			// RequestParameter -> String[] -> Object[] -> List
 			converter = new ChainedResolverBuilder(Arrays.asList(requestParameterToStringArray, stringArrayToObjectArrayResolver, arrayToListResolverBuilder));
 		} else {
-			converter = resolverManager.getResolverOutput(RequestParameter.class, type);
+			converter = resolverManager.getResolverOutput(RequestContext.class, type);
 		}
 
 		if (converter == null) {
-			this.throwParameterError(parameter, "No resolver exists for input RequestParameter to output " + type);
+			this.throwParameterError(parameter, "No resolver exists for input RequestContext to output " + type);
 		}
 
 		return converter;
@@ -217,9 +236,10 @@ public class EndpointEntry {
 
 		subResolverBuilders.add(subResolverBuilder);
 	}
+
 	public void init(IParameterNameResolver parameterNameResolver, ResolverManager resolverManager) {
 		Parameter[] parameters = this.method.getParameters();
-		this.parameterResolvers.clear();
+		this.requestParameters.clear();
 		this.parameterResolverBuilders.clear();
 
 		if (this.shouldResolveOutput) {
@@ -265,11 +285,13 @@ public class EndpointEntry {
 			boolean required = true;
 			String resolvedName = null;
 			boolean needsNameResolve = parameterNameResolver != null;
-			int resolverOptions = 0;
+			List<RequestParameterResolverOption> resolverOptions = new ArrayList<>();
 
 			if (paramAnnotation != null) {
 				required = paramAnnotation.required();
-				resolverOptions = paramAnnotation.resolverOptions();
+				for (ResolverOption option : paramAnnotation.resolverOptions()) {
+					resolverOptions.add(new RequestParameterResolverOption(option));
+				}
 				if (!Strings.isNullOrEmpty(paramAnnotation.name())) {
 					resolvedName = paramAnnotation.name();
 					needsNameResolve = false;
@@ -286,70 +308,26 @@ public class EndpointEntry {
 				resolvedName = parameterNameResolver.javaParameterNameToApiName(resolvedName);
 			}
 
-			if (!shouldFetchFromResource) {
-				shouldFetchFromResource = this.pathIdentifierForIndex.contains(resolvedName); // Support for both with parameter resolver and without
-			}
+			resolverOptions.add(new RequestParameterResolverOption(RequestContextToStringResolver.OPTION_PARAMETER_NAME, resolvedName));
+			resolverOptions.add(new RequestParameterResolverOption(RequestContextToStringResolver.OPTION_FETCH_FROM_RESOURCE, shouldFetchFromResource ? "true" : "false"));
 
-			final String name = resolvedName;
-			final int fResolverOptions = resolverOptions;
-			final boolean fRequired = required;
-			final boolean fShouldFetchFromResource = shouldFetchFromResource;
-			final IResolverBuilder fConverter = this.getResolverBuilder(resolverManager, parameter, genericParameterType, name, required);
-
-			this.parameterResolverBuilders.add(fConverter);
-
-			RequestParameterCreator requestParameterCreator;
-
-			requestParameterCreator = (e) -> {
-				RequestContext requestContext = e.getRequestContext();
-				String stringValue = null;
-				InputStream inputStreamValue = null;
-
-				if (fShouldFetchFromResource) {
-					stringValue = requestContext.getUrlResources().get(name);
-				} else {
-					String[] queryParameters = requestContext.getHttpRequest().getQueryParameters().get(name);
-					if (queryParameters != null && queryParameters.length > 0) {
-						stringValue = queryParameters[0];
-					}
-
-					if (stringValue == null && requestContext.getHttpRequest().getBodyParameters() != null) {
-						List<FileItem> items = requestContext.getHttpRequest().getBodyParameters().get(name);
-
-						if (items != null && items.size() > 0) {
-							FileItem item = items.get(0);
-							if (item.isFormField()) {
-								stringValue = item.getString("UTF-8");
-							} else {
-								inputStreamValue = item.getInputStream();
-							}
-						}
-					}
-				}
-
-				RequestParameter requestParameter = new RequestParameter(name, fResolverOptions, fRequired);
-				requestParameter.setStringValue(stringValue);
-				requestParameter.setInputStream(inputStreamValue);
-
-				return requestParameter;
-			};
-
-
-			this.parameterResolvers.add(requestParameterCreator);
+			this.parameterResolverBuilders.add(this.getResolverBuilder(resolverManager, parameter, genericParameterType));
+			this.requestParameters.add(new RequestParameter(resolvedName, required, resolverOptions));
 			i++;
 		}
 	}
 
 	private Object[] generateParameters(RequestHandler requestHandler) throws Throwable {
-		Object[] parameters = new Object[this.parameterResolvers.size()];
+		Object[] parameters = new Object[requestHandler.getParametersResolver().size()];
 
-		for (int i = 0, length = this.parameterResolvers.size(); i < length; i++) {
-			RequestParameter requestParameter = this.parameterResolvers.get(i).createParameter(requestHandler);
+		for (int i = 0, length = requestHandler.getParametersResolver().size(); i < length; i++) {
+			ResolverContext resolverContext = requestHandler.getParametersResolverContexts().get(i);
 
+			RequestParameter requestParameter = this.requestParameters.get(i);
 			Object output = null;
 			try {
-				IResolver<RequestParameter, ?> resolver =  requestHandler.getParametersResolver().get(i);
-				output = resolver.resolve(requestParameter, null, requestParameter.getResolverOptions());
+				IResolver<RequestContext, ?> resolver =  requestHandler.getParametersResolver().get(i);
+				output = resolver.resolve(requestHandler.getRequestContext(), null, resolverContext);
 			} catch (Exception ex) {
 				throw new CindyException("Error while resolving the parameter: " + requestParameter.getName(), ex);
 			}
@@ -425,9 +403,5 @@ public class EndpointEntry {
 
 	public boolean shouldResolveOutput() {
 		return this.shouldResolveOutput;
-	}
-
-	public int getOutputResolverOptions() {
-		return this.mapped.outputResolverOptions();
 	}
 }

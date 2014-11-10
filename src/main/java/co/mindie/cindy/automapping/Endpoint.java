@@ -28,6 +28,6 @@ public @interface Endpoint {
 
 	boolean resolveOutput() default true;
 
-	int outputResolverOptions() default 0;
+	ResolverOption[] outputResolverOptions() default {};
 
 }

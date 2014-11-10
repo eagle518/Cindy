@@ -2,6 +2,7 @@ package co.mindie.cindy.resolver;
 
 import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.automapping.Box;
+import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.automapping.WiredCore;
 import co.mindie.cindy.component.ComponentInitializer;
@@ -41,7 +42,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 		initializer.init();
 
-		return (Output)resolver.resolve(input, outputClass, 0);
+		return (Output)resolver.resolve(input, outputClass, null);
 	}
 
 	@Test
@@ -134,7 +135,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 	public static class WeirdResolver implements IResolver<Boolean, Object[]> {
 		@Override
-		public Object[] resolve(Boolean input, Class<?> expectedOutputType, int options) {
+		public Object[] resolve(Boolean input, Class<?> expectedOutputType, ResolverContext options) {
 			return new Object[]{new MyObject()};
 		}
 	}
@@ -143,7 +144,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 		@Override
 		public MyObject resolve(Integer input, Class<?> expectedOutputType,
-		                        int options) {
+		                        ResolverContext options) {
 			MyObject obj = new MyObject();
 			obj.value = input;
 

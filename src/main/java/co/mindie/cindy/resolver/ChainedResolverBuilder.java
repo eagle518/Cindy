@@ -45,11 +45,11 @@ public class ChainedResolverBuilder implements IResolverBuilder {
 
 		return new IResolver() {
 			@Override
-			public Object resolve(Object o, Class expectedOutputType, int options) {
+			public Object resolve(Object o, Class expectedOutputType, ResolverContext resolverContext) {
 				Object output = o;
 
 				for (IResolver resolver : resolvers) {
-					output = resolver.resolve(output, expectedOutputType, options);
+					output = resolver.resolve(output, expectedOutputType, resolverContext);
 				}
 
 				return output;

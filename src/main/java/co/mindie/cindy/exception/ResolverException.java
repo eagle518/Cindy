@@ -21,6 +21,10 @@ public class ResolverException extends CindyException {
 	// CONSTRUCTORS
 	////////////////
 
+	public ResolverException(String message, Exception inner) {
+		super(message, inner);
+	}
+
 	public ResolverException(String message) {
 		super(message);
 	}

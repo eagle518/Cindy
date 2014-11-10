@@ -35,8 +35,6 @@ public class CindyWebAppTest extends AbstractCindyTest {
 	@Override
 	protected void onLoad(ComponentMetadataManager metadataManager) {
 		super.onLoad(metadataManager);
-
-
 	}
 
 	@Test

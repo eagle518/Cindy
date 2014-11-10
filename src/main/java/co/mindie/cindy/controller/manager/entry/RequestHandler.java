@@ -19,6 +19,7 @@ import co.mindie.cindy.component.ComponentAspect;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 
 @Box(rejectAspects = ComponentAspect.SINGLETON)
 public class RequestHandler implements Closeable {
@@ -37,7 +38,10 @@ public class RequestHandler implements Closeable {
 	private EndpointEntry endpointEntry;
 
 	private List<IResolver> parametersResolver;
+	private List<ResolverContext> parametersResolverContexts;
+
 	private IResolver outputResolver;
+	private ResolverContext outputResolverContext;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -112,5 +116,21 @@ public class RequestHandler implements Closeable {
 
 	public void setParametersResolver(List<IResolver> parametersResolver) {
 		this.parametersResolver = parametersResolver;
+	}
+
+	public List<ResolverContext> getParametersResolverContexts() {
+		return parametersResolverContexts;
+	}
+
+	public void setParametersResolverContexts(List<ResolverContext> parametersResolverContexts) {
+		this.parametersResolverContexts = parametersResolverContexts;
+	}
+
+	public ResolverContext getOutputResolverContext() {
+		return outputResolverContext;
+	}
+
+	public void setOutputResolverContext(ResolverContext outputResolverContext) {
+		this.outputResolverContext = outputResolverContext;
 	}
 }

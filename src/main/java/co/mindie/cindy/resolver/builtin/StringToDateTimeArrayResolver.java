@@ -13,6 +13,7 @@ import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 import org.joda.time.DateTime;
 
 @Load(creationPriority = -1)
@@ -36,16 +37,16 @@ public class StringToDateTimeArrayResolver implements IResolver<String, DateTime
 	////////////////
 
 	@Override
-	public DateTime[] resolve(String input, Class<?> expectedOutputType, int options) {
+	public DateTime[] resolve(String input, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		if (input == null) {
 			return null;
 		}
 
-		String[] array = this.stringArrayResolver.resolve(input, String[].class, options);
+		String[] array = this.stringArrayResolver.resolve(input, String[].class, resolverContext);
 		DateTime[] dateTimeArray = new DateTime[array.length];
 
 		for (int i = 0; i < dateTimeArray.length; i++) {
-			dateTimeArray[i] = this.dateTimeResolver.resolve(array[i], DateTime.class, options);
+			dateTimeArray[i] = this.dateTimeResolver.resolve(array[i], DateTime.class, resolverContext);
 		}
 
 		return dateTimeArray;

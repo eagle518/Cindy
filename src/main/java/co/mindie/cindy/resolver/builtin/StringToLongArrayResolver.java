@@ -13,6 +13,7 @@ import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 
 @Load(creationPriority = -1)
 @Resolver(managedInputClasses = { String.class }, managedOutputClasses = { long[].class })
@@ -39,16 +40,16 @@ public class StringToLongArrayResolver implements IResolver<String, long[]> {
 	////////////////
 
 	@Override
-	public long[] resolve(String input, Class<?> expectedOutputType, int options) {
+	public long[] resolve(String input, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		if (input == null) {
 			return null;
 		}
 
-		String[] array = this.stringArrayResolver.resolve(input, String[].class, options);
+		String[] array = this.stringArrayResolver.resolve(input, String[].class, resolverContext);
 		long[] longArray = new long[array.length];
 
 		for (int i = 0; i < longArray.length; i++) {
-			longArray[i] = this.longResolver.resolve(array[i], long.class, options);
+			longArray[i] = this.longResolver.resolve(array[i], long.class, resolverContext);
 		}
 
 		return longArray;

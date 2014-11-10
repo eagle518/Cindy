@@ -12,6 +12,7 @@ package co.mindie.cindy.resolver.builtin;
 import java.util.ArrayList;
 import java.util.Collection;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 
 public class CollectionResolver<Input, Output> implements IResolver<Collection<Input>, Collection<Output>> {
 
@@ -36,7 +37,7 @@ public class CollectionResolver<Input, Output> implements IResolver<Collection<I
 	////////////////
 
 	@Override
-	public Collection<Output> resolve(Collection<Input> inputs, Class<?> expectedOutputType, int options) {
+	public Collection<Output> resolve(Collection<Input> inputs, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		if (inputs == null) {
 			return null;
 		}
@@ -44,7 +45,7 @@ public class CollectionResolver<Input, Output> implements IResolver<Collection<I
 		Collection<Output> outputs = new ArrayList<>();
 
 		for (Input input : inputs) {
-			this.singleResolver.resolve(input, expectedOutputType, options);
+			this.singleResolver.resolve(input, expectedOutputType, resolverContext);
 		}
 
 		return outputs;

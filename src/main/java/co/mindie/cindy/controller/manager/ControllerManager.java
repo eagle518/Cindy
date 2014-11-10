@@ -390,7 +390,6 @@ public class ControllerManager implements Initializable {
 		Object response = null;
 		Throwable thrownException = null;
 		boolean shouldResolveOutput = endpointEntry.shouldResolveOutput();
-		int options = endpointEntry.getOutputResolverOptions();
 
 		try {
 			context.willBegin();
@@ -402,9 +401,6 @@ public class ControllerManager implements Initializable {
 
 			if (context.shouldResolveOutput() != null) {
 				shouldResolveOutput = context.shouldResolveOutput();
-			}
-			if (context.getOutputResolverOptions() != null) {
-				options = context.getOutputResolverOptions();
 			}
 		} catch (Throwable e) {
 			thrownException = e;
@@ -421,7 +417,7 @@ public class ControllerManager implements Initializable {
 				IResolver outputResolver = requestHandler.getOutputResolver();
 
 				if (outputResolver != null) {
-					response = outputResolver.resolve(response, null, endpointEntry.getOutputResolverOptions());
+					response = outputResolver.resolve(response, null, requestHandler.getOutputResolverContext());
 				} else if (this.failOnResolverNotFound) {
 					throw new CindyException("No resolver output found for " + response.getClass().getName());
 				}

@@ -13,6 +13,7 @@ import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 
 @Load(creationPriority = -1)
 @Resolver(managedInputClasses = { String.class }, managedOutputClasses = { float[].class })
@@ -39,16 +40,16 @@ public class StringToFloatArrayResolver implements IResolver<String, float[]> {
 	////////////////
 
 	@Override
-	public float[] resolve(String input, Class<?> expectedOutputType, int options) {
+	public float[] resolve(String input, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		if (input == null) {
 			return null;
 		}
 
-		String[] array = this.stringArrayResolver.resolve(input, String[].class, options);
+		String[] array = this.stringArrayResolver.resolve(input, String[].class, resolverContext);
 		float[] floatArray = new float[array.length];
 
 		for (int i = 0; i < floatArray.length; i++) {
-			floatArray[i] = this.floatResolver.resolve(array[i], float.class, options);
+			floatArray[i] = this.floatResolver.resolve(array[i], float.class, resolverContext);
 		}
 
 		return floatArray;

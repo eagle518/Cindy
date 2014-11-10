@@ -9,7 +9,7 @@
 
 package co.mindie.cindy.resolver;
 
-import co.mindie.cindy.context.RequestContext;
+import me.corsin.javatools.misc.NullArgumentException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,43 +20,52 @@ public class ResolverContext {
 	// VARIABLES
 	////////////////
 
+	private ResolverOptions options;
 	private Map<Object, Object> cache;
-	private RequestContext requestContext;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ResolverContext(RequestContext requestContext) {
-		this.requestContext = requestContext;
-		this.cache = new HashMap<>();
-	}
+	public ResolverContext(ResolverOptions resolverOptions) {
+		if (resolverOptions == null) {
+			throw new NullArgumentException("resolverOptions");
+		}
 
-	public ResolverContext() {
-		this(null);
+		this.options = resolverOptions;
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
 
-	public void save(Object input, Object output) {
-		this.cache.put(input, output);
+	public void putCache(Object id, Object object) {
+		if (this.cache == null) {
+			this.cache = new HashMap<>();
+		}
+
+		this.cache.put(id, object);
 	}
 
-	public Object restore(Object input) {
-		return this.cache.get(input);
+	public Object getCached(Object id) {
+		if (this.cache == null) {
+			return null;
+		}
+
+		return this.cache.get(id);
+	}
+
+	public void clearCache() {
+		if (this.cache != null) {
+			this.cache.clear();
+		}
 	}
 
 	////////////////////////
 	// GETTERS/SETTERS
 	////////////////
 
-	public RequestContext getRequestContext() {
-		return this.requestContext;
-	}
-
-	public void setRequestContext(RequestContext requestContext) {
-		this.requestContext = requestContext;
+	public ResolverOptions getOptions() {
+		return options;
 	}
 }

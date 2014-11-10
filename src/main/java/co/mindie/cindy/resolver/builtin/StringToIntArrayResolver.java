@@ -13,6 +13,7 @@ import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 
 @Load(creationPriority = -1)
 @Resolver(managedInputClasses = { String.class }, managedOutputClasses = { int[].class })
@@ -38,16 +39,16 @@ public class StringToIntArrayResolver implements IResolver<String, int[]> {
 	////////////////
 
 	@Override
-	public int[] resolve(String input, Class<?> expectedOutputType, int options) {
+	public int[] resolve(String input, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		if (input == null) {
 			return null;
 		}
 
-		String[] array = this.stringArrayResolver.resolve(input, String[].class, options);
+		String[] array = this.stringArrayResolver.resolve(input, String[].class, resolverContext);
 		int[] intArray = new int[array.length];
 
 		for (int i = 0; i < intArray.length; i++) {
-			intArray[i] = this.intResolver.resolve(array[i], int.class, options);
+			intArray[i] = this.intResolver.resolve(array[i], int.class, resolverContext);
 		}
 
 		return intArray;

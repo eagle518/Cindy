@@ -31,7 +31,6 @@ public class RequestContext {
 	private Map<String, String> urlResources;
 	private boolean shouldWriteResponse;
 	private Boolean shouldResolveOutput;
-	private Integer outputResolverOptions;
 
 	@Wired
 	private List<Flushable> flushables;
@@ -95,7 +94,6 @@ public class RequestContext {
 		this.urlResources.clear();
 		this.shouldWriteResponse = true;
 		this.shouldResolveOutput = null;
-		this.outputResolverOptions = null;
 	}
 
 	// //////////////////////
@@ -128,14 +126,6 @@ public class RequestContext {
 
 	public void setShouldResolveOutput(Boolean shouldResolveOutput) {
 		this.shouldResolveOutput = shouldResolveOutput;
-	}
-
-	public Integer getOutputResolverOptions() {
-		return this.outputResolverOptions;
-	}
-
-	public void setOutputResolverOptions(Integer outputResolverOptions) {
-		this.outputResolverOptions = outputResolverOptions;
 	}
 
 	public HttpRequest getHttpRequest() {

@@ -3,6 +3,7 @@ package co.mindie.cindy.resolver.builtin;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.resolver.IDynamicResolver;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 
 import java.lang.reflect.Array;
 
@@ -33,7 +34,7 @@ public class ArrayToArrayResolver<Input, Output> implements IDynamicResolver<Inp
 	////////////////
 
 	@Override
-	public Output[] resolve(Input[] inputArray, Class<?> expectedOutputType, int options) {
+	public Output[] resolve(Input[] inputArray, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		if (this.singleResolver == null) {
 			throw new CindyException("ArrayToArrayResolver needs to has a sub resolver");
 		}
@@ -45,7 +46,7 @@ public class ArrayToArrayResolver<Input, Output> implements IDynamicResolver<Inp
 		Output[] outputArray = (Output[])Array.newInstance(this.outputClass, inputArray.length);
 
 		for (int j = 0; j < inputArray.length; j++) {
-			Output obj = this.singleResolver.resolve(inputArray[j], expectedOutputType, options);
+			Output obj = this.singleResolver.resolve(inputArray[j], expectedOutputType, resolverContext);
 
 			outputArray[j] = obj;
 		}

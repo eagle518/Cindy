@@ -11,6 +11,6 @@ package co.mindie.cindy.resolver;
 
 public interface IResolver<Input, Output> {
 
-	Output resolve(Input input, Class<?> expectedOutputType, int options);
+	Output resolve(Input input, Class<?> expectedOutputType, ResolverContext resolverContext);
 
 }

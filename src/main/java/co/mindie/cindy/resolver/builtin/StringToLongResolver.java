@@ -12,6 +12,7 @@ package co.mindie.cindy.resolver.builtin;
 import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 import me.corsin.javatools.misc.NullArgumentException;
 
 @Load(creationPriority = -1)
@@ -35,7 +36,7 @@ public class StringToLongResolver implements IResolver<String, Long> {
 	////////////////
 
 	@Override
-	public Long resolve(String input, Class<?> expectedOutputType, int options) {
+	public Long resolve(String input, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		if (expectedOutputType == null) {
 			expectedOutputType = Long.class;
 		}

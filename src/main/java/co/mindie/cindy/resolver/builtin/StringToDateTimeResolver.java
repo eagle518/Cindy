@@ -11,6 +11,7 @@ package co.mindie.cindy.resolver.builtin;
 
 import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
+import co.mindie.cindy.resolver.ResolverContext;
 import org.joda.time.DateTime;
 
 import co.mindie.cindy.resolver.IResolver;
@@ -36,7 +37,7 @@ public class StringToDateTimeResolver implements IResolver<String, DateTime> {
 	////////////////
 
 	@Override
-	public DateTime resolve(String input, Class<?> expectedOutputType, int options) {
+	public DateTime resolve(String input, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		if (input == null) {
 			return null;
 		}

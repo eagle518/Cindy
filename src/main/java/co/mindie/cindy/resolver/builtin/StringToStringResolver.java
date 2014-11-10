@@ -12,6 +12,7 @@ package co.mindie.cindy.resolver.builtin;
 import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.ResolverContext;
 
 @Load(creationPriority = -1)
 @Resolver(managedInputClasses = { String.class }, managedOutputClasses = { String.class })
@@ -34,7 +35,7 @@ public class StringToStringResolver implements IResolver<String, String> {
 	////////////////
 
 	@Override
-	public String resolve(String input, Class<?> expectedOutputType, int options) {
+	public String resolve(String input, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		return input;
 	}
 

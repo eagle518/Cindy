@@ -1,19 +1,15 @@
 package co.mindie.cindy.resolver.builtin;
 
-import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.context.RequestContext;
-import co.mindie.cindy.controller.manager.HttpRequest;
-import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.dao.domain.AbstractListRequest;
 import co.mindie.cindy.dao.domain.Direction;
 import co.mindie.cindy.dao.domain.Sort;
 import co.mindie.cindy.resolver.IResolver;
-import org.apache.commons.fileupload.FileItem;
+import co.mindie.cindy.resolver.ResolverContext;
+import co.mindie.cindy.resolver.ResolverOptions;
 
-import java.util.List;
-
-public abstract class AbstractListRequestResolver<T extends AbstractListRequest> implements IResolver<RequestParameter, T> {
+public abstract class AbstractListRequestResolver<T extends AbstractListRequest> implements IResolver<RequestContext, T> {
 
 	////////////////////////
 	// VARIABLES
@@ -21,26 +17,31 @@ public abstract class AbstractListRequestResolver<T extends AbstractListRequest>
 
 	public static int DEFAULT_LIMIT = 50;
 
-	@Wired(creationBox = CreationBox.NO_CREATION) private RequestContext context;
+	@Wired private RequestContextToStringResolver requestContextToStringResolver;
 	@Wired private StringToBooleanResolver booleanResolver;
+
+	private ResolverOptions reversedOptions = new ResolverOptions(RequestContextToStringResolver.OPTION_PARAMETER_NAME, this.getReversedParameterName());
+	private ResolverOptions orderOptions = new ResolverOptions(RequestContextToStringResolver.OPTION_PARAMETER_NAME, this.getOrderParameterName());
+	private ResolverOptions sortOptions = new ResolverOptions(RequestContextToStringResolver.OPTION_PARAMETER_NAME, this.getSortParameterName());
+	private ResolverOptions propertyOptions = new ResolverOptions(RequestContextToStringResolver.OPTION_PARAMETER_NAME, this.getPropertyParameterName());
 
 	////////////////////////
 	// METHODS
 	////////////////
 
-	public T resolveSort(T listRequest) {
+	public T resolveSort(RequestContext requestContext, T listRequest) {
 		// Sorting
 		Sort sort = null;
-		Boolean reverse = this.booleanResolver.resolve(this.getRequestParameter("reversed"), Boolean.class, 0);
+		Boolean reverse = this.booleanResolver.resolve(this.getRequestParameter(requestContext, this.reversedOptions), Boolean.class, null);
 		if (reverse == null) {
-			String reverseStr = this.getRequestParameter("order");
+			String reverseStr = this.getRequestParameter(requestContext, this.orderOptions);
 			if ("ASC".equalsIgnoreCase(reverseStr)) {
 				reverse = false;
 			}
 		}
-		String criteria = this.getRequestParameter("property");
+		String criteria = this.getRequestParameter(requestContext, this.propertyOptions);
 		if (criteria == null) {
-			criteria = this.getRequestParameter("sort");
+			criteria = this.getRequestParameter(requestContext, this.sortOptions);
 		}
 		if (reverse != null || criteria != null) {
 			if (criteria == null) {
@@ -58,25 +59,27 @@ public abstract class AbstractListRequestResolver<T extends AbstractListRequest>
 		return listRequest;
 	}
 
-	protected String getRequestParameter(String key) {
-		HttpRequest httpRequest = this.context.getHttpRequest();
-		String[] values = httpRequest.getQueryParameters().get(key);
-		String value = null;
+	protected String getRequestParameter(RequestContext requestContext, ResolverOptions options) {
+		return this.requestContextToStringResolver.resolve(requestContext, null, new ResolverContext(options));
+	}
 
-		if (values != null && values.length > 0) {
-			value = values[0];
-		} else {
-			if (httpRequest.getBodyParameters() != null) {
-				List<FileItem> bodyValues = httpRequest.getBodyParameters().get(key);
-				if (bodyValues != null && bodyValues.size() > 0) {
-					FileItem bodyValue = bodyValues.get(0);
-					if (bodyValue.isFormField()) {
-						value = bodyValue.getString();
-					}
-				}
-			}
-		}
+	////////////////////////
+	// CUSTOMIZATION
+	////////////////
 
-		return value;
+	public String getReversedParameterName() {
+		return "reversed";
+	}
+
+	public String getOrderParameterName() {
+		return "order";
+	}
+
+	public String getSortParameterName() {
+		return "sort";
+	}
+
+	public String getPropertyParameterName() {
+		return "property";
 	}
 }
