@@ -10,7 +10,7 @@ import co.mindie.cindy.resolver.ResolverContext;
 import co.mindie.cindy.resolver.ResolverOptions;
 
 @Load(creationPriority = -1)
-@Resolver(managedInputClasses = RequestParameter.class, managedOutputClasses = PageRequest.class)
+@Resolver(managedInputClasses = RequestContext.class, managedOutputClasses = PageRequest.class)
 public class PageRequestResolver extends AbstractListRequestResolver<PageRequest> {
 
 	////////////////////////

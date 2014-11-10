@@ -4,13 +4,12 @@ import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.context.RequestContext;
-import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.dao.domain.OffsetedRequest;
 import co.mindie.cindy.resolver.ResolverContext;
 import co.mindie.cindy.resolver.ResolverOptions;
 
 @Load(creationPriority = -1)
-@Resolver(managedInputClasses = RequestParameter.class, managedOutputClasses = OffsetedRequest.class)
+@Resolver(managedInputClasses = RequestContext.class, managedOutputClasses = OffsetedRequest.class)
 public class OffsetedRequestResolver extends AbstractListRequestResolver<OffsetedRequest> {
 
 	////////////////////////
