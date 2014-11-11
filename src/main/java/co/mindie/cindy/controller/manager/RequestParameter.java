@@ -21,15 +21,17 @@ public class RequestParameter {
 
 	final private String name;
 	final private boolean required;
+	final private boolean isFromResource;
 	final private List<RequestParameterResolverOption> resolverOptions;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public RequestParameter(String name, boolean required, List<RequestParameterResolverOption> resolverOptions) {
+	public RequestParameter(String name, boolean required, boolean isFromResource, List<RequestParameterResolverOption> resolverOptions) {
 		this.name = name;
 		this.required = required;
+		this.isFromResource = isFromResource;
 		this.resolverOptions = resolverOptions;
 	}
 
@@ -51,5 +53,9 @@ public class RequestParameter {
 
 	public boolean isRequired() {
 		return required;
+	}
+
+	public boolean isFromResource() {
+		return isFromResource;
 	}
 }

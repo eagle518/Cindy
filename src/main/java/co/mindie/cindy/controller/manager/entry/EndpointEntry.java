@@ -13,32 +13,42 @@ import co.mindie.cindy.automapping.Endpoint;
 import co.mindie.cindy.automapping.Param;
 import co.mindie.cindy.automapping.ResolverOption;
 import co.mindie.cindy.component.ComponentInitializer;
+import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.component.CreatedComponent;
 import co.mindie.cindy.component.box.ComponentBox;
-import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.CindyController;
 import co.mindie.cindy.controller.manager.IParameterNameResolver;
 import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.exception.BadParameterException;
 import co.mindie.cindy.exception.CindyException;
-import co.mindie.cindy.resolver.*;
-import co.mindie.cindy.resolver.builtin.AbstractRequestContextParameterResolver;
+import co.mindie.cindy.exception.ResourceNotFoundException;
+import co.mindie.cindy.resolver.ChainedResolverBuilder;
+import co.mindie.cindy.resolver.IDynamicResolver;
+import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.IResolverBuilder;
+import co.mindie.cindy.resolver.ResolverBuilder;
+import co.mindie.cindy.resolver.ResolverContext;
+import co.mindie.cindy.resolver.ResolverManager;
+import co.mindie.cindy.resolver.ResolverOptions;
 import co.mindie.cindy.resolver.builtin.ArrayToArrayResolver;
 import co.mindie.cindy.resolver.builtin.ArrayToListResolver;
 import co.mindie.cindy.resolver.builtin.RequestContextToStringResolver;
-import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.string.Strings;
-import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.Logger;
 
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EndpointEntry {
 
@@ -111,7 +121,7 @@ public class EndpointEntry {
 		if (requestHandler == null) {
 			ComponentInitializer initializer = metadataManager.createInitializer();
 
-			CreatedComponent<RequestHandler> createdComponent = initializer.createComponent((Class<RequestHandler>)this.requestHandlerType, box);
+			CreatedComponent<RequestHandler> createdComponent = initializer.createComponent((Class<RequestHandler>) this.requestHandlerType, box);
 			requestHandler = createdComponent.getInstance();
 			requestHandler.setEndpointEntry(this);
 
@@ -251,17 +261,17 @@ public class EndpointEntry {
 				if (this.method.getReturnType().getComponentType() != null) {
 					this.appendSubResolverBuilder(resolverManager, this.method.getReturnType().getComponentType(), subResolverBuilders);
 				} else if (this.method.getGenericReturnType() instanceof ParameterizedType) {
-					ParameterizedType aType = (ParameterizedType)this.method.getGenericReturnType();
+					ParameterizedType aType = (ParameterizedType) this.method.getGenericReturnType();
 
 					for (Type type : aType.getActualTypeArguments()) {
-						this.appendSubResolverBuilder(resolverManager, (Class<?>)type, subResolverBuilders);
+						this.appendSubResolverBuilder(resolverManager, (Class<?>) type, subResolverBuilders);
 					}
 				} else {
 					this.throwMethodError("Return type is dynamic but the returned type is not generic nor an array");
 				}
 
 				this.outputResolverBuilder = (initializer, box) -> {
-					IDynamicResolver baseResolver = (IDynamicResolver)defaultBuilder.findOrCreateResolver(initializer, box);
+					IDynamicResolver baseResolver = (IDynamicResolver) defaultBuilder.findOrCreateResolver(initializer, box);
 
 					for (IResolverBuilder subResolverBuilder : subResolverBuilders) {
 						baseResolver.appendSubResolver(subResolverBuilder.findOrCreateResolver(initializer, box));
@@ -312,7 +322,7 @@ public class EndpointEntry {
 			resolverOptions.add(new RequestParameterResolverOption(RequestContextToStringResolver.OPTION_FETCH_FROM_RESOURCE, shouldFetchFromResource ? "true" : "false"));
 
 			this.parameterResolverBuilders.add(this.getResolverBuilder(resolverManager, parameter, genericParameterType));
-			this.requestParameters.add(new RequestParameter(resolvedName, required, resolverOptions));
+			this.requestParameters.add(new RequestParameter(resolvedName, required, shouldFetchFromResource, resolverOptions));
 			i++;
 		}
 	}
@@ -326,14 +336,18 @@ public class EndpointEntry {
 			RequestParameter requestParameter = this.requestParameters.get(i);
 			Object output = null;
 			try {
-				IResolver<RequestContext, ?> resolver =  requestHandler.getParametersResolver().get(i);
+				IResolver<RequestContext, ?> resolver = requestHandler.getParametersResolver().get(i);
 				output = resolver.resolve(requestHandler.getRequestContext(), null, resolverContext);
 			} catch (Exception ex) {
 				throw new CindyException("Error while resolving the parameter: " + requestParameter.getName(), ex);
 			}
 
-			if (requestParameter.isRequired() && output == null) {
-				throw new BadParameterException(requestParameter.getName(), this.mapped.httpMethod(), this.getPath());
+			if (output == null) {
+				if (requestParameter.isFromResource()) {
+					throw new ResourceNotFoundException(requestParameter.getName(), this.mapped.httpMethod(), this.getPath());
+				} else if (requestParameter.isRequired()) {
+					throw new BadParameterException(requestParameter.getName(), this.mapped.httpMethod(), this.getPath());
+				}
 			}
 
 			parameters[i] = output;
