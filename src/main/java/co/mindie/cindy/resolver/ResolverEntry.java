@@ -42,21 +42,34 @@ public class ResolverEntry {
 	// METHODS
 	////////////////
 
-	public void addConverter(Class<?> converterClass, Class<?> outputClass, boolean isDefault) {
+	public void addConverter(Class<?> converterClass, Class<?> outputClass, boolean isDefault, int priority) {
 		ResolverBuilder output = this.outputsByOutputClass.get(outputClass);
 
+		boolean shoudlAddConverter = true;
+
 		if (output != null) {
-			if (output.getConverterClass() != converterClass) {
+			if (output.getConverterClass() != converterClass && output.getPriority() == priority) {
 				throw new CindyException(Strings.format("Attempted to add converter {#0} to output {#1}, but the converter {#2}"
 						+ " has been already added for this output", converterClass, outputClass, output.getConverterClass()));
+			} else if (output.getPriority() < priority) {
+				this.outputsByOutputClass.remove(outputClass);
+				this.outputs.remove(output);
+			} else {
+				shoudlAddConverter = false;
 			}
 		} else {
 			if (isDefault && this.defaultConverterOutput != null && this.defaultConverterOutput.getConverterClass() != converterClass) {
-				throw new CindyException(Strings.format("Attempted to set converter {#0} as a default for input {#1}, but the converter {#2}"
+				if (this.defaultConverterOutput.getPriority() == priority) {
+					throw new CindyException(Strings.format("Attempted to set converter {#0} as a default for input {#1}, but the converter {#2}"
 							+ " has been already added set as default", converterClass, this.inputClass, this.defaultConverterOutput.getConverterClass()));
+				} else if (this.defaultConverterOutput.getPriority() > priority) {
+					shoudlAddConverter = false;
+				}
 			}
+		}
 
-			output = new ResolverBuilder(converterClass, this.inputClass, outputClass);
+		if (shoudlAddConverter) {
+			output = new ResolverBuilder(converterClass, this.inputClass, outputClass, priority);
 			if (isDefault) {
 				this.defaultConverterOutput = output;
 			}

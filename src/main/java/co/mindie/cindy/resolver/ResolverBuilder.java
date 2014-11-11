@@ -21,15 +21,17 @@ public class ResolverBuilder implements IResolverBuilder {
 	final private Class<?> converterClass;
 	final private Class<?> inputClass;
 	final private Class<?> outputClass;
+	final private int priority;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ResolverBuilder(Class<?> converterClass, Class<?> inputClass, Class<?> outputClass) {
+	public ResolverBuilder(Class<?> converterClass, Class<?> inputClass, Class<?> outputClass, int priority) {
 		this.converterClass = converterClass;
 		this.inputClass = inputClass;
 		this.outputClass = outputClass;
+		this.priority = priority;
 	}
 
 	////////////////////////
@@ -43,10 +45,10 @@ public class ResolverBuilder implements IResolverBuilder {
 
 	@Override
 	public IResolver findOrCreateResolver(ComponentInitializer initializer, ComponentBox enclosingBox) {
-		IResolver resolver = (IResolver)enclosingBox.findComponent(this.converterClass);
+		IResolver resolver = (IResolver) enclosingBox.findComponent(this.converterClass);
 
 		if (resolver == null) {
-			resolver = (IResolver)initializer.createComponent(this.converterClass, enclosingBox).getInstance();
+			resolver = (IResolver) initializer.createComponent(this.converterClass, enclosingBox).getInstance();
 		}
 
 		return resolver;
@@ -72,4 +74,7 @@ public class ResolverBuilder implements IResolverBuilder {
 		return IDynamicResolver.class.isAssignableFrom(this.converterClass);
 	}
 
+	public int getPriority() {
+		return priority;
+	}
 }

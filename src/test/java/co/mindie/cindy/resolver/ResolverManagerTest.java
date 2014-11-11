@@ -2,23 +2,23 @@ package co.mindie.cindy.resolver;
 
 import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.automapping.Box;
-import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.automapping.WiredCore;
 import co.mindie.cindy.component.ComponentInitializer;
-import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.component.box.ComponentBox;
+import co.mindie.cindy.exception.CindyException;
 import org.junit.Test;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @Box(rejectAspects = {}, readOnly = false)
 public class ResolverManagerTest extends AbstractCindyTest {
-
 	@Wired private ResolverManager resolverManager;
 	@WiredCore private ComponentBox componentBox;
 
@@ -30,19 +30,26 @@ public class ResolverManagerTest extends AbstractCindyTest {
 	}
 
 	private <Input, Output> Output resolve(Input input, Class<Output> outputClass) {
-		return this.resolve(input, outputClass, (Class<Input>)input.getClass());
+		return this.resolve(input, outputClass, (Class<Input>) input.getClass());
 	}
 
 	private <Input, Output> Output resolve(Input input, Class<Output> outputClass, Class<Input> inputClass) {
-		IResolverBuilder output =  this.resolverManager.getResolverOutput(inputClass, outputClass);
+		return this.resolve(input, outputClass, this.resolverManager.getResolverOutput(inputClass, outputClass));
+	}
+
+	private <Input, Output> Output resolve(Input input, Class<Output> outputClass, IResolverBuilder builderOutput) {
 
 		ComponentInitializer initializer = this.metadataManager.createInitializer();
 
-		IResolver resolver = output.findOrCreateResolver(initializer, this.componentBox);
+		IResolver resolver = builderOutput.findOrCreateResolver(initializer, this.componentBox);
 
 		initializer.init();
 
-		return (Output)resolver.resolve(input, outputClass, null);
+		return (Output) resolver.resolve(input, outputClass, null);
+	}
+
+	private <Input, Output> Output resolve(Input input) {
+		return this.resolve(input, null, this.resolverManager.getDefaultResolverOutputForInput(input));
 	}
 
 	@Test
@@ -97,7 +104,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 		assertNull(output);
 
 		this.metadataManager.loadComponent(IntToMyObjectResolver.class);
-		this.resolverManager.addConverter(IntToMyObjectResolver.class, Integer.class, MyObject.class, false);
+		this.resolverManager.addConverter(IntToMyObjectResolver.class, Integer.class, MyObject.class, false, 0);
 
 		output = this.resolverManager.getResolverOutput(String.class, MyObject.class);
 
@@ -116,7 +123,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 		assertNull(output);
 
 		this.metadataManager.loadComponent(WeirdResolver.class);
-		this.resolverManager.addConverter(WeirdResolver.class, Boolean.class, Object[].class, false);
+		this.resolverManager.addConverter(WeirdResolver.class, Boolean.class, Object[].class, false, 0);
 
 		output = this.resolverManager.getResolverOutput(Boolean.class, List.class);
 
@@ -125,6 +132,65 @@ public class ResolverManagerTest extends AbstractCindyTest {
 		List<Object> list = this.resolve(true, List.class, Boolean.class);
 
 		assertTrue(list.size() == 1);
+	}
+
+	@Test
+	public void addConverter_with_a_higher_priority_overrides_the_lower_priority() {
+		this.metadataManager.loadComponent(StringToInt1Resolver.class);
+		this.metadataManager.loadComponent(StringToInt2Resolver.class);
+
+		this.resolverManager.addConverter(StringToInt1Resolver.class, String.class, Integer.class, false, 0);
+		this.resolverManager.addConverter(StringToInt2Resolver.class, String.class, Integer.class, false, 1);
+
+		IResolverBuilder output = this.resolverManager.getResolverOutput(String.class, Integer.class);
+
+		assertNotNull(output);
+
+		int value = this.resolve("", Integer.class);
+		assertEquals(2, value);
+	}
+
+	@Test
+	public void addConverter_with_the_same_priority_fails() {
+		this.metadataManager.loadComponent(StringToInt1Resolver.class);
+		this.metadataManager.loadComponent(StringToInt2Resolver.class);
+
+		this.expectedException.expect(CindyException.class);
+
+		this.resolverManager.addConverter(StringToInt1Resolver.class, String.class, Integer.class, false, 0);
+		this.resolverManager.addConverter(StringToInt2Resolver.class, String.class, Integer.class, false, 0);
+	}
+
+	@Test
+	public void addConverter_with_a_higher_priority_but_not_default_doesnt_override_the_default() {
+		this.metadataManager.loadComponent(StringToInt1Resolver.class);
+		this.metadataManager.loadComponent(StringToInt2Resolver.class);
+
+		this.resolverManager.addConverter(StringToInt1Resolver.class, String.class, Integer.class, true, 0);
+		this.resolverManager.addConverter(StringToInt2Resolver.class, String.class, Integer.class, false, 1);
+
+		IResolverBuilder output = this.resolverManager.getResolverOutput(String.class, Integer.class);
+
+		assertNotNull(output);
+
+		int value = this.resolve("");
+		assertEquals(1, value);
+	}
+
+	@Test
+	public void addConverter_with_a_higher_priority_and_default_overrides_the_default() {
+		this.metadataManager.loadComponent(StringToInt1Resolver.class);
+		this.metadataManager.loadComponent(StringToInt2Resolver.class);
+
+		this.resolverManager.addConverter(StringToInt1Resolver.class, String.class, Integer.class, true, 0);
+		this.resolverManager.addConverter(StringToInt2Resolver.class, String.class, Integer.class, true, 1);
+
+		IResolverBuilder output = this.resolverManager.getResolverOutput(String.class, Integer.class);
+
+		assertNotNull(output);
+
+		int value = this.resolve("");
+		assertEquals(2, value);
 	}
 
 	public static class MyObject {
@@ -137,6 +203,20 @@ public class ResolverManagerTest extends AbstractCindyTest {
 		@Override
 		public Object[] resolve(Boolean input, Class<?> expectedOutputType, ResolverContext options) {
 			return new Object[]{new MyObject()};
+		}
+	}
+
+	public static class StringToInt1Resolver implements IResolver<String, Integer> {
+		@Override
+		public Integer resolve(String input, Class<?> expectedOutputType, ResolverContext options) {
+			return 1;
+		}
+	}
+
+	public static class StringToInt2Resolver implements IResolver<String, Integer> {
+		@Override
+		public Integer resolve(String input, Class<?> expectedOutputType, ResolverContext options) {
+			return 2;
 		}
 	}
 
