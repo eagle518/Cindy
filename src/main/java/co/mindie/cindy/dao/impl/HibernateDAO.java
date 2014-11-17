@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
-public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType, PrimaryKey, HibernateDatabase> implements Closeable {
+public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType, PrimaryKey, HibernateDatabase> implements Closeable, KeyForEntityResolver<PrimaryKey, ElementType> {
 
 	// //////////////////////
 	// VARIABLES
@@ -231,10 +231,6 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 				.single()).longValue();
 	}
 
-	public PrimaryKey getKeyForElement(ElementType elementType) {
-		return (PrimaryKey) ReflectionUtils.getField(elementType, this.getPrimaryKeyPropertyName());
-	}
-
 	public List<ElementType> findAllSince(DateTime date) {
 		return this.createCriteria()
 				.add(Restrictions.gt(this.getCreatedDatePropertyName(), date))
@@ -247,6 +243,10 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 				.page(abstractListRequest);
 	}
 
+	public List<ElementType> findForKeys(List<PrimaryKey> keys) {
+		return this.findForKeys(keys, this.getManagedClass(), this);
+	}
+
 	/**
 	 * Resolves elements for keys. The PrimaryKey must have a working
 	 * implementation of getHashCode() or this method will have an unexpected
@@ -255,26 +255,26 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	 * @param keys
 	 * @return
 	 */
-	public List<ElementType> findForKeys(List<PrimaryKey> keys) {
+	public <OutputType, OutputTypeKey> List<OutputType> findForKeys(List<OutputTypeKey> keys, Class<OutputType> outputClass, KeyForEntityResolver<OutputTypeKey, OutputType> keyForEntityResolver) {
 		if (keys.isEmpty()) {
-			return new ArrayList<ElementType>();
+			return new ArrayList<OutputType>();
 		}
 
-		Map<PrimaryKey, ElementType> associations = new HashMap<PrimaryKey, ElementType>();
+		Map<OutputTypeKey, OutputType> associations = new HashMap<>();
 
-		List<ElementType> elements = this.createCriteria().add(Restrictions.in(this.getPrimaryKeyPropertyName(), keys)).list();
+		List<OutputType> elements = this.createCriteria(outputClass).add(Restrictions.in(this.getPrimaryKeyPropertyName(), keys)).list();
 
-		for (ElementType element : elements) {
-			PrimaryKey key = this.getKeyForElement(element);
+		for (OutputType element : elements) {
+			OutputTypeKey key = keyForEntityResolver.getKeyForEntity(element);
 			if (key == null) {
 				throw new RuntimeException("getKeyForElement did not return the primary key");
 			}
 			associations.put(key, element);
 		}
 
-		List<ElementType> outputList = new ArrayList<ElementType>();
-		for (PrimaryKey key : keys) {
-			ElementType element = associations.get(key);
+		List<OutputType> outputList = new ArrayList<>();
+		for (OutputTypeKey key : keys) {
+			OutputType element = associations.get(key);
 
 			// element might be null. Still have to think about what to do in
 			// that case
@@ -303,6 +303,11 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 
 	public void setDatabaseHandle(HibernateDatabaseHandle databaseHandle) {
 		this.databaseHandle = databaseHandle;
+	}
+
+	@Override
+	public PrimaryKey getKeyForEntity(ElementType entity) {
+		return (PrimaryKey) ReflectionUtils.getField(entity, this.getPrimaryKeyPropertyName());
 	}
 
 	// //////////////////////
