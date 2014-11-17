@@ -37,6 +37,7 @@ public class ComponentInitializer implements Initializable {
 	private List<ComponentBox> createdBoxes;
 	private ComponentMetadataManager metadataManager;
 	private int currentRecursionCallCount;
+	private ComponentInitializerListener listener;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -92,6 +93,10 @@ public class ComponentInitializer implements Initializable {
 			this.currentRecursionCallCount++;
 
 			CreatedComponent<T> createdComponent =  this.addCreatedComponent(objectInstance, metadata, enclosingBox, objectClass);
+
+			if (this.listener != null) {
+				this.listener.onComponentCreated(this, createdComponent);
+			}
 
 			return createdComponent;
 		} finally {
@@ -334,5 +339,13 @@ public class ComponentInitializer implements Initializable {
 
 	public ComponentMetadataManager getMetadataManager() {
 		return metadataManager;
+	}
+
+	public ComponentInitializerListener getListener() {
+		return listener;
+	}
+
+	public void setListener(ComponentInitializerListener listener) {
+		this.listener = listener;
 	}
 }

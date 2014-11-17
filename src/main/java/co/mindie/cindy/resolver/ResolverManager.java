@@ -9,21 +9,15 @@
 
 package co.mindie.cindy.resolver;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import co.mindie.cindy.automapping.*;
+import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
+import co.mindie.cindy.automapping.WiredCore;
 import co.mindie.cindy.component.ComponentMetadata;
 import co.mindie.cindy.component.ComponentMetadataManager;
 import co.mindie.cindy.utils.Initializable;
 import org.apache.log4j.Logger;
+
+import java.util.*;
 
 @Load(creationPriority = -1)
 public class ResolverManager implements Initializable {

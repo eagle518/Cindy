@@ -27,6 +27,10 @@ public class ResolverContext {
 	// CONSTRUCTORS
 	////////////////
 
+	public ResolverContext() {
+		this(ResolverOptions.emptyOptions());
+	}
+
 	public ResolverContext(ResolverOptions resolverOptions) {
 		if (resolverOptions == null) {
 			throw new NullArgumentException("resolverOptions");

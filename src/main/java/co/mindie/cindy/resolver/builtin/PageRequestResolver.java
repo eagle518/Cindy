@@ -4,7 +4,6 @@ import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.context.RequestContext;
-import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.dao.domain.PageRequest;
 import co.mindie.cindy.resolver.ResolverContext;
 import co.mindie.cindy.resolver.ResolverOptions;

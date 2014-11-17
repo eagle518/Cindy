@@ -20,6 +20,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.persister.entity.SingleTableEntityPersister;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.ServiceRegistryBuilder;
 import org.hibernate.stat.Statistics;
 import org.joda.time.DateTime;
@@ -87,17 +88,20 @@ public abstract class HibernateDatabase extends Database implements Pausable, In
 //				stats.getQueryExecutionCount() + stats.getCollectionFetchCount();
 	}
 
+	protected HibernateSessionFactoryCreator getSessionFactoryCreator() {
+		final org.hibernate.cfg.Configuration configuration = this.getHibernateConfiguration();
+		ServiceRegistryBuilder builder = new ServiceRegistryBuilder();
+		builder.applySettings(configuration.getProperties());
+
+		return new HibernateSessionFactoryCreator(configuration, builder.buildServiceRegistry());
+	}
+
 	public SessionFactory getSessionFactory() {
 		SessionFactory sessionFactory = this.sessionFactory;
 		if (sessionFactory == null) {
 			synchronized (this) {
 				if (this.sessionFactory == null) {
-					final org.hibernate.cfg.Configuration configuration = this.getHibernateConfiguration();
-					ServiceRegistryBuilder builder = new ServiceRegistryBuilder();
-					builder.applySettings(configuration.getProperties());
-
-					this.sessionFactory = configuration.buildSessionFactory(builder.buildServiceRegistry());
-					return this.sessionFactory;
+					this.sessionFactory = this.getSessionFactoryCreator().createSessionFactory();
 				}
 
 				sessionFactory = this.sessionFactory;

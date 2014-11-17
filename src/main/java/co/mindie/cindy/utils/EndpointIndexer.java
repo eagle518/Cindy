@@ -9,13 +9,13 @@
 
 package co.mindie.cindy.utils;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import co.mindie.cindy.exception.CindyException;
-import me.corsin.javatools.string.Strings;
 import co.mindie.cindy.controller.manager.entry.EndpointEntry;
 import co.mindie.cindy.controller.manager.entry.EndpointPathResult;
+import co.mindie.cindy.exception.CindyException;
+import me.corsin.javatools.string.Strings;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class EndpointIndexer {
 

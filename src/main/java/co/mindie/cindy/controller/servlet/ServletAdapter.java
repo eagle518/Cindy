@@ -9,15 +9,14 @@
 
 package co.mindie.cindy.controller.servlet;
 
-import java.io.IOException;
+import co.mindie.cindy.automapping.HttpMethod;
+import co.mindie.cindy.controller.manager.ControllerManager;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import co.mindie.cindy.automapping.HttpMethod;
-import co.mindie.cindy.controller.manager.ControllerManager;
+import java.io.IOException;
 
 public class ServletAdapter extends HttpServlet {
 

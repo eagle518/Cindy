@@ -9,14 +9,13 @@
 
 package co.mindie.cindy.controller.dummy;
 
+import co.mindie.cindy.automapping.HttpMethod;
+import co.mindie.cindy.controller.manager.HttpRequest;
+import org.apache.commons.fileupload.FileItem;
+
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-
-import co.mindie.cindy.automapping.HttpMethod;
-import org.apache.commons.fileupload.FileItem;
-
-import co.mindie.cindy.controller.manager.HttpRequest;
 
 public class DummyHttpRequest implements HttpRequest {
 

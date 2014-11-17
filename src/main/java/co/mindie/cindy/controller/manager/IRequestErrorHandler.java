@@ -9,11 +9,9 @@
 
 package co.mindie.cindy.controller.manager;
 
-import java.io.IOException;
-
-import co.mindie.cindy.controller.manager.HttpResponse;
 import co.mindie.cindy.context.RequestContext;
-import co.mindie.cindy.controller.manager.HttpRequest;
+
+import java.io.IOException;
 
 public interface IRequestErrorHandler {
 

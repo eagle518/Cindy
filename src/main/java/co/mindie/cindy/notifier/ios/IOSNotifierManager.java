@@ -9,6 +9,11 @@
 
 package co.mindie.cindy.notifier.ios;
 
+import co.mindie.cindy.exception.CindyException;
+import co.mindie.cindy.notifier.NotifierListener;
+import me.corsin.javatools.misc.Pair;
+import me.corsin.javatools.task.TaskQueue;
+
 import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
@@ -16,11 +21,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import co.mindie.cindy.exception.CindyException;
-import co.mindie.cindy.notifier.NotifierListener;
-import me.corsin.javatools.misc.Pair;
-import me.corsin.javatools.task.TaskQueue;
 
 public class IOSNotifierManager implements Closeable, Flushable {
 

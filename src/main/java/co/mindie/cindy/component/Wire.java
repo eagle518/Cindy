@@ -10,8 +10,6 @@
 package co.mindie.cindy.component;
 
 import co.mindie.cindy.automapping.Box;
-import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.exception.CindyException;
 
 import java.lang.reflect.Field;

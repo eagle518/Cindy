@@ -10,8 +10,8 @@
 package co.mindie.cindy.dao.impl;
 
 import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.dao.domain.Page;
 import co.mindie.cindy.dao.domain.AbstractListRequest;
+import co.mindie.cindy.dao.domain.Page;
 import co.mindie.cindy.dao.utils.CriteriaBuilder;
 import co.mindie.cindy.dao.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.dao.utils.GroupByResultTransformer;

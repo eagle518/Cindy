@@ -9,12 +9,12 @@
 
 package co.mindie.cindy.controller.manager;
 
+import co.mindie.cindy.automapping.HttpMethod;
+import org.apache.commons.fileupload.FileItem;
+
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-
-import co.mindie.cindy.automapping.HttpMethod;
-import org.apache.commons.fileupload.FileItem;
 
 public interface HttpRequest {
 

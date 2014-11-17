@@ -9,13 +9,13 @@
 
 package co.mindie.cindy.resolver.builtin;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Resolver;
 import co.mindie.cindy.resolver.IResolver;
 import co.mindie.cindy.resolver.ResolverContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Load(creationPriority = -1)
 @Resolver(managedInputClasses = Object[].class, managedOutputClasses = List.class)

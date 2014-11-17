@@ -9,15 +9,16 @@
 
 package co.mindie.cindy.context;
 
+import co.mindie.cindy.automapping.Load;
+import co.mindie.cindy.automapping.Wired;
+import co.mindie.cindy.controller.manager.HttpRequest;
+import co.mindie.cindy.controller.manager.HttpResponse;
+import co.mindie.cindy.responseserializer.IResponseWriter;
+import co.mindie.cindy.utils.Flushable;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import co.mindie.cindy.automapping.*;
-import co.mindie.cindy.controller.manager.HttpResponse;
-import co.mindie.cindy.utils.Flushable;
-import co.mindie.cindy.controller.manager.HttpRequest;
-import co.mindie.cindy.responseserializer.IResponseWriter;
 
 @Load(creationPriority = -1)
 public class RequestContext {

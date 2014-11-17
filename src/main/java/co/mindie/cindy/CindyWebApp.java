@@ -10,7 +10,10 @@
 package co.mindie.cindy;
 
 import co.mindie.cindy.automapping.*;
-import co.mindie.cindy.component.*;
+import co.mindie.cindy.component.ComponentAspect;
+import co.mindie.cindy.component.ComponentInitializer;
+import co.mindie.cindy.component.ComponentMetadata;
+import co.mindie.cindy.component.WireListener;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.controller.manager.ControllerManager;
@@ -19,7 +22,6 @@ import co.mindie.cindy.utils.Initializable;
 import co.mindie.cindy.utils.Pausable;
 import me.corsin.javatools.array.ArrayUtils;
 import org.apache.log4j.Appender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTimeZone;
 

@@ -9,9 +9,6 @@
 
 package co.mindie.cindy.controller.manager.entry;
 
-import java.io.Closeable;
-import java.util.List;
-
 import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.automapping.WiredCore;
@@ -20,6 +17,9 @@ import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.resolver.IResolver;
 import co.mindie.cindy.resolver.ResolverContext;
+
+import java.io.Closeable;
+import java.util.List;
 
 @Box(rejectAspects = ComponentAspect.SINGLETON)
 public class RequestHandler implements Closeable {

@@ -9,10 +9,10 @@
 
 package co.mindie.cindy.controller.dummy;
 
+import co.mindie.cindy.controller.manager.HttpResponse;
+
 import java.io.IOException;
 import java.io.OutputStream;
-
-import co.mindie.cindy.controller.manager.HttpResponse;
 
 public class DummyHttpResponse implements HttpResponse {
 

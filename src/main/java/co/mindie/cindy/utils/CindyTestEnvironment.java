@@ -20,6 +20,10 @@ public abstract class CindyTestEnvironment {
 		metadataManager.loadComponents("co.mindie.cindy");
 	}
 
+	protected void onCreate(ComponentInitializer initializer) {
+
+	}
+
 	protected void injectComponent(Object component, ComponentMetadataManager metadataManager) {
 		Class<?> cls = component.getClass();
 
@@ -34,15 +38,21 @@ public abstract class CindyTestEnvironment {
 
 		this.onLoad(metadataManager);
 
+		metadataManager.ensureIntegrity();
+
 		ComponentInitializer initializer =  this.metadataManager.createInitializer();
 
 		initializer.addCreatedComponent(this, ComponentBox.create(true));
+
+		this.onCreate(initializer);
 
 		initializer.init();
 	}
 
 	public void unprepare() {
-		this.innerBox.close();
+		if (this.innerBox != null) {
+			this.innerBox.close();
+		}
 
 		releaseTime();
 	}

@@ -86,9 +86,11 @@ public class ComponentMetadataManager {
 				if (exception != null || (compatibleMetadata == null && dependency.isRequired())) {
 					String message = "" +
 							"On " + metadata.getComponentClass() + " and dependency " + dependency.getComponentClass() + " " +
-							(dependency.getWire() != null ? "(wire on property " + dependency.getWire().getField() + ") " : "") +
-							":\n" + (exception == null ? "No compatible loaded candidate was found" : exception.getMessage())
+							(dependency.getWire() != null ? "(wire on property " + dependency.getWire().getField() + ") " : "")
+							+ "\nLoad context:\n" + metadata.getLoadDescriptionContext()
 							;
+
+					message += "\n\nError message: " + (exception == null ? "No compatible loaded candidate was found" : exception.getMessage());
 					throw new CindyException(message);
 				}
 			}
@@ -111,6 +113,10 @@ public class ComponentMetadataManager {
 	}
 
 	public ComponentMetadata loadComponent(Class<?> cls) {
+		return this.loadComponent(cls, null);
+	}
+
+	private ComponentMetadata loadComponent(Class<?> cls, ComponentMetadata parentComponentMetadata) {
 		if (!ComponentMetadata.isLoadable(cls)) {
 			throw new CindyException("The " + cls + " is not loadable (is abstract or an interface)");
 		}
@@ -120,14 +126,14 @@ public class ComponentMetadataManager {
 			ComponentMetadata componentMetadata = this.getComponentMetadata(cls);
 
 			if (componentMetadata == null) {
-				componentMetadata = new ComponentMetadata(this, cls);
+				componentMetadata = new ComponentMetadata(this, cls, parentComponentMetadata);
 				this.metadatas.put(cls, componentMetadata);
 				this.componentIndexer.add(componentMetadata, cls);
 
 				this.log("Loaded component {#0}", cls.getSimpleName());
 				for (ComponentDependency e : componentMetadata.getDependencies()) {
-					if (ComponentMetadata.isLoadable(e.getComponentClass()) && e.getComponentClass().getAnnotation(Load.class) != null) {
-						this.loadComponent(e.getComponentClass());
+					if (e.getComponentClass().getAnnotation(Load.class) != null) {
+						this.loadComponent(e.getComponentClass(), componentMetadata);
 					}
 				}
 

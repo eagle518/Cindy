@@ -9,16 +9,19 @@
 
 package co.mindie.cindy.controller.servlet;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRegistration.Dynamic;
-
 import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.CindyWebAppCreator;
 import org.apache.log4j.Logger;
 
-import co.mindie.cindy.component.ComponentMetadataManager;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRegistration.Dynamic;
 
+/**
+ * Creates and register a CindyWebApp as a servlet. Implementing this class
+ * requires to implement getAppCreator() that is responsible for returning a
+ * CindyWebAppCreator that will later be used to create the CindyWebApp instance.
+ */
 public abstract class CindyServletWebAppLoader implements ServletContextListener {
 
 	////////////////////////
@@ -43,9 +46,7 @@ public abstract class CindyServletWebAppLoader implements ServletContextListener
 
 	abstract protected CindyWebAppCreator getAppCreator();
 
-	protected void onReady() {
-		LOGGER.info("CindyWebApp running.");
-	}
+	abstract protected void onReady(CindyWebApp webApp);
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
@@ -54,7 +55,8 @@ public abstract class CindyServletWebAppLoader implements ServletContextListener
 		Dynamic dynamic = sce.getServletContext().addServlet("CindyServlet", new ServletAdapter(this.application.getControllerManager()));
 		dynamic.addMapping("/*");
 
-		this.onReady();
+		this.onReady(this.application);
+		LOGGER.info("CindyWebApp running.");
 	}
 
 	@Override

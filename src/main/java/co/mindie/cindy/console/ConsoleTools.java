@@ -9,11 +9,11 @@
 
 package co.mindie.cindy.console;
 
+import me.corsin.javatools.string.Strings;
+
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-
-import me.corsin.javatools.string.Strings;
 
 public class ConsoleTools {
 

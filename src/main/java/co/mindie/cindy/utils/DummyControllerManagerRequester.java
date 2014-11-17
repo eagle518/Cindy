@@ -9,34 +9,33 @@
 
 package co.mindie.cindy.utils;
 
+import co.mindie.cindy.automapping.HttpMethod;
+import co.mindie.cindy.controller.dummy.DummyHttpRequest;
+import co.mindie.cindy.controller.dummy.DummyHttpResponse;
+import co.mindie.cindy.controller.manager.ControllerManager;
+import co.mindie.cindy.responseserializer.JsonResponseWriter;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import co.mindie.cindy.CindyWebApp;
-import co.mindie.cindy.automapping.HttpMethod;
-import co.mindie.cindy.controller.dummy.DummyHttpRequest;
-import co.mindie.cindy.controller.dummy.DummyHttpResponse;
-import co.mindie.cindy.responseserializer.JsonResponseWriter;
-
-public class ControllerTester {
+public class DummyControllerManagerRequester {
 
 	////////////////////////
 	// VARIABLES
 	////////////////
 
-	final private CindyWebApp application;
+	final private ControllerManager controllerManager;
 	final private JsonResponseWriter responseWriter;
-
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ControllerTester(CindyWebApp application) {
-		this.application = application;
+	public DummyControllerManagerRequester(ControllerManager controllerManager) {
+		this.controllerManager = controllerManager;
 		this.responseWriter = new JsonResponseWriter();
 	}
 
@@ -71,7 +70,7 @@ public class ControllerTester {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		response.setOutputStream(outputStream);
 
-		this.application.getControllerManager().handle(request, response);
+		this.controllerManager.handle(request, response);
 
 //		try {
 			return this.responseWriter.getObjectMapper().readValue(outputStream.toByteArray(), outputType);

@@ -2,7 +2,10 @@ package co.mindie.cindy.queue;
 
 import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.automapping.WiredCore;
-import co.mindie.cindy.component.*;
+import co.mindie.cindy.component.AbstractWorker;
+import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.component.ComponentPool;
+import co.mindie.cindy.component.PoolableComponent;
 import co.mindie.cindy.component.box.ComponentBox;
 import me.corsin.javatools.exception.StackTraceUtils;
 import me.corsin.javatools.task.ThreadedConcurrentTaskQueue;
@@ -12,7 +15,7 @@ import org.apache.log4j.Logger;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Box
+@Box(readOnly = false)
 public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataType>> extends AbstractWorker {
 
 	////////////////////////

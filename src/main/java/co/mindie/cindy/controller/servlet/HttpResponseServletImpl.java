@@ -9,12 +9,11 @@
 
 package co.mindie.cindy.controller.servlet;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import co.mindie.cindy.controller.manager.HttpResponse;
 
 import javax.servlet.http.HttpServletResponse;
-
-import co.mindie.cindy.controller.manager.HttpResponse;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class HttpResponseServletImpl implements HttpResponse {
 

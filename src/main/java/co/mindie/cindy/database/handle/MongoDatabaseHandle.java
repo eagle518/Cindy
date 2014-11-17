@@ -12,8 +12,8 @@ package co.mindie.cindy.database.handle;
 import co.mindie.cindy.automapping.Component;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.database.Database;
-import co.mindie.cindy.database.MongoDatabase;
 import co.mindie.cindy.database.MongoConnection;
+import co.mindie.cindy.database.MongoDatabase;
 import com.mongodb.DBCollection;
 
 @Component

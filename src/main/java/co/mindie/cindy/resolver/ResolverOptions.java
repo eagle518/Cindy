@@ -122,6 +122,11 @@ public class ResolverOptions {
 		return value != null ? value.booleanValue() : defaultValue;
 	}
 
+	private static ResolverOptions emptyOptions = new ResolverOptions(new HashMap<>());
+	public static ResolverOptions emptyOptions() {
+		return emptyOptions;
+	}
+
 	////////////////////////
 	// GETTERS/SETTERS
 	////////////////

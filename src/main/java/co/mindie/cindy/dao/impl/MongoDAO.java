@@ -10,18 +10,14 @@
 package co.mindie.cindy.dao.impl;
 
 import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.dao.domain.Direction;
 import co.mindie.cindy.dao.domain.AbstractListRequest;
+import co.mindie.cindy.dao.domain.Direction;
 import co.mindie.cindy.database.MongoDatabase;
 import co.mindie.cindy.database.handle.MongoDatabaseHandle;
 import co.mindie.cindy.mongo.MongoEntity;
 import co.mindie.cindy.mongo.MongoIterator;
 import co.mindie.cindy.mongo.MongoQuery;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
+import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 

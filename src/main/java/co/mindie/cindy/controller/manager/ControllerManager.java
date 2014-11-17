@@ -11,7 +11,10 @@ package co.mindie.cindy.controller.manager;
 
 import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
 import co.mindie.cindy.automapping.*;
-import co.mindie.cindy.component.*;
+import co.mindie.cindy.component.ComponentDependency;
+import co.mindie.cindy.component.ComponentMetadata;
+import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.component.Wire;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.manager.entry.ControllerEntry;
@@ -23,6 +26,7 @@ import co.mindie.cindy.resolver.IResolver;
 import co.mindie.cindy.resolver.ResolverManager;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 import co.mindie.cindy.responseserializer.StringResponseWriter;
+import co.mindie.cindy.utils.DummyControllerManagerRequester;
 import co.mindie.cindy.utils.EndpointIndexer;
 import co.mindie.cindy.utils.Initializable;
 import javassist.ClassPool;
@@ -223,6 +227,10 @@ public class ControllerManager implements Initializable {
 		context.setHttpRequest(httpRequest);
 
 		return requestHandler;
+	}
+
+	public <T> T getResponse(HttpMethod method, String path, Map<String, String> parameters, Class<T> outputType) throws IOException {
+		return new DummyControllerManagerRequester(this).getResponse(method, path, parameters, outputType);
 	}
 
 	public void handle(HttpRequest httpRequest, HttpResponse httpResponse) {

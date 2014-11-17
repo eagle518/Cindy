@@ -9,8 +9,6 @@
 
 package co.mindie.cindy.controller.manager.entry;
 
-import co.mindie.cindy.controller.manager.entry.EndpointEntry;
-
 import java.util.ArrayList;
 import java.util.List;
 

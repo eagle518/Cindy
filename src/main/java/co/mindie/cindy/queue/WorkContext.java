@@ -1,7 +1,5 @@
 package co.mindie.cindy.queue;
 
-import co.mindie.cindy.automapping.Wired;
-
 /**
  * Created by simoncorsin on 29/09/14.
  */
@@ -11,8 +9,8 @@ public class WorkContext<DataType> {
 	// VARIABLES
 	////////////////
 
-	@Wired private WorkQueue<DataType> queue;
-	@Wired private WorkProcessor<DataType> workProcessor;
+	private WorkQueue<DataType> queue;
+	private WorkProcessor<DataType> workProcessor;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -37,5 +35,13 @@ public class WorkContext<DataType> {
 
 	public WorkProcessor<DataType> getWorkProcessor() {
 		return workProcessor;
+	}
+
+	public void setQueue(WorkQueue<DataType> queue) {
+		this.queue = queue;
+	}
+
+	public void setWorkProcessor(WorkProcessor<DataType> workProcessor) {
+		this.workProcessor = workProcessor;
 	}
 }

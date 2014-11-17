@@ -12,8 +12,6 @@ package co.mindie.cindy.controller.manager.entry;
 import java.util.ArrayList;
 import java.util.List;
 
-import co.mindie.cindy.CindyWebApp;
-
 public class ControllerEntry {
 
 	////////////////////////

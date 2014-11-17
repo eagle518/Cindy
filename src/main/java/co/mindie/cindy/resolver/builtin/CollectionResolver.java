@@ -9,10 +9,11 @@
 
 package co.mindie.cindy.resolver.builtin;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import co.mindie.cindy.resolver.IResolver;
 import co.mindie.cindy.resolver.ResolverContext;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class CollectionResolver<Input, Output> implements IResolver<Collection<Input>, Collection<Output>> {
 

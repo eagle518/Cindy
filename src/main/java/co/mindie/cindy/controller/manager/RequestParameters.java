@@ -9,11 +9,11 @@
 
 package co.mindie.cindy.controller.manager;
 
+import org.apache.commons.fileupload.FileItem;
+
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.fileupload.FileItem;
 
 public class RequestParameters {
 

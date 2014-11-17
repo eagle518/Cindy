@@ -10,7 +10,6 @@
 package co.mindie.cindy.component;
 
 import co.mindie.cindy.automapping.*;
-import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.exception.CindyException;
 
 import java.lang.annotation.Annotation;
@@ -35,6 +34,7 @@ public class ComponentMetadata {
 	final private Dependencies dependenciesAnnotation;
 	final private Box boxAnnotation;
 	final private Map<Class<?>, Annotation> annotations;
+	final private ComponentMetadata parentComponentMetadata;
 
 	private Factory<Object> factory;
 	private ComponentAspect[] aspects;
@@ -44,7 +44,7 @@ public class ComponentMetadata {
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentMetadata(ComponentMetadataManager manager, Class<?> objectClass) {
+	public ComponentMetadata(ComponentMetadataManager manager, Class<?> objectClass, ComponentMetadata parentComponentMetadata) {
 		this.manager = manager;
 		this.dependencies = new ArrayList<>();
 		this.wires = new ArrayList<>();
@@ -52,6 +52,7 @@ public class ComponentMetadata {
 		this.listDependencies = new ArrayList<>();
 		this.componentClass = objectClass;
 		this.annotations = new HashMap<>();
+		this.parentComponentMetadata = parentComponentMetadata;
 
 		this.factory = () -> {
 			try {
@@ -61,12 +62,14 @@ public class ComponentMetadata {
 			}
 		};
 
-		this.loadAnnotations();
+		this.loadClassAnnotations();
 
 		this.loadAnnotation = this.getAnnotation(Load.class);
 		this.boxAnnotation = this.getAnnotation(Box.class);
 		this.dependenciesAnnotation = this.getAnnotation(Dependencies.class);
 		this.componentAnnotation = this.getAnnotation(Component.class);
+
+		this.loadWires();
 
 		if (this.dependenciesAnnotation != null) {
 			for (Class<?> dependencyClass : this.dependenciesAnnotation.dependenciesClasses()) {
@@ -108,17 +111,10 @@ public class ComponentMetadata {
 		return (cls.getModifiers() & Modifier.ABSTRACT) == 0 && !cls.isInterface();
 	}
 
-	private void loadAnnotations() {
+	private void loadWires() {
 		Class<?> currentClass = this.componentClass;
 
 		while (currentClass != null) {
-			for (Annotation annotation : currentClass.getAnnotations()) {
-				Class<?> annotationClass = annotation.annotationType();
-				if (!this.annotations.containsKey(annotationClass)) {
-					this.annotations.put(annotationClass, annotation);
-				}
-			}
-
 			Field[] fields = currentClass.getDeclaredFields();
 
 			for (Field field : fields) {
@@ -146,6 +142,21 @@ public class ComponentMetadata {
 
 					Wire wire = new Wire(field, null, wiredCore.value());
 					this.wireCores.add(wire);
+				}
+			}
+
+			currentClass = currentClass.getSuperclass();
+		}
+	}
+
+	private void loadClassAnnotations() {
+		Class<?> currentClass = this.componentClass;
+
+		while (currentClass != null) {
+			for (Annotation annotation : currentClass.getAnnotations()) {
+				Class<?> annotationClass = annotation.annotationType();
+				if (!this.annotations.containsKey(annotationClass)) {
+					this.annotations.put(annotationClass, annotation);
 				}
 			}
 
@@ -188,6 +199,15 @@ public class ComponentMetadata {
 	 */
 	public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
 		return (T)this.annotations.get(annotationClass);
+	}
+
+	public String getLoadDescriptionContext() {
+		if (this.parentComponentMetadata == null) {
+			return this.componentClass + " was loaded manually";
+		} else {
+			return this.componentClass + " was loaded by " + this.parentComponentMetadata.getComponentClass() + "\n" +
+					this.parentComponentMetadata.getLoadDescriptionContext();
+		}
 	}
 
 	////////////////////////
@@ -246,4 +266,9 @@ public class ComponentMetadata {
 	public List<ComponentDependency> getListDependencies() {
 		return listDependencies;
 	}
+
+	public ComponentMetadata getParentComponentMetadata() {
+		return parentComponentMetadata;
+	}
+
 }

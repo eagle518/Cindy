@@ -9,14 +9,13 @@
 
 package co.mindie.cindy.resolver;
 
+import co.mindie.cindy.exception.CindyException;
+import me.corsin.javatools.string.Strings;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import co.mindie.cindy.component.ComponentMetadataManager;
-import co.mindie.cindy.exception.CindyException;
-import me.corsin.javatools.string.Strings;
 
 public class ResolverEntry {
 

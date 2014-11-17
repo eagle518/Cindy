@@ -9,12 +9,12 @@
 
 package co.mindie.cindy.console;
 
-import java.io.IOException;
-
 import me.corsin.javatools.dynamictext.Context;
 import me.corsin.javatools.dynamictext.ContextObjectResolver;
 import me.corsin.javatools.string.Strings;
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
 
 public class InterpreterProtocol implements IConsoleProtocol {
 

@@ -9,10 +9,10 @@
 
 package co.mindie.cindy.database;
 
-import java.io.Closeable;
-
 import co.mindie.cindy.utils.Pausable;
 import org.apache.log4j.Logger;
+
+import java.io.Closeable;
 
 public abstract class Database implements Closeable, Pausable {
 

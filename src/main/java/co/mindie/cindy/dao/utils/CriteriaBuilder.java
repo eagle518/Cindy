@@ -1,16 +1,12 @@
 package co.mindie.cindy.dao.utils;
 
-import co.mindie.cindy.dao.domain.Page;
 import co.mindie.cindy.dao.domain.AbstractListRequest;
+import co.mindie.cindy.dao.domain.Page;
 import me.corsin.javatools.misc.Pool;
 import me.corsin.javatools.reflect.ReflectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projection;
-import org.hibernate.criterion.ProjectionList;
-import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.*;
 import org.hibernate.transform.ResultTransformer;
 
 import java.lang.reflect.Field;

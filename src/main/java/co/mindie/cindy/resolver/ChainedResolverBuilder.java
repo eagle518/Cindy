@@ -9,11 +9,11 @@
 
 package co.mindie.cindy.resolver;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.box.ComponentBox;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChainedResolverBuilder implements IResolverBuilder {
 

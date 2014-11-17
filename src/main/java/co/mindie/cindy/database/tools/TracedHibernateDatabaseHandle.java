@@ -9,9 +9,8 @@
 
 package co.mindie.cindy.database.tools;
 
-import org.joda.time.DateTime;
-
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
+import org.joda.time.DateTime;
 
 public class TracedHibernateDatabaseHandle {
 

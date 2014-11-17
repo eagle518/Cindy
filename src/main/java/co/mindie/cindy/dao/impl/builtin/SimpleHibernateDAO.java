@@ -9,13 +9,13 @@
 
 package co.mindie.cindy.dao.impl.builtin;
 
-import java.io.Serializable;
-
 import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.dao.impl.HibernateDAO;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.utils.Initializable;
+
+import java.io.Serializable;
 
 public abstract class SimpleHibernateDAO<ElementType, PrimaryKey extends Serializable> extends HibernateDAO<ElementType, PrimaryKey> implements Initializable{
 

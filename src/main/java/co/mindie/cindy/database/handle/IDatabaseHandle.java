@@ -9,9 +9,9 @@
 
 package co.mindie.cindy.database.handle;
 
-import java.io.Closeable;
-
 import co.mindie.cindy.database.Database;
+
+import java.io.Closeable;
 
 public interface IDatabaseHandle extends Closeable {
 

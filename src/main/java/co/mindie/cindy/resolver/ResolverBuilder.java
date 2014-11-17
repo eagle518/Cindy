@@ -11,7 +11,6 @@ package co.mindie.cindy.resolver;
 
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.box.ComponentBox;
-import co.mindie.cindy.component.ComponentMetadataManager;
 
 public class ResolverBuilder implements IResolverBuilder {
 
