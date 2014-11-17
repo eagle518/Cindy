@@ -10,6 +10,14 @@
 package co.mindie.cindy;
 
 import co.mindie.cindy.automapping.*;
+import co.mindie.cindy.automapping.Box;
+import co.mindie.cindy.automapping.Component;
+import co.mindie.cindy.automapping.CreationBox;
+import co.mindie.cindy.automapping.Load;
+import co.mindie.cindy.automapping.SearchScope;
+import co.mindie.cindy.automapping.Singleton;
+import co.mindie.cindy.automapping.Wired;
+import co.mindie.cindy.automapping.WiredCore;
 import co.mindie.cindy.component.ComponentAspect;
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadata;
@@ -23,14 +31,13 @@ import co.mindie.cindy.utils.Pausable;
 import me.corsin.javatools.array.ArrayUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTimeZone;
 
 import java.io.Closeable;
 import java.util.List;
 
 @Load(creationPriority = -1)
-@Component(aspects = { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE })
-@Box(needAspects = { ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE }, rejectAspects = {})
+@Component(aspects = {ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE})
+@Box(needAspects = {ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE}, rejectAspects = {})
 public class CindyWebApp implements Pausable, Closeable, WireListener, Initializable {
 
 	// //////////////////////
@@ -46,14 +53,6 @@ public class CindyWebApp implements Pausable, Closeable, WireListener, Initializ
 	@Wired private List<Pausable> pausables;
 
 	@WiredCore private ComponentBox innerBox;
-
-	// //////////////////////
-	// CONSTRUCTORS
-	// //////////////
-
-	public CindyWebApp() {
-		DateTimeZone.setDefault(DateTimeZone.UTC);
-	}
 
 	// //////////////////////
 	// METHODS
