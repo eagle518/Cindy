@@ -1,20 +1,22 @@
 /////////////////////////////////////////////////
 // Project : WSFramework
-// Package : co.mindie.wsframework.controller.dummy
-// DummyHttpResponse.java
+// Package : co.mindie.wsframework.controller.local
+// LocalHttpResponse.java
 //
 // Author : Simon CORSIN <simoncorsin@gmail.com>
 // File created on Aug 4, 2014 at 3:34:50 PM
 ////////
 
-package co.mindie.cindy.controller.dummy;
+package co.mindie.cindy.controller.local;
 
 import co.mindie.cindy.controller.manager.HttpResponse;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
-public class DummyHttpResponse implements HttpResponse {
+public class LocalHttpResponse implements HttpResponse {
 
 	////////////////////////
 	// VARIABLES
@@ -22,13 +24,15 @@ public class DummyHttpResponse implements HttpResponse {
 
 	private int statusCode;
 	private OutputStream outputStream;
+	private Map<String, String> headers;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public DummyHttpResponse() {
-
+	public LocalHttpResponse() {
+		this.headers = new HashMap<>();
+		this.statusCode = 200;
 	}
 
 	////////////////////////
@@ -56,7 +60,11 @@ public class DummyHttpResponse implements HttpResponse {
 
 	@Override
 	public void setHeader(String key, String value) {
+		this.headers.put(key, value);
+	}
 
+	public Map<String, String> getHeaders() {
+		return headers;
 	}
 
 	@Override

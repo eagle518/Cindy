@@ -1,20 +1,21 @@
 /////////////////////////////////////////////////
 // Project : WSFramework
 // Package : co.mindie.wsframework.controller.servlet
-// FormFileItem.java
+// BodyFileItem.java
 //
 // Author : Simon CORSIN <simoncorsin@gmail.com>
 // File created on Aug 5, 2014 at 4:46:19 PM
 ////////
 
-package co.mindie.cindy.controller.servlet;
+package co.mindie.cindy.controller.manager;
 
+import co.mindie.cindy.utils.io.InputStreamCreator;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemHeaders;
 
 import java.io.*;
 
-public class FormFileItem implements FileItem {
+public class BodyFileItem implements FileItem {
 
 	////////////////////////
 	// VARIABLES
@@ -22,16 +23,20 @@ public class FormFileItem implements FileItem {
 
 	private static final long serialVersionUID = 4204876205064815962L;
 
-	private String name;
-	private String value;
+	final private String name;
+	final private String contentType;
+	final private boolean isInMemory;
+	final private InputStreamCreator inputStreamCreator;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public FormFileItem(String name, String value) {
+	public BodyFileItem(String name, String contentType, boolean isInMemory, InputStreamCreator inputStreamCreator) {
 		this.name = name;
-		this.value = value;
+		this.contentType = contentType;
+		this.isInMemory = isInMemory;
+		this.inputStreamCreator = inputStreamCreator;
 	}
 
 	////////////////////////
@@ -49,17 +54,17 @@ public class FormFileItem implements FileItem {
 
 	@Override
 	public void setHeaders(FileItemHeaders headers) {
-		throw new RuntimeException("Invalid operation on FormFileItem");
+		throw new RuntimeException("Invalid operation on BodyFileItem");
 	}
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		throw new RuntimeException("Invalid operation on FormFileItem");
+		return this.inputStreamCreator.createInputStream();
 	}
 
 	@Override
 	public String getContentType() {
-		return null;
+		return this.contentType;
 	}
 
 	@Override
@@ -69,42 +74,38 @@ public class FormFileItem implements FileItem {
 
 	@Override
 	public boolean isInMemory() {
-		return true;
+		return this.isInMemory;
 	}
 
 	@Override
 	public long getSize() {
-		return this.value.length();
+		return this.inputStreamCreator.getInputStreamLength();
 	}
 
 	@Override
 	public byte[] get() {
-		try {
-			return this.value.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
+		throw new RuntimeException("Invalid operation on BodyFileItem");
 	}
 
 	@Override
 	public String getString(String encoding)
 			throws UnsupportedEncodingException {
-		return this.value;
+		throw new RuntimeException("Invalid operation on BodyFileItem");
 	}
 
 	@Override
 	public String getString() {
-		return this.value;
+		throw new RuntimeException("Invalid operation on BodyFileItem");
 	}
 
 	@Override
 	public void write(File file) throws Exception {
-		throw new RuntimeException("Invalid operation on FormFileItem");
+		throw new RuntimeException("Invalid operation on BodyFileItem");
 	}
 
 	@Override
 	public void delete() {
-		throw new RuntimeException("Invalid operation on FormFileItem");
+		throw new RuntimeException("Invalid operation on BodyFileItem");
 	}
 
 	@Override
@@ -114,21 +115,21 @@ public class FormFileItem implements FileItem {
 
 	@Override
 	public void setFieldName(String name) {
-		throw new RuntimeException("Invalid operation on FormFileItem");
+		throw new RuntimeException("Invalid operation on BodyFileItem");
 	}
 
 	@Override
 	public boolean isFormField() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public void setFormField(boolean state) {
-		throw new RuntimeException("Invalid operation on FormFileItem");
+		throw new RuntimeException("Invalid operation on BodyFileItem");
 	}
 
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		throw new RuntimeException("Invalid operation on FormFileItem");
+		throw new RuntimeException("Invalid operation on BodyFileItem");
 	}
 }

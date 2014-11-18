@@ -10,6 +10,7 @@
 package co.mindie.cindy.controller.servlet;
 
 import co.mindie.cindy.automapping.HttpMethod;
+import co.mindie.cindy.controller.manager.FormFileItem;
 import co.mindie.cindy.controller.manager.HttpRequest;
 import me.corsin.javatools.io.IOUtils;
 import org.apache.commons.fileupload.FileItem;

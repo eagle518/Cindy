@@ -26,7 +26,7 @@ import co.mindie.cindy.resolver.IResolver;
 import co.mindie.cindy.resolver.ResolverManager;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 import co.mindie.cindy.responseserializer.StringResponseWriter;
-import co.mindie.cindy.utils.DummyControllerManagerRequester;
+import co.mindie.cindy.controller.local.LocalRequester;
 import co.mindie.cindy.utils.EndpointIndexer;
 import co.mindie.cindy.utils.Initializable;
 import javassist.ClassPool;
@@ -229,8 +229,8 @@ public class ControllerManager implements Initializable {
 		return requestHandler;
 	}
 
-	public <T> T getResponse(HttpMethod method, String path, Map<String, String> parameters, Class<T> outputType) throws IOException {
-		return new DummyControllerManagerRequester(this).getResponse(method, path, parameters, outputType);
+	public LocalRequester createLocalRequester() {
+		return new LocalRequester(this);
 	}
 
 	public void handle(HttpRequest httpRequest, HttpResponse httpResponse) {

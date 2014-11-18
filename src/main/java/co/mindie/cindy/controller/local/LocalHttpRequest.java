@@ -1,23 +1,28 @@
 /////////////////////////////////////////////////
 // Project : WSFramework
-// Package : co.mindie.wsframework.controller.dummy
-// DummyHttpRequest.java
+// Package : co.mindie.wsframework.controller.local
+// LocalHttpRequest.java
 //
 // Author : Simon CORSIN <simoncorsin@gmail.com>
 // File created on Aug 4, 2014 at 3:33:17 PM
 ////////
 
-package co.mindie.cindy.controller.dummy;
+package co.mindie.cindy.controller.local;
 
 import co.mindie.cindy.automapping.HttpMethod;
+import co.mindie.cindy.controller.manager.BodyFileItem;
 import co.mindie.cindy.controller.manager.HttpRequest;
+import co.mindie.cindy.utils.io.InputStreamCreator;
+import me.corsin.javatools.array.ArrayUtils;
 import org.apache.commons.fileupload.FileItem;
 
-import java.io.InputStream;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DummyHttpRequest implements HttpRequest {
+public class LocalHttpRequest implements HttpRequest {
 
 	////////////////////////
 	// VARIABLES
@@ -34,13 +39,37 @@ public class DummyHttpRequest implements HttpRequest {
 	// CONSTRUCTORS
 	////////////////
 
-	public DummyHttpRequest() {
-
+	public LocalHttpRequest() {
+		this.queryParameters = new HashMap<>();
+		this.bodyParameters = new HashMap<>();
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
+
+	public void putQueryParameter(String parameter, Object value) {
+		String[] currentValues = this.queryParameters.get(parameter);
+
+		if (currentValues == null) {
+			currentValues = new String[] { value.toString() };
+		} else {
+			currentValues = ArrayUtils.addItem(currentValues, value.toString());
+		}
+
+		this.queryParameters.put(parameter, currentValues);
+	}
+
+	public void putBodyParameter(String parameter, String contentType, InputStreamCreator inputStreamCreator) {
+		List<FileItem> fileItems = this.bodyParameters.get(parameter);
+
+		if (fileItems == null) {
+			fileItems = new ArrayList<>();
+			this.bodyParameters.put(parameter, fileItems);
+		}
+
+		fileItems.add(new BodyFileItem(parameter, contentType, true, inputStreamCreator));
+	}
 
 	////////////////////////
 	// GETTERS/SETTERS

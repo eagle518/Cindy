@@ -10,23 +10,19 @@ import java.util.Map.Entry;
 
 import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.CindyWebApp;
-import co.mindie.cindy.CindyWebAppCreator;
 import co.mindie.cindy.automapping.*;
 import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.controller.local.LocalHttpResponse;
+import co.mindie.cindy.controller.local.LocalResult;
 import co.mindie.cindy.resolver.IDynamicResolver;
 import co.mindie.cindy.resolver.IResolver;
 import co.mindie.cindy.resolver.ResolverContext;
 import co.mindie.cindy.resolver.builtin.RequestContextToStringResolver;
-import me.corsin.javatools.string.Strings;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import co.mindie.cindy.controller.builtin.RequestErrorResponse;
-import co.mindie.cindy.controller.dummy.DummyHttpRequest;
-import co.mindie.cindy.controller.dummy.DummyHttpResponse;
+import co.mindie.cindy.controller.local.LocalHttpRequest;
 import co.mindie.cindy.responseserializer.JsonResponseWriter;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -99,7 +95,7 @@ public class ControllerManagerTest extends AbstractCindyTest {
 		}
 	}
 
-	@Wired private CindyWebApp webApp;
+	@Wired private ControllerManager controllerManager;
 
 	@Override
 	protected void onLoad(ComponentMetadataManager metadataManager) {
@@ -111,8 +107,8 @@ public class ControllerManagerTest extends AbstractCindyTest {
 		metadataManager.loadComponent(DynamicResolver.class);
 	}
 
-	private DummyHttpRequest createRequest(HttpMethod method) {
-		DummyHttpRequest request = new DummyHttpRequest();
+	private LocalHttpRequest createRequest(HttpMethod method) {
+		LocalHttpRequest request = new LocalHttpRequest();
 		request.setMethod(method);
 		request.setQueryParameters(new HashMap<>());
 
@@ -124,19 +120,19 @@ public class ControllerManagerTest extends AbstractCindyTest {
 	}
 
 	private <T> T getResponse(HttpMethod method, String path, Map<String, String> parameters, Class<T> outputType) throws IOException {
-		DummyHttpRequest request = this.createRequest(method);
+		LocalHttpRequest request = this.createRequest(method);
 
 		for (Entry<String, String> entry : parameters.entrySet()) {
 			request.getQueryParameters().put(entry.getKey(), new String[] {  entry.getValue() });
 		}
 
 		request.setPathInfo(path);
-		DummyHttpResponse response = new DummyHttpResponse();
+		LocalHttpResponse response = new LocalHttpResponse();
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		response.setOutputStream(outputStream);
 
-		this.webApp.getControllerManager().handle(request, response);
+		this.controllerManager.handle(request, response);
 
 		JsonResponseWriter responseWriter = new JsonResponseWriter();
 		try {
@@ -155,22 +151,24 @@ public class ControllerManagerTest extends AbstractCindyTest {
 		parameters.put("da_string", "that string!");
 		parameters.put("da_int", "42");
 
-		Object response = this.getResponse(HttpMethod.GET, "parameters", parameters, Object.class);
+		LocalResult<Object, RequestErrorResponse> result = this.controllerManager.createLocalRequester()
+				.queryParameter("da_string", "that string!")
+				.queryParameter("da_int", 42)
+				.path("parameters")
+				.result(Object.class, RequestErrorResponse.class);
 
-		if (response instanceof RequestErrorResponse) {
-			RequestErrorResponse error = (RequestErrorResponse)response;
-			System.err.println(error.getException() + ": " + error.getMessage());
-			Assert.assertTrue(false);
-		}
+		Assert.assertTrue("Request failed", result.isSuccess());
 	}
 
 	@Test
 	public void test_addition() throws IOException {
-		Map<String, String> parameters = new HashMap<>();
-		parameters.put("number", "42");
-		parameters.put("number2", "1000");
+		Integer response = this.controllerManager.createLocalRequester()
+				.queryParameter("number", 42)
+				.queryParameter("number2", 1000)
+				.path("add")
+				.method(HttpMethod.POST)
+				.result(Integer.class, RequestErrorResponse.class).getResponse();
 
-		Integer response = this.getResponse(HttpMethod.POST, "add", parameters, Integer.class);
 		Assert.assertEquals(response.longValue(), 1042L);
 	}
 
