@@ -267,7 +267,10 @@ public class ControllerManager implements Initializable {
 				return exceptionHandler.handleRequestException(context, exception);
 			}
 		} catch (Throwable t) {
-			LOGGER.error("An error occured in the ExceptionHandler! " + StackTraceUtils.stackTraceToString(t));
+			try {
+				context.getHttpResponse().setStatusCode(500);
+			} catch (Exception ignored) {}
+			LOGGER.error("An error occured in the ExceptionHandler!\n " + StackTraceUtils.stackTraceToString(t));
 		}
 
 		return null;
