@@ -36,7 +36,12 @@ public class Page<T> implements Iterable<T> {
 		this.listRequest = listRequest;
 		this.totalElements = totalElements;
 		if (listRequest instanceof PageRequest) {
-			this.totalPages = totalElements / listRequest.getLimit() + 1;
+			if (listRequest.getLimit() == 0) {
+				this.totalPages = 1;
+			} else {
+				int addedPage = totalElements % listRequest.getLimit() == 0 ? 0 : 1;
+				this.totalPages = totalElements / listRequest.getLimit() + addedPage;
+			}
 		}
 	}
 
