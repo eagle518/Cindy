@@ -26,7 +26,6 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.joda.time.DateTime;
 
-import java.io.Closeable;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -36,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
-public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType, PrimaryKey, HibernateDatabase> implements Closeable, KeyForEntityResolver<PrimaryKey, ElementType> {
+public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType, PrimaryKey, HibernateDatabase> implements KeyForEntityResolver<PrimaryKey, ElementType> {
 
 	// //////////////////////
 	// VARIABLES
@@ -202,7 +201,6 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 		}
 	}
 
-	@Override
 	public void close() {
 		if (this.databaseHandle != null) {
 			this.databaseHandle.close();

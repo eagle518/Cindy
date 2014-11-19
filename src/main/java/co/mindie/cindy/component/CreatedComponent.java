@@ -1,12 +1,3 @@
-/////////////////////////////////////////////////
-// Project : WSFramework
-// Package : co.mindie.wsframework.component
-// CreatedComponent.java
-//
-// Author : Simon CORSIN <simoncorsin@gmail.com>
-// File created on Jul 7, 2014 at 12:07:19 PM
-////////
-
 package co.mindie.cindy.component;
 
 import co.mindie.cindy.component.box.ComponentBox;
@@ -52,8 +43,8 @@ public class CreatedComponent<T> implements Closeable {
 
 	@Override
 	public void close() {
-		if (this.enclosingBox != null) {
-			this.enclosingBox.close();
+		if (this.innerBox != null) {
+			this.innerBox.close();
 		}
 	}
 

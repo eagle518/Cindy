@@ -96,8 +96,16 @@ public abstract class AbstractWorker implements Worker, Closeable, Initializable
     @Override
     public void stop() {
         this.stopped = true;
-        this.worker = null;
         this.wakeUp();
+        Thread thread = this.worker;
+        this.worker = null;
+
+        if (thread != null) {
+            try {
+                thread.join();
+            } catch (InterruptedException ignored) {
+            }
+        }
     }
 
     @Override

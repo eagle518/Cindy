@@ -87,6 +87,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 			try {
 				WorkContextType workContext = poolableWorkContext.getComponent();
 				List<DataType> items = workContext.getQueue().dequeueItems();
+				workContext.flush();
 
 				if (items != null && items.size() > 0) {
 					shouldWork = true;
@@ -113,6 +114,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 											workContext.getQueue().deleteItem(item);
 										}
 									}
+									workContext.flush();
 								} catch (Exception e) {
 									try {
 										this.onDeleteError(e);
@@ -123,6 +125,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 							}
 						} finally {
 							this.pendingTasks.decrementAndGet();
+							workContext.cancel();
 							poolableWorkContext.release();
 						}
 					});

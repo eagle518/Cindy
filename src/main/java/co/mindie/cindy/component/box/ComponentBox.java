@@ -207,6 +207,14 @@ public abstract class ComponentBox implements Closeable, Initializable {
 			}
 		}
 
+		for (ComponentBox childBox : this.childComponentBoxes) {
+			try {
+				childBox.close();
+			} catch (Exception e) {
+				exceptions.add(new Pair<>(childBox, e));
+			}
+		}
+
 		if (!exceptions.isEmpty()) {
 			throw new CindyException("Failed to close component context.", exceptions.get(0).getSecond());
 		}
@@ -245,19 +253,32 @@ public abstract class ComponentBox implements Closeable, Initializable {
 
 	@Override
 	public String toString() {
-		return "(id=" + this.id +
-				", owner=" + this.owner +
-				")";
+		return this.toString(false);
+	}
+
+	public String toString(boolean showContents) {
+		if (showContents) {
+			StringBuilder children = new StringBuilder();
+			this.getChildComponentBoxes().forEach(child -> children.append(child.toString(true)));
+
+			return "(id=" + this.id +
+					", owner=" + this.owner +
+					", components=" + this.getComponents() +
+					", childBoxes= " + children.toString()
+					+ ")";
+		} else {
+			return "(id=" + this.id +
+					", owner=" + this.owner +
+					")";
+		}
 	}
 
 	public void addChildBox(ComponentBox componentBox) {
 		this.childComponentBoxes.add(componentBox);
-		this.addCloseable(componentBox);
 	}
 
 	public void removeChildBox(ComponentBox componentBox) {
 		this.childComponentBoxes.remove(componentBox);
-		this.removeCloseable(componentBox);
 	}
 
 	private void addCloseable(Closeable closeable) {

@@ -12,6 +12,7 @@ package co.mindie.cindy.database.handle;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.database.Database;
 import co.mindie.cindy.database.HibernateDatabase;
+import co.mindie.cindy.utils.Cancelable;
 import co.mindie.cindy.utils.Flushable;
 import me.corsin.javatools.exception.StackTraceUtils;
 import org.apache.log4j.Logger;
@@ -22,7 +23,7 @@ import org.hibernate.exception.LockAcquisitionException;
 
 import java.io.Serializable;
 
-public abstract class HibernateDatabaseHandle implements IDatabaseHandle, Flushable {
+public abstract class HibernateDatabaseHandle implements IDatabaseHandle, Flushable, Cancelable {
 
 	// //////////////////////
 	// VARIABLES
@@ -189,7 +190,7 @@ public abstract class HibernateDatabaseHandle implements IDatabaseHandle, Flusha
 			try {
 				this.startedTransaction.rollback();
 			} catch (Throwable e) {
-				e.printStackTrace();
+				LOGGER.warn("An exception occurred while canceling a transaction " + StackTraceUtils.stackTraceToString(e));
 			}
 			this.startedTransaction = null;
 		}

@@ -14,6 +14,7 @@ import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.controller.manager.HttpRequest;
 import co.mindie.cindy.controller.manager.HttpResponse;
 import co.mindie.cindy.responseserializer.IResponseWriter;
+import co.mindie.cindy.utils.Cancelable;
 import co.mindie.cindy.utils.Flushable;
 
 import java.util.HashMap;
@@ -33,8 +34,8 @@ public class RequestContext {
 	private boolean shouldWriteResponse;
 	private Boolean shouldResolveOutput;
 
-	@Wired
-	private List<Flushable> flushables;
+	@Wired private List<Flushable> flushables;
+	@Wired private List<Cancelable> cancelables;
 
 	@Wired(required = false) private IResponseWriter responseWriter;
 
@@ -63,7 +64,7 @@ public class RequestContext {
 	}
 
 	public void cancel() {
-		this.flushables.forEach(Flushable::cancel);
+		this.cancelables.forEach(Cancelable::cancel);
 	}
 
 	/**

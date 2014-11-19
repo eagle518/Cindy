@@ -1,13 +1,23 @@
 package co.mindie.cindy.queue;
 
-/**
- * Created by simoncorsin on 29/09/14.
- */
-public class WorkContext<DataType> {
+import co.mindie.cindy.automapping.SearchScope;
+import co.mindie.cindy.automapping.Wired;
+import co.mindie.cindy.utils.Cancelable;
+import co.mindie.cindy.utils.Flushable;
+import org.apache.log4j.Logger;
+
+import java.util.List;
+
+public class WorkContext<DataType> implements Flushable, Cancelable {
 
 	////////////////////////
 	// VARIABLES
 	////////////////
+
+	private static final Logger LOGGER = Logger.getLogger(WorkContext.class);
+
+	@Wired(searchScope = SearchScope.LOCAL) List<Flushable> flushables;
+	@Wired(searchScope = SearchScope.LOCAL) List<Cancelable> cancelables;
 
 	private WorkQueue<DataType> queue;
 	private WorkProcessor<DataType> workProcessor;
@@ -22,7 +32,16 @@ public class WorkContext<DataType> {
 	////////////////
 
 	public void prepareForProcessing() {
+	}
 
+	@Override
+	public void cancel() {
+		this.cancelables.forEach(Cancelable::cancel);
+	}
+
+	@Override
+	public void flush() {
+		this.flushables.forEach(Flushable::flush);
 	}
 
 	////////////////////////
