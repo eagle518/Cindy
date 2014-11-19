@@ -11,6 +11,7 @@ package co.mindie.cindy;
 
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.component.ComponentMetadataManagerBuilder;
 import co.mindie.cindy.component.box.ComponentBox;
 import org.apache.log4j.Logger;
 
@@ -40,9 +41,9 @@ public abstract class CindyWebAppCreator {
 
 	/**
 	 * Called during the loading phase. This is where you should load the component metadatas.
-	 * @param metadataManager The ComponentMetadataManager used to load component metadatas.
+	 * @param metadataManagerBuilder The ComponentMetadataManagerBuilder used to load component metadatas.
 	 */
-	protected abstract void onLoad(ComponentMetadataManager metadataManager);
+	protected abstract void onLoad(ComponentMetadataManagerBuilder metadataManagerBuilder);
 
 	/**
 	 * Called after the load, just before the CindyWebAppCreator creates the instance of
@@ -56,17 +57,17 @@ public abstract class CindyWebAppCreator {
 	}
 
 	public CindyWebApp createApplication(boolean preloadEndpoints) {
-		ComponentMetadataManager metadataManager = new ComponentMetadataManager();
-		ComponentInitializer initializer = metadataManager.createInitializer();
+		ComponentMetadataManagerBuilder metadataManagerBuilder = new ComponentMetadataManagerBuilder();
 
-		this.onLoad(metadataManager);
+		this.onLoad(metadataManagerBuilder);
 
 		if (this.shouldLoadBuiltinComponents) {
-			metadataManager.loadComponents("co.mindie.cindy");
+			metadataManagerBuilder.loadComponents("co.mindie.cindy");
 		}
 
-		metadataManager.ensureIntegrity();
+		ComponentMetadataManager metadataManager = metadataManagerBuilder.build();
 
+		ComponentInitializer initializer = metadataManager.createInitializer();
 		this.onCreate(initializer);
 
 		CindyWebApp webApp = initializer.createComponent(CindyWebApp.class, ComponentBox.create(true)).getInstance();

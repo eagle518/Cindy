@@ -110,27 +110,27 @@ public abstract class ComponentBox implements Closeable, Initializable {
 		this.components.remove(component);
 	}
 
-	public List<Object> findComponents(Class<?> accessibleClass) {
+	public <T> List<T> findComponents(Class<T> accessibleClass) {
 		return this.findComponents(accessibleClass, SearchScope.GLOBAL, null);
 	}
 
-	public List<Object> findComponents(Class<?> accessibleClass, SearchScope searchScope) {
+	public <T> List<T> findComponents(Class<T> accessibleClass, SearchScope searchScope) {
 		return this.findComponents(accessibleClass, searchScope, null);
 	}
 
-	public List<Object> findComponents(Class<?> accessibleClass, SearchScope searchScope, List<ComponentBox> outputComponentBoxes) {
+	public <T> List<T> findComponents(Class<T> accessibleClass, SearchScope searchScope, List<ComponentBox> outputComponentBoxes) {
 		if (searchScope == SearchScope.UNDEFINED) {
 			throw new CindyException("Cannot find a component with a UNDEFINED searchScope");
 		}
 
-		List<Object> components = this.indexer.find(accessibleClass);
+		List<T> components = (List<T>)this.indexer.find(accessibleClass);
 
 		if (outputComponentBoxes != null && components != null) {
 			components.forEach(e -> outputComponentBoxes.add(this));
 		}
 
 		if (this.superBox != null && searchScope == SearchScope.GLOBAL) {
-			List<Object> parentComponents = this.superBox.findComponents(accessibleClass, searchScope, outputComponentBoxes);
+			List<T> parentComponents = this.superBox.findComponents(accessibleClass, searchScope, outputComponentBoxes);
 
 			if (components == null) {
 				return parentComponents;
@@ -144,17 +144,17 @@ public abstract class ComponentBox implements Closeable, Initializable {
 		return components;
 	}
 
-	public Object findComponent(Class<?> accessibleClass) {
+	public <T> T findComponent(Class<T> accessibleClass) {
 		return this.findComponent(accessibleClass, SearchScope.GLOBAL);
 	}
 
-	public Object findComponent(Class<?> accessibleClass, SearchScope searchScope) {
+	public <T> T findComponent(Class<T> accessibleClass, SearchScope searchScope) {
 		return this.findComponent(accessibleClass, searchScope, null);
 	}
 
-	public Object findComponent(Class<?> accessibleClass, SearchScope searchScope, ValueHolder<ComponentBox> outputComponentBox) {
+	public <T> T findComponent(Class<T> accessibleClass, SearchScope searchScope, ValueHolder<ComponentBox> outputComponentBox) {
 		List<ComponentBox> outputBoxes = new ArrayList<>();
-		List<Object> components = this.findComponents(accessibleClass, searchScope, outputBoxes);
+		List<T> components = this.findComponents(accessibleClass, searchScope, outputBoxes);
 
 		if (components == null) {
 			return null;

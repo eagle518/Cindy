@@ -1,9 +1,8 @@
 package co.mindie.cindy.dao.impl;
 
 import co.mindie.cindy.automapping.*;
-import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadata;
-import co.mindie.cindy.component.WireListener;
+import co.mindie.cindy.component.ComponentMetadataManagerBuilder;
 import co.mindie.cindy.dao.domain.OffsetedRequest;
 import co.mindie.cindy.utils.Initializable;
 import org.apache.log4j.Logger;
@@ -12,7 +11,7 @@ import java.util.List;
 
 @Singleton
 @Box
-public class HibernateDAOValidator implements Initializable, WireListener {
+public class HibernateDAOValidator implements Initializable {
 
 	////////////////////////
 	// VARIABLES
@@ -45,20 +44,17 @@ public class HibernateDAOValidator implements Initializable, WireListener {
 		LOGGER.info("Successfully validated all Hibernate DAOs");
 	}
 
-	@Override
-	public void onWillWire(ComponentInitializer initializer) {
-		ComponentMetadata myMetadata = initializer.getMetadataManager().loadComponent(this.getClass());
+	@MetadataModifier
+	public static void autoAddDependencies(ComponentMetadataManagerBuilder componentMetadataManagerBuilder) {
+		for (ComponentMetadata myMetadata : componentMetadataManagerBuilder.findCompatibleComponentsForClass(HibernateDAOValidator.class)) {
+			List<ComponentMetadata> daoMetadatas = componentMetadataManagerBuilder.findCompatibleComponentsForClass(HibernateDAO.class);
 
-		List<ComponentMetadata> daoMetadatas = initializer.getMetadataManager().findCompatibleComponentForClass(HibernateDAO.class);
-
-		for (ComponentMetadata metadata : daoMetadatas) {
-			myMetadata.addDependency(metadata.getComponentClass(), true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
+			if (daoMetadatas != null) {
+				for (ComponentMetadata metadata : daoMetadatas) {
+					myMetadata.addDependency(metadata.getComponentClass(), true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
+				}
+			}
 		}
-	}
-
-	@Override
-	public void onWired(ComponentInitializer initializer) {
-
 	}
 
 	////////////////////////

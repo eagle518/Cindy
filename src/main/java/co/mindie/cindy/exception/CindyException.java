@@ -6,7 +6,7 @@ public class CindyException extends RuntimeException {
 		super(msg);
 	}
 
-	public CindyException(String msg, Exception e) {
+	public CindyException(String msg, Throwable e) {
 		super(msg, e);
 	}
 }

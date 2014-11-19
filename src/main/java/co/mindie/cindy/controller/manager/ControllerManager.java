@@ -11,10 +11,7 @@ package co.mindie.cindy.controller.manager;
 
 import co.mindie.cindy.authorizer.IRequestContextAuthorizer;
 import co.mindie.cindy.automapping.*;
-import co.mindie.cindy.component.ComponentDependency;
-import co.mindie.cindy.component.ComponentMetadata;
-import co.mindie.cindy.component.ComponentMetadataManager;
-import co.mindie.cindy.component.Wire;
+import co.mindie.cindy.component.*;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.context.RequestContext;
 import co.mindie.cindy.controller.manager.entry.ControllerEntry;
@@ -119,30 +116,46 @@ public class ControllerManager implements Initializable {
 		}
 	}
 
-	private Class<?> makeEndpointType(Class<?> controllerClass, Method method) {
-		try {
-			String newClassName = "co.mindie.cindy.controller.manager.entry.RequestHandler$" + controllerClass.getSimpleName() + "$" + method.getName();
-			Class<?> createdClass;
+	private static String getClassNameForControllerAndMethod(Class<?> controllerClass, Method method) {
+		return "co.mindie.cindy.controller.manager.entry.RequestHandler$" + controllerClass.getSimpleName() + "$" + method.getName();
+	}
 
-			try {
-				createdClass = Class.forName(newClassName);
-			} catch (ClassNotFoundException e) {
-				ClassPool pool = ClassPool.getDefault();
+	@MetadataModifier
+	public static void loadEndpointTypes(ComponentMetadataManagerBuilder metadataManagerBuilder) {
+		for (ComponentMetadata controllerMetadata : metadataManagerBuilder.getLoadedComponentsWithAnnotation(Controller.class)) {
+			final Class<?> controllerClass = controllerMetadata.getComponentClass();
+			for (Method method : controllerClass.getMethods()) {
+				Endpoint mapped = method.getAnnotation(Endpoint.class);
 
-				CtClass requestHandlerClass = pool.get(RequestHandler.class.getName());
+				if (mapped != null) {
+					final String path = mapped.path();
+					final HttpMethod type = mapped.httpMethod();
 
-				CtClass cls = pool.makeClass(newClassName, requestHandlerClass);
-				createdClass = cls.toClass();
+					try {
+						String newClassName = getClassNameForControllerAndMethod(controllerClass, method);
+						Class<?> createdClass;
+
+						try {
+							createdClass = Class.forName(newClassName);
+						} catch (ClassNotFoundException e) {
+							ClassPool pool = ClassPool.getDefault();
+
+							CtClass requestHandlerClass = pool.get(RequestHandler.class.getName());
+
+							CtClass cls = pool.makeClass(newClassName, requestHandlerClass);
+							createdClass = cls.toClass();
+						}
+
+						ComponentMetadata metadata = metadataManagerBuilder.loadComponent(createdClass);
+
+						ComponentDependency dependency = metadata.addDependency(controllerClass, true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
+						dependency.setWire(new Wire(createdClass.getSuperclass().getDeclaredField("controller"), null, null));
+					} catch (Exception e) {
+						throw new CindyException("Unable to make endpoint type", e);
+					}
+
+				}
 			}
-
-			ComponentMetadata metadata = this.metadataManager.loadComponent(createdClass);
-
-			ComponentDependency dependency = metadata.addDependency(controllerClass, true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
-			dependency.setWire(new Wire(createdClass.getSuperclass().getDeclaredField("controller"), null, null));
-
-			return createdClass;
-		} catch (Exception e) {
-			throw new CindyException("Unable to make endpoint type", e);
 		}
 	}
 
@@ -162,7 +175,12 @@ public class ControllerManager implements Initializable {
 				final String path = mapped.path();
 				final HttpMethod type = mapped.httpMethod();
 
-				Class<?> endpointType = this.makeEndpointType(controllerClass, method);
+				Class<?> endpointType = null;
+				try {
+					endpointType = Class.forName(getClassNameForControllerAndMethod(controllerClass, method));
+				} catch (ClassNotFoundException e) {
+					throw new CindyException("Unable to add controller " + controllerClass + " with endpoint " + mapped + ": The types must be loaded before");
+				}
 
 				EndpointEntry endpointEntry = new EndpointEntry(controllerEntry, basePath + path, method, mapped, endpointType);
 

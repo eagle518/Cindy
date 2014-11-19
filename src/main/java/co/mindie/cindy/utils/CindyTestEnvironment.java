@@ -7,6 +7,7 @@ import co.mindie.cindy.automapping.WiredCore;
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadata;
 import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.component.ComponentMetadataManagerBuilder;
 import co.mindie.cindy.component.box.ComponentBox;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
@@ -16,9 +17,10 @@ public abstract class CindyTestEnvironment {
 
 	@WiredCore private ComponentBox innerBox;
 
+	protected ComponentMetadataManagerBuilder metadataManagerBuilder;
 	protected ComponentMetadataManager metadataManager;
 
-	protected void onLoad(ComponentMetadataManager metadataManager) {
+	protected void onLoad(ComponentMetadataManagerBuilder metadataManager) {
 		metadataManager.loadComponents("co.mindie.cindy");
 	}
 
@@ -26,24 +28,24 @@ public abstract class CindyTestEnvironment {
 
 	}
 
-	protected void injectComponent(Object component, ComponentMetadataManager metadataManager) {
+	protected void injectComponent(Object component, ComponentMetadataManagerBuilder metadataManagerBuilder) {
 		Class<?> cls = component.getClass();
 
-		ComponentMetadata metadata = metadataManager.loadComponent(cls);
+		ComponentMetadata metadata = metadataManagerBuilder.loadComponent(cls);
 		metadata.setCreationPriority(Integer.MAX_VALUE);
 		metadata.setFactory(() -> component);
-		metadataManager.loadComponent(this.getClass()).addDependency(cls, true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
+		metadataManagerBuilder.loadComponent(this.getClass()).addDependency(cls, true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
 	}
 
 	public void prepare() {
-		this.metadataManager = new ComponentMetadataManager();
-		this.metadataManager.loadComponent(this.getClass());
+		this.metadataManagerBuilder = new ComponentMetadataManagerBuilder();
+		this.metadataManagerBuilder.loadComponent(this.getClass());
 
-		this.onLoad(metadataManager);
+		this.onLoad(metadataManagerBuilder);
 
-		metadataManager.ensureIntegrity();
+		this.metadataManager = metadataManagerBuilder.build();
 
-		ComponentInitializer initializer =  this.metadataManager.createInitializer();
+		ComponentInitializer initializer = this.metadataManager.createInitializer();
 
 		initializer.addCreatedComponent(this, ComponentBox.create(true));
 

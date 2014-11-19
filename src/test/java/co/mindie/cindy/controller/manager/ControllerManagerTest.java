@@ -12,6 +12,7 @@ import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.automapping.*;
 import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.component.ComponentMetadataManagerBuilder;
 import co.mindie.cindy.controller.local.LocalHttpResponse;
 import co.mindie.cindy.controller.local.LocalResult;
 import co.mindie.cindy.resolver.IDynamicResolver;
@@ -98,7 +99,7 @@ public class ControllerManagerTest extends AbstractCindyTest {
 	@Wired private ControllerManager controllerManager;
 
 	@Override
-	protected void onLoad(ComponentMetadataManager metadataManager) {
+	protected void onLoad(ComponentMetadataManagerBuilder metadataManager) {
 		super.onLoad(metadataManager);
 
 		metadataManager.loadComponent(RequestContextToStringResolver.class);

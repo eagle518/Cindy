@@ -18,10 +18,7 @@ import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.automapping.Singleton;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.automapping.WiredCore;
-import co.mindie.cindy.component.ComponentAspect;
-import co.mindie.cindy.component.ComponentInitializer;
-import co.mindie.cindy.component.ComponentMetadata;
-import co.mindie.cindy.component.WireListener;
+import co.mindie.cindy.component.*;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.configuration.Configuration;
 import co.mindie.cindy.controller.manager.ControllerManager;
@@ -38,7 +35,7 @@ import java.util.List;
 @Load(creationPriority = -1)
 @Component(aspects = {ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE})
 @Box(needAspects = {ComponentAspect.SINGLETON, ComponentAspect.THREAD_SAFE}, rejectAspects = {})
-public class CindyWebApp implements Pausable, Closeable, WireListener, Initializable {
+public class CindyWebApp implements Pausable, Closeable, Initializable {
 
 	// //////////////////////
 	// VARIABLES
@@ -57,29 +54,6 @@ public class CindyWebApp implements Pausable, Closeable, WireListener, Initializ
 	// //////////////////////
 	// METHODS
 	// //////////////
-
-	@Override
-	public void onWillWire(ComponentInitializer initializer) {
-		ComponentMetadata myMetadata = initializer.getMetadataManager().getComponentMetadata(this.getClass());
-
-		for (ComponentMetadata metadata : initializer.getMetadataManager().getLoadedComponentsWithAnnotation(Singleton.class)) {
-			if (!ArrayUtils.arrayContains(metadata.getAspects(), ComponentAspect.SINGLETON)) {
-				metadata.setAspects(ArrayUtils.addItem(metadata.getAspects(), ComponentAspect.SINGLETON));
-			}
-			if (!ArrayUtils.arrayContains(metadata.getAspects(), ComponentAspect.THREAD_SAFE)) {
-				metadata.setAspects(ArrayUtils.addItem(metadata.getAspects(), ComponentAspect.THREAD_SAFE));
-			}
-
-			if (!myMetadata.hasDependency(metadata.getComponentClass())) {
-				myMetadata.addDependency(metadata.getComponentClass(), true, false, SearchScope.LOCAL, CreationBox.CURRENT_BOX);
-			}
-		}
-	}
-
-	@Override
-	public void onWired(ComponentInitializer initializer) {
-
-	}
 
 	public void init() {
 		if (this.rootLogAppender != null) {
@@ -109,6 +83,24 @@ public class CindyWebApp implements Pausable, Closeable, WireListener, Initializ
 
 		if (this.rootLogAppender != null) {
 			Logger.getRootLogger().removeAppender(this.rootLogAppender);
+		}
+	}
+
+	@MetadataModifier
+	public static void injectSingletons(ComponentMetadataManagerBuilder componentMetadataManagerBuilder) {
+		for (ComponentMetadata appMetadata : componentMetadataManagerBuilder.findCompatibleComponentsForClass(CindyWebApp.class)) {
+			for (ComponentMetadata metadata : componentMetadataManagerBuilder.getLoadedComponentsWithAnnotation(Singleton.class)) {
+				if (!ArrayUtils.arrayContains(metadata.getAspects(), ComponentAspect.SINGLETON)) {
+					metadata.setAspects(ArrayUtils.addItem(metadata.getAspects(), ComponentAspect.SINGLETON));
+				}
+				if (!ArrayUtils.arrayContains(metadata.getAspects(), ComponentAspect.THREAD_SAFE)) {
+					metadata.setAspects(ArrayUtils.addItem(metadata.getAspects(), ComponentAspect.THREAD_SAFE));
+				}
+
+				if (!appMetadata.hasDependency(metadata.getComponentClass())) {
+					appMetadata.addDependency(metadata.getComponentClass(), true, false, SearchScope.LOCAL, CreationBox.CURRENT_BOX);
+				}
+			}
 		}
 	}
 

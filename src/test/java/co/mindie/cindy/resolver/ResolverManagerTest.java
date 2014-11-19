@@ -6,6 +6,7 @@ import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.automapping.WiredCore;
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadataManager;
+import co.mindie.cindy.component.ComponentMetadataManagerBuilder;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.exception.CindyException;
 import org.junit.Test;
@@ -23,7 +24,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 	@WiredCore private ComponentBox componentBox;
 
 	@Override
-	protected void onLoad(ComponentMetadataManager metadataManager) {
+	protected void onLoad(ComponentMetadataManagerBuilder metadataManager) {
 		super.onLoad(metadataManager);
 
 		metadataManager.loadComponents("co.mindie.cindy");
@@ -103,7 +104,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 		assertNull(output);
 
-		this.metadataManager.loadComponent(IntToMyObjectResolver.class);
+		this.metadataManagerBuilder.loadComponent(IntToMyObjectResolver.class);
 		this.resolverManager.addConverter(IntToMyObjectResolver.class, Integer.class, MyObject.class, false, 0);
 
 		output = this.resolverManager.getResolverOutput(String.class, MyObject.class);
@@ -122,7 +123,7 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 		assertNull(output);
 
-		this.metadataManager.loadComponent(WeirdResolver.class);
+		this.metadataManagerBuilder.loadComponent(WeirdResolver.class);
 		this.resolverManager.addConverter(WeirdResolver.class, Boolean.class, Object[].class, false, 0);
 
 		output = this.resolverManager.getResolverOutput(Boolean.class, List.class);
@@ -136,8 +137,8 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 	@Test
 	public void addConverter_with_a_higher_priority_overrides_the_lower_priority() {
-		this.metadataManager.loadComponent(StringToInt1Resolver.class);
-		this.metadataManager.loadComponent(StringToInt2Resolver.class);
+		this.metadataManagerBuilder.loadComponent(StringToInt1Resolver.class);
+		this.metadataManagerBuilder.loadComponent(StringToInt2Resolver.class);
 
 		this.resolverManager.addConverter(StringToInt1Resolver.class, String.class, Integer.class, false, 0);
 		this.resolverManager.addConverter(StringToInt2Resolver.class, String.class, Integer.class, false, 1);
@@ -152,8 +153,8 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 	@Test
 	public void addConverter_with_the_same_priority_fails() {
-		this.metadataManager.loadComponent(StringToInt1Resolver.class);
-		this.metadataManager.loadComponent(StringToInt2Resolver.class);
+		this.metadataManagerBuilder.loadComponent(StringToInt1Resolver.class);
+		this.metadataManagerBuilder.loadComponent(StringToInt2Resolver.class);
 
 		this.expectedException.expect(CindyException.class);
 
@@ -163,8 +164,8 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 	@Test
 	public void addConverter_with_a_higher_priority_but_not_default_doesnt_override_the_default() {
-		this.metadataManager.loadComponent(StringToInt1Resolver.class);
-		this.metadataManager.loadComponent(StringToInt2Resolver.class);
+		this.metadataManagerBuilder.loadComponent(StringToInt1Resolver.class);
+		this.metadataManagerBuilder.loadComponent(StringToInt2Resolver.class);
 
 		this.resolverManager.addConverter(StringToInt1Resolver.class, String.class, Integer.class, true, 0);
 		this.resolverManager.addConverter(StringToInt2Resolver.class, String.class, Integer.class, false, 1);
@@ -179,8 +180,8 @@ public class ResolverManagerTest extends AbstractCindyTest {
 
 	@Test
 	public void addConverter_with_a_higher_priority_and_default_overrides_the_default() {
-		this.metadataManager.loadComponent(StringToInt1Resolver.class);
-		this.metadataManager.loadComponent(StringToInt2Resolver.class);
+		this.metadataManagerBuilder.loadComponent(StringToInt1Resolver.class);
+		this.metadataManagerBuilder.loadComponent(StringToInt2Resolver.class);
 
 		this.resolverManager.addConverter(StringToInt1Resolver.class, String.class, Integer.class, true, 0);
 		this.resolverManager.addConverter(StringToInt2Resolver.class, String.class, Integer.class, true, 1);

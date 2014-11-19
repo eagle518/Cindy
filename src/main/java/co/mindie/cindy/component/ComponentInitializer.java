@@ -79,6 +79,10 @@ public class ComponentInitializer implements Initializable {
 	}
 
 	public <T> CreatedComponent<T> createComponent(Class<T> objectClass, ComponentBox enclosingBox) {
+		if (enclosingBox == null) {
+			throw new NullArgumentException("enclosingBox");
+		}
+
 		ComponentMetadata metadata = this.metadataManager.getCompatibleMetadata(objectClass);
 
 		if (metadata == null) {
@@ -92,7 +96,7 @@ public class ComponentInitializer implements Initializable {
 		try {
 			this.currentRecursionCallCount++;
 
-			CreatedComponent<T> createdComponent =  this.addCreatedComponent(objectInstance, metadata, enclosingBox, objectClass);
+			CreatedComponent<T> createdComponent = this.addCreatedComponent(objectInstance, metadata, enclosingBox, objectClass);
 
 			if (this.listener != null) {
 				this.listener.onComponentCreated(this, createdComponent);
@@ -155,8 +159,6 @@ public class ComponentInitializer implements Initializable {
 		ComponentMetadata componentMetadata = createdComponent.getMetadata();
 		Object objectInstance = createdComponent.getInstance();
 		Class<?> objectClass = objectInstance.getClass();
-		WireListener objectInstanceAsInitializerListener = objectInstance instanceof WireListener ?
-				(WireListener)objectInstance : null;
 
 		this.log("/ Injecting all dependencies of " + objectClass.getSimpleName() + " in box " + createdComponent.getCurrentBox());
 		this.currentRecursionCallCount++;
@@ -166,10 +168,6 @@ public class ComponentInitializer implements Initializable {
 		if (currentBox == null) {
 			throw new CindyException("On component " + objectClass + ": No current box found (the component has " +
 					"neither a inner box nor an enclosing box)");
-		}
-
-		if (objectInstanceAsInitializerListener != null) {
-			objectInstanceAsInitializerListener.onWillWire(this);
 		}
 
 		for (ComponentDependency dependency : componentMetadata.getDependencies()) {
@@ -270,11 +268,6 @@ public class ComponentInitializer implements Initializable {
 		}
 
 		this.currentRecursionCallCount--;
-
-		if (objectInstanceAsInitializerListener != null) {
-			objectInstanceAsInitializerListener.onWired(this);
-		}
-
 	}
 
 	private <T> void injectListDependencies(CreatedComponent<T> createdComponent) {

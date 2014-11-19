@@ -9,69 +9,38 @@
 
 package co.mindie.cindy.component;
 
-import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.component.box.ComponentBox;
 import co.mindie.cindy.exception.CindyException;
-import co.mindie.cindy.misc.ComponentScanner;
 import me.corsin.javatools.dynamictext.DynamicText;
 import me.corsin.javatools.reflect.ClassIndexer;
-import me.corsin.javatools.string.Strings;
-import org.apache.log4j.Logger;
 
-import java.lang.annotation.Annotation;
 import java.util.*;
 
-public class ComponentMetadataManager {
+public class ComponentMetadataManager extends ComponentMetadatasHolder {
 
 	////////////////////////
 	// VARIABLES
 	////////////////
 
-	private static final Logger LOGGER = Logger.getLogger(ComponentMetadataManager.class);
-
-	private Map<Class<?>, ComponentMetadata> metadatas;
-	private ClassIndexer<ComponentMetadata> componentIndexer;
-	private Map<Class<?>, List<ComponentMetadata>> metadatasByAnnotation;
-	private int currentRecursionCallCount;
-
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentMetadataManager() {
-		this.metadatas = new HashMap<>();
-		this.componentIndexer = new ClassIndexer<>();
-		this.metadatasByAnnotation = new HashMap<>();
+	public ComponentMetadataManager(Map<Class<?>, ComponentMetadata> metadatas, ClassIndexer<ComponentMetadata> componentIndexer,
+									Map<Class<?>, List<ComponentMetadata>> metadatasByAnnotation) {
+		super(metadatas, componentIndexer, metadatasByAnnotation);
+
+		this.ensureIntegrity();
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
 
-	public ComponentMetadata getComponentMetadata(Class<?> objectClass) {
-		return this.metadatas.get(objectClass);
-	}
-
-	public List<ComponentMetadata> findCompatibleComponentForClass(Class<?> objectClass) {
-		return this.componentIndexer.find(objectClass);
-	}
-
-	public List<ComponentMetadata> loadComponents(String classPath) {
-		ComponentScanner scanner = new ComponentScanner(classPath);
-
-		final List<ComponentMetadata> metadatas = new ArrayList<>();
-
-		for (Class<?> type : scanner.findAnnotedTypes(Load.class)) {
-			metadatas.add(this.loadComponent(type));
-		}
-
-		return metadatas;
- 	}
-
 	/**
 	 * Ensure that each loaded component can effectively be created correctly and is therefore useable.
 	 */
-	public void ensureIntegrity() {
+	private void ensureIntegrity() {
 		for (ComponentMetadata metadata : this.metadatas.values()) {
 
 			for (ComponentDependency dependency : metadata.getDependencies()) {
@@ -98,77 +67,8 @@ public class ComponentMetadataManager {
 		}
 	}
 
-	/**
-	 * @param annotationType The annotation type to search
-	 * @return A list containing all the component metadata that has the annotationType
-	 */
-	public <T extends Annotation> List<ComponentMetadata> getLoadedComponentsWithAnnotation(Class<T> annotationType) {
-		List<ComponentMetadata> metadatas = this.metadatasByAnnotation.get(annotationType);
-
-		if (metadatas == null) {
-			metadatas = new ArrayList<>();
-		}
-
-		return metadatas;
-	}
-
-	public ComponentMetadata loadComponent(Class<?> cls) {
-		return this.loadComponent(cls, null);
-	}
-
-	private ComponentMetadata loadComponent(Class<?> cls, ComponentMetadata parentComponentMetadata) {
-		if (!ComponentMetadata.isLoadable(cls)) {
-			throw new CindyException("The " + cls + " is not loadable (is abstract or an interface)");
-		}
-
-		this.currentRecursionCallCount++;
-		try {
-			ComponentMetadata componentMetadata = this.getComponentMetadata(cls);
-
-			if (componentMetadata == null) {
-				componentMetadata = new ComponentMetadata(this, cls, parentComponentMetadata);
-				this.metadatas.put(cls, componentMetadata);
-				this.componentIndexer.add(componentMetadata, cls);
-
-				this.log("Loaded component {#0}", cls.getSimpleName());
-				for (ComponentDependency e : componentMetadata.getDependencies()) {
-					if (e.getComponentClass().getAnnotation(Load.class) != null) {
-						this.loadComponent(e.getComponentClass(), componentMetadata);
-					}
-				}
-
-				for (Class<?> annotationClass : componentMetadata.getAnnotationClasses()) {
-					List<ComponentMetadata> associatedMetadatas = this.metadatasByAnnotation.get(annotationClass);
-
-					if (associatedMetadatas == null) {
-						associatedMetadatas = new ArrayList<>();
-						this.metadatasByAnnotation.put(annotationClass, associatedMetadatas);
-					}
-
-					associatedMetadatas.add(componentMetadata);
-				}
-			}
-
-			return componentMetadata;
-		} finally {
-			this.currentRecursionCallCount--;
-		}
-	}
-
-	private void log(String format, Object... params) {
-		StringBuilder sb = new StringBuilder();
-
-		for (int i = 0; i < this.currentRecursionCallCount; i++) {
-			sb.append(' ');
-		}
-
-		sb.append(format);
-
-		LOGGER.trace(Strings.format(sb.toString(), params));
-	}
-
 	public ComponentMetadata getCompatibleMetadata(Class<?> objectClass) {
-		List<ComponentMetadata> compatibleComponents = this.findCompatibleComponentForClass(objectClass);
+		List<ComponentMetadata> compatibleComponents = this.findCompatibleComponentsForClass(objectClass);
 
 		if (compatibleComponents == null) {
 			return null;

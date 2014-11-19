@@ -14,6 +14,7 @@ import co.mindie.cindy.exception.CindyException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -23,7 +24,6 @@ public class ComponentMetadata {
 	// VARIABLES
 	////////////////
 
-	final private ComponentMetadataManager manager;
 	final private Class<?> componentClass;
 	final private List<Wire> wires;
 	final private List<Wire> wireCores;
@@ -34,6 +34,7 @@ public class ComponentMetadata {
 	final private Dependencies dependenciesAnnotation;
 	final private Box boxAnnotation;
 	final private Map<Class<?>, Annotation> annotations;
+	final private Map<Class<?>, List<Method>> methodsByAnnotations;
 	final private ComponentMetadata parentComponentMetadata;
 
 	private Factory<Object> factory;
@@ -44,14 +45,14 @@ public class ComponentMetadata {
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentMetadata(ComponentMetadataManager manager, Class<?> objectClass, ComponentMetadata parentComponentMetadata) {
-		this.manager = manager;
+	public ComponentMetadata(Class<?> objectClass, ComponentMetadata parentComponentMetadata) {
 		this.dependencies = new ArrayList<>();
 		this.wires = new ArrayList<>();
 		this.wireCores = new ArrayList<>();
 		this.listDependencies = new ArrayList<>();
 		this.componentClass = objectClass;
 		this.annotations = new HashMap<>();
+		this.methodsByAnnotations = new HashMap<>();
 		this.parentComponentMetadata = parentComponentMetadata;
 
 		this.factory = () -> {
@@ -62,7 +63,7 @@ public class ComponentMetadata {
 			}
 		};
 
-		this.loadClassAnnotations();
+		this.loadAnnotations();
 
 		this.loadAnnotation = this.getAnnotation(Load.class);
 		this.boxAnnotation = this.getAnnotation(Box.class);
@@ -149,7 +150,7 @@ public class ComponentMetadata {
 		}
 	}
 
-	private void loadClassAnnotations() {
+	private void loadAnnotations() {
 		Class<?> currentClass = this.componentClass;
 
 		while (currentClass != null) {
@@ -157,6 +158,20 @@ public class ComponentMetadata {
 				Class<?> annotationClass = annotation.annotationType();
 				if (!this.annotations.containsKey(annotationClass)) {
 					this.annotations.put(annotationClass, annotation);
+				}
+			}
+
+			for (Method method : currentClass.getDeclaredMethods()) {
+				for (Annotation annotation : method.getAnnotations()) {
+					Class<?> annotationClass = annotation.annotationType();
+					List<Method> methods = this.methodsByAnnotations.get(annotationClass);
+
+					if (methods == null) {
+						methods = new ArrayList<>();
+						this.methodsByAnnotations.put(annotationClass, methods);
+					}
+
+					methods.add(method);
 				}
 			}
 
@@ -201,9 +216,16 @@ public class ComponentMetadata {
 		return (T)this.annotations.get(annotationClass);
 	}
 
+	/**
+	 * @return The list of methods that has the given annotationClass in the Component Java Object hierarchy, or null if not found.
+	 */
+	public <T extends Annotation> List<Method> getMethodsWithAnnotation(Class<T> annotationClass) {
+		return this.methodsByAnnotations.get(annotationClass);
+	}
+
 	public String getLoadDescriptionContext() {
 		if (this.parentComponentMetadata == null) {
-			return this.componentClass + " was loaded manually";
+			return this.componentClass + " was loaded manually using loadComponent()";
 		} else {
 			return this.componentClass + " was loaded by " + this.parentComponentMetadata.getComponentClass() + "\n" +
 					this.parentComponentMetadata.getLoadDescriptionContext();
@@ -253,10 +275,6 @@ public class ComponentMetadata {
 
 	public void setCreationPriority(int creationPriority) {
 		this.creationPriority = creationPriority;
-	}
-
-	public ComponentMetadataManager getManager() {
-		return manager;
 	}
 
 	public List<Wire> getWireCores() {
