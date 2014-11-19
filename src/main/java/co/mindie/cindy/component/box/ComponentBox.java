@@ -118,19 +118,19 @@ public abstract class ComponentBox implements Closeable, Initializable {
 		return this.findComponents(accessibleClass, searchScope, null);
 	}
 
-	public List<Object> findComponents(Class<?> accessibleClass, SearchScope searchScope, ValueHolder<ComponentBox> outputComponentBox) {
+	public List<Object> findComponents(Class<?> accessibleClass, SearchScope searchScope, List<ComponentBox> outputComponentBoxes) {
 		if (searchScope == SearchScope.UNDEFINED) {
 			throw new CindyException("Cannot find a component with a UNDEFINED searchScope");
 		}
 
 		List<Object> components = this.indexer.find(accessibleClass);
 
-		if (outputComponentBox != null && components != null) {
-			outputComponentBox.setValue(this);
+		if (outputComponentBoxes != null && components != null) {
+			components.forEach(e -> outputComponentBoxes.add(this));
 		}
 
 		if (this.superBox != null && searchScope == SearchScope.GLOBAL) {
-			List<Object> parentComponents = this.superBox.findComponents(accessibleClass, searchScope, outputComponentBox);
+			List<Object> parentComponents = this.superBox.findComponents(accessibleClass, searchScope, outputComponentBoxes);
 
 			if (components == null) {
 				return parentComponents;
@@ -152,8 +152,9 @@ public abstract class ComponentBox implements Closeable, Initializable {
 		return this.findComponent(accessibleClass, searchScope, null);
 	}
 
-	public Object findComponent(Class<?> accessibleClass, SearchScope searchScope, ValueHolder<ComponentBox> outputComponentContext) {
-		List<Object> components = this.findComponents(accessibleClass, searchScope, outputComponentContext);
+	public Object findComponent(Class<?> accessibleClass, SearchScope searchScope, ValueHolder<ComponentBox> outputComponentBox) {
+		List<ComponentBox> outputBoxes = new ArrayList<>();
+		List<Object> components = this.findComponents(accessibleClass, searchScope, outputBoxes);
 
 		if (components == null) {
 			return null;
@@ -165,17 +166,33 @@ public abstract class ComponentBox implements Closeable, Initializable {
 			StringBuilder sb = new StringBuilder();
 			sb.append("Found too many components for ");
 			sb.append(accessibleClass);
-			sb.append(" using searchScope " + searchScope);
+			sb.append(" using searchScope ").append(searchScope);
 			sb.append(" in ").append(this);
 			sb.append("\nOthers are:\n");
+			int i = 0;
 			for (Object component : components) {
-				sb.append(component.getClass()).append(": ").append(component).append("\n");
+				sb.append(component.getClass())
+						.append(" in ComponentBox ")
+						.append(outputBoxes.get(i))
+						.append(": ")
+						.append(component).append("\n");
+				i++;
 			}
 
 			throw new CindyException(sb.toString());
 		}
 
-		return size == 1 ? components.get(0) : null;
+		if (size == 1) {
+			if (outputComponentBox != null) {
+				outputComponentBox.setValue(outputBoxes.get(0));
+			}
+
+			return components.get(0);
+		} else if (outputComponentBox != null) {
+			outputComponentBox.setValue(outputBoxes.get(0));
+		}
+
+		return null;
 	}
 
 	@Override
@@ -213,6 +230,7 @@ public abstract class ComponentBox implements Closeable, Initializable {
 
 	/**
 	 * Create a child ComponentBox that has this box as the super box.
+	 *
 	 * @param owner the owner of the new created ComponentBox
 	 * @return the new created ComponentBox.
 	 */

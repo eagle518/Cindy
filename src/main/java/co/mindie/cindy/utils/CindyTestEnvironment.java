@@ -1,6 +1,8 @@
 package co.mindie.cindy.utils;
 
 import co.mindie.cindy.automapping.Box;
+import co.mindie.cindy.automapping.CreationBox;
+import co.mindie.cindy.automapping.SearchScope;
 import co.mindie.cindy.automapping.WiredCore;
 import co.mindie.cindy.component.ComponentInitializer;
 import co.mindie.cindy.component.ComponentMetadata;
@@ -30,6 +32,7 @@ public abstract class CindyTestEnvironment {
 		ComponentMetadata metadata = metadataManager.loadComponent(cls);
 		metadata.setCreationPriority(Integer.MAX_VALUE);
 		metadata.setFactory(() -> component);
+		metadataManager.loadComponent(this.getClass()).addDependency(cls, true, false, SearchScope.NO_SEARCH, CreationBox.CURRENT_BOX);
 	}
 
 	public void prepare() {
