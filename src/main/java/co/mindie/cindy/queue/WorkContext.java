@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 
 import java.util.List;
 
-public class WorkContext<DataType> implements Flushable, Cancelable {
+public class WorkContext<DataType> {
 
 	////////////////////////
 	// VARIABLES
@@ -34,12 +34,10 @@ public class WorkContext<DataType> implements Flushable, Cancelable {
 	public void prepareForProcessing() {
 	}
 
-	@Override
 	public void cancel() {
 		this.cancelables.forEach(Cancelable::cancel);
 	}
 
-	@Override
 	public void flush() {
 		this.flushables.forEach(Flushable::flush);
 	}
