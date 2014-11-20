@@ -90,13 +90,10 @@ public class ControllerManager implements Initializable {
 
 	@Override
 	public void init() {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		ClassPool.getDefault().insertClassPath(new LoaderClassPath(cl));
-
 		for (ComponentMetadata controllerMetadata : this.metadataManager.getLoadedComponentsWithAnnotation(Controller.class)) {
 			Controller controllerAnnotation = controllerMetadata.getAnnotation(Controller.class);
 
-			this.addController(controllerMetadata.getComponentClass(), controllerAnnotation.basePath());
+			this.addController(controllerMetadata, controllerAnnotation.basePath());
 		}
 
 		for (ControllerEntry controller : this.controllers.values()) {
@@ -117,11 +114,14 @@ public class ControllerManager implements Initializable {
 	}
 
 	private static String getClassNameForControllerAndMethod(Class<?> controllerClass, Method method) {
-		return "co.mindie.cindy.controller.manager.entry.RequestHandler$" + controllerClass.getSimpleName() + "$" + method.getName();
+		return RequestHandler.class.getName() + "$" + controllerClass.getSimpleName() + "$" + method.getName();
 	}
 
 	@MetadataModifier
 	public static void loadEndpointTypes(ComponentMetadataManagerBuilder metadataManagerBuilder) {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		ClassPool.getDefault().insertClassPath(new LoaderClassPath(cl));
+
 		for (ComponentMetadata controllerMetadata : metadataManagerBuilder.getLoadedComponentsWithAnnotation(Controller.class)) {
 			final Class<?> controllerClass = controllerMetadata.getComponentClass();
 			for (Method method : controllerClass.getMethods()) {
@@ -159,14 +159,19 @@ public class ControllerManager implements Initializable {
 		}
 	}
 
-	public void addController(Class<?> controllerClass, String basePath) {
+	public void addController(ComponentMetadata controllerMetadata, String basePath) {
 		if (!basePath.endsWith("/")) {
 			basePath = basePath + "/";
 		}
 
+		Class<?> controllerClass = controllerMetadata.getComponentClass();
 		ControllerEntry controllerEntry = new ControllerEntry(controllerClass, basePath);
 
-		Method[] methods = controllerClass.getMethods();
+		List<Method> methods = controllerMetadata.getMethodsWithAnnotation(Endpoint.class);
+
+		if (methods == null) {
+			throw new CindyException("The controller " + controllerMetadata.getComponentClass() + " has no Endpoint methods");
+		}
 
 		for (Method method : methods) {
 			Endpoint mapped = method.getAnnotation(Endpoint.class);
