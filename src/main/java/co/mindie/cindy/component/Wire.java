@@ -9,7 +9,6 @@
 
 package co.mindie.cindy.component;
 
-import co.mindie.cindy.automapping.Box;
 import co.mindie.cindy.exception.CindyException;
 
 import java.lang.reflect.Field;
@@ -23,18 +22,22 @@ public class Wire {
 	////////////////
 
 	final private Field field;
-	final private Box box;
+	final private BoxOptions boxOptions;
 	final private String context;
 
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
 
-	public Wire(Field field, Box box, String context) {
+	public Wire(Field field, BoxOptions boxOptions) {
+		this(field, boxOptions, null);
+	}
+
+	public Wire(Field field, BoxOptions boxOptions, String context) {
 		field.setAccessible(true);
 
 		this.field = field;
-		this.box = box;
+		this.boxOptions = boxOptions;
 		this.context = context;
 	}
 
@@ -92,8 +95,8 @@ public class Wire {
 		return this.field;
 	}
 
-	public Box getBox() {
-		return box;
+	public BoxOptions getBoxOptions() {
+		return boxOptions;
 	}
 
 	public String getContext() {

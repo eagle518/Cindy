@@ -10,6 +10,7 @@
 package co.mindie.cindy.component.box;
 
 import co.mindie.cindy.automapping.SearchScope;
+import co.mindie.cindy.component.BoxOptions;
 import co.mindie.cindy.component.ComponentAspect;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.utils.Initializable;
@@ -221,7 +222,7 @@ public abstract class ComponentBox implements Closeable, Initializable {
 	}
 
 	public ComponentBox createChildBox(boolean readOnly, Object owner) {
-		return this.createChildBox(new ComponentAspect[0], new ComponentAspect[0], owner, readOnly);
+		return this.createChildBox(new ComponentAspect[0], new ComponentAspect[0], readOnly, owner);
 	}
 
 	public static ComponentBox create(boolean readOnly) {
@@ -236,13 +237,17 @@ public abstract class ComponentBox implements Closeable, Initializable {
 		}
 	}
 
+	public ComponentBox createChildBox(BoxOptions boxOptions, Object owner) {
+		return this.createChildBox(boxOptions.getNeededAspects(), boxOptions.getRejectedAspects(), boxOptions.isReadOnly(), owner);
+	}
+
 	/**
 	 * Create a child ComponentBox that has this box as the super box.
 	 *
 	 * @param owner the owner of the new created ComponentBox
 	 * @return the new created ComponentBox.
 	 */
-	public ComponentBox createChildBox(ComponentAspect[] neededAspects, ComponentAspect[] rejectedAspects, Object owner, boolean readOnly) {
+	public ComponentBox createChildBox(ComponentAspect[] neededAspects, ComponentAspect[] rejectedAspects, boolean readOnly, Object owner) {
 		ComponentBox box = create(neededAspects, rejectedAspects, this, readOnly);
 		box.setOwner(owner);
 

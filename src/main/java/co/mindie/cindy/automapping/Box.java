@@ -24,11 +24,6 @@ import java.lang.annotation.Target;
 public @interface Box {
 
 	/**
-	 * @return
-	 */
-	String value() default "";
-
-	/**
 	 * @return the ComponentAspects that every component added in this box must have.
 	 * Attempting to add a Component that doesn't have those aspects inside this box
 	 * will fail.

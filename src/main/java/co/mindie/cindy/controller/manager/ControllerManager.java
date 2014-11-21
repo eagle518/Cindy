@@ -119,18 +119,12 @@ public class ControllerManager implements Initializable {
 
 	@MetadataModifier
 	public static void loadEndpointTypes(ComponentMetadataManagerBuilder metadataManagerBuilder) {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		ClassPool.getDefault().insertClassPath(new LoaderClassPath(cl));
-
 		for (ComponentMetadata controllerMetadata : metadataManagerBuilder.getLoadedComponentsWithAnnotation(Controller.class)) {
 			final Class<?> controllerClass = controllerMetadata.getComponentClass();
 			for (Method method : controllerClass.getMethods()) {
 				Endpoint mapped = method.getAnnotation(Endpoint.class);
 
 				if (mapped != null) {
-					final String path = mapped.path();
-					final HttpMethod type = mapped.httpMethod();
-
 					try {
 						String newClassName = getClassNameForControllerAndMethod(controllerClass, method);
 						Class<?> createdClass;

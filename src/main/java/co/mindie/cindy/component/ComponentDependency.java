@@ -12,6 +12,9 @@ package co.mindie.cindy.component;
 import co.mindie.cindy.automapping.CreationBox;
 import co.mindie.cindy.automapping.SearchScope;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ComponentDependency {
 
 	////////////////////////
@@ -24,6 +27,7 @@ public class ComponentDependency {
 	private SearchScope searchScope;
 	private CreationBox creationBox;
 	private Wire wire;
+	private List<DependencyInjectedListener> dependencyInjectedListeners;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -34,11 +38,20 @@ public class ComponentDependency {
 		this.list = isList;
 		this.searchScope = searchScope;
 		this.creationBox = creationBox;
+		this.dependencyInjectedListeners = new ArrayList<>();
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
+
+	public void onInjected(DependencyInjectedListener dependencyInjectedListener) {
+		this.dependencyInjectedListeners.add(dependencyInjectedListener);
+	}
+
+	public void notifyInjected(ComponentMetadata componentMetadata, Object dependencyInstance) {
+		this.dependencyInjectedListeners.forEach(f -> f.onComponentDependencyInjected(componentMetadata, this, dependencyInstance));
+	}
 
 	////////////////////////
 	// GETTERS/SETTERS

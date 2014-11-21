@@ -11,6 +11,8 @@ package co.mindie.cindy.controller.servlet;
 
 import co.mindie.cindy.CindyWebApp;
 import co.mindie.cindy.CindyWebAppCreator;
+import javassist.ClassPool;
+import javassist.LoaderClassPath;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletContextEvent;
@@ -50,6 +52,9 @@ public abstract class CindyServletWebAppLoader implements ServletContextListener
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		ClassPool.getDefault().insertClassPath(new LoaderClassPath(cl));
+
 		this.application = this.getAppCreator().createApplication();
 
 		Dynamic dynamic = sce.getServletContext().addServlet("CindyServlet", new ServletAdapter(this.application.getControllerManager()));

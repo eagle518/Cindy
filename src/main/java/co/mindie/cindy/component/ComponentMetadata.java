@@ -55,13 +55,7 @@ public class ComponentMetadata {
 		this.methodsByAnnotations = new HashMap<>();
 		this.parentComponentMetadata = parentComponentMetadata;
 
-		this.factory = () -> {
-			try {
-				return this.componentClass.newInstance();
-			} catch (Exception e) {
-				throw new CindyException("Unable to instantiate CindyComponent " + this.componentClass.getName(), e);
-			}
-		};
+		this.factory = new ClassFactory<>((Class<Object>)objectClass);
 
 		this.loadAnnotations();
 
@@ -126,7 +120,7 @@ public class ComponentMetadata {
 					field.setAccessible(true);
 					Box box = field.getAnnotation(Box.class);
 
-					Wire wire = new Wire(field, box, null);
+					Wire wire = new Wire(field, box != null ? new BoxOptions(box.needAspects(), box.rejectAspects(), box.readOnly()) : null, null);
 
 					Class<?> wireClass = wire.getFieldType();
 					ComponentDependency dependency = this.addDependency(wireClass, wired.required(), wire.isList(),

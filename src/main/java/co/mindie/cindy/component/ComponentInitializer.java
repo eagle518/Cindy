@@ -115,7 +115,7 @@ public class ComponentInitializer implements Initializable {
 		ComponentBox innerBox = null;
 
 		if (boxAnnotation != null) {
-			innerBox = enclosingBox.createChildBox(boxAnnotation.needAspects(), boxAnnotation.rejectAspects(), objectInstance, boxAnnotation.readOnly());
+			innerBox = enclosingBox.createChildBox(boxAnnotation.needAspects(), boxAnnotation.rejectAspects(), boxAnnotation.readOnly(), objectInstance);
 
 			this.createdBoxes.add(innerBox);
 		}
@@ -174,10 +174,9 @@ public class ComponentInitializer implements Initializable {
 			currentBox = createdComponent.getCurrentBox();
 
 
-			if (dependency.getWire() != null && dependency.getWire().getBox() != null) {
-				Box box = dependency.getWire().getBox();
+			if (dependency.getWire() != null && dependency.getWire().getBoxOptions() != null) {
 
-				currentBox = currentBox.createChildBox(box.needAspects(), box.rejectAspects(), objectInstance, box.readOnly());
+				currentBox = currentBox.createChildBox(dependency.getWire().getBoxOptions(), objectInstance);
 				this.createdBoxes.add(currentBox);
 			}
 
@@ -231,6 +230,7 @@ public class ComponentInitializer implements Initializable {
 			if (dependencyInstance != null) {
 				createdComponent.addDependency(dependencyInstance);
 			}
+			dependency.notifyInjected(componentMetadata, dependencyInstance);
 		}
 
 		for (Wire wireCore : componentMetadata.getWireCores()) {
