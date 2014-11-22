@@ -34,6 +34,8 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	private ThreadedConcurrentTaskQueue workTaskQueue;
 	private AtomicInteger pendingTasks;
 	private final String workerName;
+	private final Object queueIsEmptyNotifier;
+	private boolean queueIsEmpty;
 
 	@WiredCore private ComponentMetadataManager metadataManager;
 	@WiredCore private ComponentBox box;
@@ -45,6 +47,8 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	public WorkDispatcher(Class<WorkContextType> workContextTypeClass, String workerName, TimeSpan waitDuration) {
 		super(workerName, waitDuration);
 
+		this.queueIsEmptyNotifier = new Object();
+		this.queueIsEmpty = false;
 		this.workerName = workerName;
 		this.maxNumberOfThreads = DEFAULT_MAX_NUMBER_OF_THREADS;
 		this.workContextTypeClass = workContextTypeClass;
@@ -73,6 +77,7 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 		}
 
 		this.workTaskQueue.close();
+		this.notifyQueueIsEmpty();
 	}
 
 	@Override
@@ -129,6 +134,8 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 							poolableWorkContext.release();
 						}
 					});
+				} else {
+					this.notifyQueueIsEmpty();
 				}
 			} catch (Exception e) {
 				try {
@@ -174,7 +181,22 @@ public class WorkDispatcher<DataType, WorkContextType extends WorkContext<DataTy
 	}
 
 	public void waitWorkCompletion() {
+		while (!this.queueIsEmpty) {
+			synchronized (this.queueIsEmptyNotifier) {
+				try {
+					this.queueIsEmptyNotifier.wait();
+				} catch (InterruptedException ignored) {
+				}
+			}
+		}
 		this.workTaskQueue.waitAllTasks();
+	}
+
+	private void notifyQueueIsEmpty() {
+		synchronized (this.queueIsEmptyNotifier) {
+			this.queueIsEmpty = true;
+			this.queueIsEmptyNotifier.notifyAll();
+		}
 	}
 
 	////////////////////////
