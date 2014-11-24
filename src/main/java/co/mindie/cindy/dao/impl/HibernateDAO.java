@@ -124,6 +124,13 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 		return key;
 	}
 
+	public Serializable saveWithoutDates(ElementType element) {
+		this.limit(element);
+		Serializable key = this.getDatabaseHandle().save(element);
+		ReflectionUtils.setField(element, this.getPrimaryKeyPropertyName(), key);
+		return key;
+	}
+
 	public void update(ElementType element) {
 		this.limit(element);
 
