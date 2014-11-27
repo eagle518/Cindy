@@ -1,6 +1,6 @@
 package co.mindie.cindy.async.task;
 
-import co.mindie.cindy.exception.CindyException;
+import co.mindie.cindy.core.exception.CindyException;
 
 import java.util.ArrayList;
 import java.util.List;

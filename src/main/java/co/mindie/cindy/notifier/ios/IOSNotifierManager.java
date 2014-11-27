@@ -9,8 +9,8 @@
 
 package co.mindie.cindy.notifier.ios;
 
-import co.mindie.cindy.exception.CindyException;
-import co.mindie.cindy.notifier.NotifierListener;
+import co.mindie.cindy.core.exception.CindyException;
+import co.mindie.cindy.notifier.base.NotifierListener;
 import me.corsin.javatools.misc.Pair;
 import me.corsin.javatools.task.TaskQueue;
 

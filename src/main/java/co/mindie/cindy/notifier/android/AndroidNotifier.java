@@ -9,8 +9,8 @@
 
 package co.mindie.cindy.notifier.android;
 
-import co.mindie.cindy.notifier.Notifier;
-import co.mindie.cindy.responseserializer.JsonResponseWriter;
+import co.mindie.cindy.notifier.base.Notifier;
+import co.mindie.cindy.webservice.responsewriter.JsonResponseWriter;
 import me.corsin.javatools.http.CommunicatorResponse;
 import me.corsin.javatools.http.HttpMethod;
 import me.corsin.javatools.http.ServerRequest;

@@ -1,15 +1,11 @@
 package co.mindie.cindy.web;
 
-import co.mindie.cindy.AbstractCindyTest;
-import co.mindie.cindy.CindyWebApp;
-import co.mindie.cindy.automapping.Dependencies;
-import co.mindie.cindy.automapping.Load;
-import co.mindie.cindy.automapping.Singleton;
-import co.mindie.cindy.automapping.Wired;
-import co.mindie.cindy.component.ComponentMetadataManager;
-import co.mindie.cindy.component.ComponentMetadataManagerBuilder;
-import co.mindie.cindy.component.CreatedComponent;
-import co.mindie.cindy.component.box.ComponentBox;
+import co.mindie.cindy.webservice.CindyWebApp;
+import co.mindie.cindy.core.annotation.Load;
+import co.mindie.cindy.webservice.annotation.Singleton;
+import co.mindie.cindy.core.annotation.Wired;
+import co.mindie.cindy.core.component.metadata.ComponentMetadataManagerBuilder;
+import co.mindie.cindy.core.component.box.ComponentBox;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

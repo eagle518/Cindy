@@ -9,7 +9,7 @@
 
 package co.mindie.cindy.notifier.ios;
 
-import co.mindie.cindy.notifier.Notifier;
+import co.mindie.cindy.notifier.base.Notifier;
 import javapns.Push;
 import javapns.devices.exceptions.InvalidDeviceTokenFormatException;
 import javapns.notification.*;

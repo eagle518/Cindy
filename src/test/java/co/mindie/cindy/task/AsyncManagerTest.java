@@ -1,13 +1,13 @@
 package co.mindie.cindy.task;
 
-import co.mindie.cindy.async.Async;
-import co.mindie.cindy.async.AsyncContext;
-import co.mindie.cindy.async.AsyncMode;
-import co.mindie.cindy.async.AsyncTaskManager;
+import co.mindie.cindy.async.annotation.Async;
+import co.mindie.cindy.async.manager.AsyncContext;
+import co.mindie.cindy.async.manager.AsyncMode;
+import co.mindie.cindy.async.manager.AsyncTaskManager;
 import co.mindie.cindy.async.task.AsyncResult;
-import co.mindie.cindy.component.ComponentMetadataManagerBuilder;
-import co.mindie.cindy.component.box.ComponentBox;
-import co.mindie.cindy.utils.Activator;
+import co.mindie.cindy.core.component.metadata.ComponentMetadataManagerBuilder;
+import co.mindie.cindy.core.component.box.ComponentBox;
+import co.mindie.cindy.core.tools.Activator;
 import me.corsin.javatools.misc.Action;
 import me.corsin.javatools.misc.ValueHolder;
 import org.junit.Assert;

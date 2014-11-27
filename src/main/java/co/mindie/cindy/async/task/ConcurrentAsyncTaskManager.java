@@ -1,9 +1,9 @@
 package co.mindie.cindy.async.task;
 
-import co.mindie.cindy.async.AsyncTaskManager;
+import co.mindie.cindy.async.manager.AsyncTaskManager;
 import co.mindie.cindy.async.task.queue.TaskQueue;
 import co.mindie.cindy.async.task.queue.ThreadedConcurrentTaskQueue;
-import co.mindie.cindy.automapping.Load;
+import co.mindie.cindy.core.annotation.Load;
 
 @Load
 public class ConcurrentAsyncTaskManager extends AsyncTaskManager {

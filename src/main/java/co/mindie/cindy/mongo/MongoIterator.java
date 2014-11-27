@@ -1,6 +1,6 @@
 package co.mindie.cindy.mongo;
 
-import co.mindie.cindy.dao.impl.MongoDAO;
+import co.mindie.cindy.mongo.dao.MongoDAO;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 

@@ -9,7 +9,7 @@
 
 package co.mindie.cindy.notifier.ios;
 
-import co.mindie.cindy.notifier.MobileNotification;
+import co.mindie.cindy.notifier.base.MobileNotification;
 
 public class IOSNotification extends MobileNotification {
 

@@ -1,9 +1,9 @@
 package co.mindie.cindy.async.task;
 
-import co.mindie.cindy.async.AsyncTaskManager;
+import co.mindie.cindy.async.manager.AsyncTaskManager;
 import co.mindie.cindy.async.task.queue.TaskQueue;
 import co.mindie.cindy.async.task.queue.ThreadedPeriodicTaskQueue;
-import co.mindie.cindy.automapping.Load;
+import co.mindie.cindy.core.annotation.Load;
 import org.joda.time.Duration;
 
 @Load

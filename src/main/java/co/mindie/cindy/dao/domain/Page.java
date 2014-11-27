@@ -1,6 +1,6 @@
 package co.mindie.cindy.dao.domain;
 
-import co.mindie.cindy.exception.CindyException;
+import co.mindie.cindy.core.exception.CindyException;
 
 import java.util.Iterator;
 import java.util.List;

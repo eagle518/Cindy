@@ -1,7 +1,5 @@
 package co.mindie.cindy.worker;
 
-import co.mindie.cindy.component.AbstractWorker;
-import com.sun.swing.internal.plaf.synth.resources.synth_zh_HK;
 import me.corsin.javatools.timer.TimeSpan;
 import org.junit.Test;
 import org.junit.runner.RunWith;

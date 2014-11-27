@@ -1,6 +1,6 @@
 package co.mindie.cindy.token;
 
-import co.mindie.cindy.utils.Token;
+import co.mindie.cindy.webservice.utils.Token;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

@@ -1,6 +1,6 @@
 package co.mindie.cindy;
 
-import co.mindie.cindy.utils.CindyTestEnvironment;
+import co.mindie.cindy.core.tools.CindyTestEnvironment;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
