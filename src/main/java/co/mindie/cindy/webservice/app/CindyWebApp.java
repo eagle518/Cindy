@@ -96,7 +96,7 @@ public class CindyWebApp implements Pausable, Closeable, Initializable {
 				}
 
 				if (!appMetadata.hasDependency(metadata.getComponentClass())) {
-					appMetadata.addDependency(metadata.getComponentClass(), true, false, SearchScope.LOCAL, CreationBox.CURRENT_BOX);
+					appMetadata.addDependency(metadata.getComponentClass(), true, false, SearchScope.GLOBAL, CreationBox.CURRENT_BOX);
 				}
 			}
 		}

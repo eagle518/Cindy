@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by simoncorsin on 21/11/14.
+ * An Activator is an object that can be activated or deactivated
+ * and notify every listeners that may be listening to one
+ * or both events. A listener can also wait until one instance
+ * gets activated or desactivated.
  */
 public class Activator {
 

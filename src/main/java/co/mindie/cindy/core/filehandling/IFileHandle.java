@@ -20,11 +20,10 @@ public interface IFileHandle {
 
 	InputStream getInputStream() throws IOException;
 
-	void write(InputStream inputStream, int streamSize) throws IOException;
+	void write(InputStream inputStream, long length) throws IOException;
 
 	boolean exists();
 
 	boolean delete();
-
 
 }
