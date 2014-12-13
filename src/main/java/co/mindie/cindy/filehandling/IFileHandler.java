@@ -16,7 +16,7 @@ import java.util.Iterator;
 
 public interface IFileHandler {
 
-	OutputStream getOutputStream(String file);
+	OutputStream getOutputStream(String file) throws IOException;
 
 	IFileHandle getFileHandle(String file);
 
