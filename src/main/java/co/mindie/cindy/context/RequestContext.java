@@ -13,9 +13,11 @@ import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.controller.manager.HttpRequest;
 import co.mindie.cindy.controller.manager.HttpResponse;
+import co.mindie.cindy.exception.BadParameterException;
 import co.mindie.cindy.responseserializer.IResponseWriter;
 import co.mindie.cindy.utils.Cancelable;
 import co.mindie.cindy.utils.Flushable;
+import org.apache.commons.fileupload.FileItem;
 
 import java.util.HashMap;
 import java.util.List;
@@ -153,4 +155,29 @@ public class RequestContext {
 	public void setUrlResources(Map<String, String> urlResources) {
 		this.urlResources = urlResources;
 	}
+
+	public String getStringParameter(String key) {
+		HttpRequest httpRequest = this.getHttpRequest();
+		String[] values = httpRequest.getQueryParameters().get(key);
+		String value = null;
+
+		if (values != null && values.length > 0) {
+			value = values[0];
+		} else {
+			if (httpRequest.getBodyParameters() != null) {
+				List<FileItem> bodyValues = httpRequest.getBodyParameters().get(key);
+				if (bodyValues != null && bodyValues.size() > 0) {
+					FileItem bodyValue = bodyValues.get(0);
+					if (bodyValue.isFormField()) {
+						value = bodyValue.getString();
+					} else {
+						throw new BadParameterException(key);
+					}
+				}
+			}
+		}
+
+		return value;
+	}
+
 }

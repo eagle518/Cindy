@@ -19,9 +19,8 @@ import javassist.*;
 import org.joda.time.Duration;
 
 import java.io.Closeable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,13 +70,18 @@ public abstract class AsyncTaskManager implements Initializable, Closeable {
 
 		int idx = 0;
 		for (Method method : asyncMethods) {
+			if (Modifier.isPrivate(method.getModifiers())) {
+				throw new CindyException("Cannot create ASync method impl on " + method + ": Only protected or public methods" +
+						" are supported");
+			}
 			String asyncTaskManagerPropertyName = "__asyncTaskManager_" + idx;
 			String asyncRunnerPropertyName = "__asyncRunner_" + idx;
 			cls.addField(CtField.make("private " + AsyncTaskManager.class.getName() + " " + asyncTaskManagerPropertyName + ";", cls));
 			cls.addField(CtField.make("public " + AsyncRunner.class.getName() + " " + asyncRunnerPropertyName + ";", cls));
 
 			StringBuilder methodImpl = new StringBuilder();
-			methodImpl.append("public ")
+			String modifier = java.lang.reflect.Modifier.isPublic(method.getModifiers()) ? "public" : "protected";
+			methodImpl.append(modifier + " ")
 					.append(method.getReturnType().getName())
 					.append(" ")
 					.append(method.getName())

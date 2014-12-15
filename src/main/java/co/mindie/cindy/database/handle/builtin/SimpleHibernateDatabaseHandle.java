@@ -9,12 +9,10 @@
 
 package co.mindie.cindy.database.handle.builtin;
 
-import co.mindie.cindy.automapping.Load;
 import co.mindie.cindy.automapping.Wired;
 import co.mindie.cindy.database.HibernateDatabase;
 import co.mindie.cindy.database.handle.HibernateDatabaseHandle;
 
-@Load(creationPriority = -1)
 public class SimpleHibernateDatabaseHandle extends HibernateDatabaseHandle {
 
 	////////////////////////

@@ -28,7 +28,6 @@ public abstract class HibernateDatabaseMonitor implements Runnable, Closeable, I
 	////////////////
 
 	private static final Logger LOGGER = Logger.getLogger(HibernateDatabaseMonitor.class);
-	@Wired private HibernateDatabase database;
 	@Wired private Configuration configuration;
 	private boolean cont;
 	private int leakDetectThredshold;
@@ -80,7 +79,7 @@ public abstract class HibernateDatabaseMonitor implements Runnable, Closeable, I
 
 	public void detectLeaks() {
 		LOGGER.trace("DetectLeaks() launched.");
-		List<TracedHibernateDatabaseHandle> leakedHandles = this.database.getHandlesWithActiveSessionsLivingFor(this.leakDetectThredshold);
+		List<TracedHibernateDatabaseHandle> leakedHandles = this.getHibernateDatabase().getHandlesWithActiveSessionsLivingFor(this.leakDetectThredshold);
 
 		for (TracedHibernateDatabaseHandle handle : leakedHandles) {
 			this.onDetectedLeakedDatabaseHandle(handle.getHandle(), handle.getCreatedDate(), handle.getStackTrace());
@@ -93,6 +92,8 @@ public abstract class HibernateDatabaseMonitor implements Runnable, Closeable, I
 	}
 
 	protected abstract void onDetectedLeakedDatabaseHandle(HibernateDatabaseHandle handle, DateTime createdDate, StackTraceElement[] stackTrace);
+
+	public abstract HibernateDatabase getHibernateDatabase();
 
 	////////////////////////
 	// GETTERS/SETTERS
