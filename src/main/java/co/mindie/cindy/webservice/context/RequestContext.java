@@ -1,4 +1,4 @@
-/////////////////////////////////////////////////
+package co.mindie.cindy.webservice.context;/////////////////////////////////////////////////
 // Project : webservice
 // Package : com.ever.webservice.context
 // RequestContext.java
@@ -7,15 +7,15 @@
 // File created on Mar 4, 2013 at 3:45:44 PM
 ////////
 
-package co.mindie.cindy.webservice.context;
-
 import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.core.annotation.Wired;
-import co.mindie.cindy.webservice.controller.manager.HttpRequest;
-import co.mindie.cindy.webservice.controller.manager.HttpResponse;
-import co.mindie.cindy.webservice.responsewriter.IResponseWriter;
 import co.mindie.cindy.core.tools.Cancelable;
 import co.mindie.cindy.core.tools.Flushable;
+import co.mindie.cindy.webservice.controller.manager.HttpRequest;
+import co.mindie.cindy.webservice.controller.manager.HttpResponse;
+import co.mindie.cindy.webservice.exception.BadParameterException;
+import co.mindie.cindy.webservice.responsewriter.IResponseWriter;
+import org.apache.commons.fileupload.FileItem;
 
 import java.util.HashMap;
 import java.util.List;
@@ -153,4 +153,29 @@ public class RequestContext {
 	public void setUrlResources(Map<String, String> urlResources) {
 		this.urlResources = urlResources;
 	}
+
+	public String getStringParameter(String key) {
+		HttpRequest httpRequest = this.getHttpRequest();
+		String[] values = httpRequest.getQueryParameters().get(key);
+		String value = null;
+
+		if (values != null && values.length > 0) {
+			value = values[0];
+		} else {
+			if (httpRequest.getBodyParameters() != null) {
+				List<FileItem> bodyValues = httpRequest.getBodyParameters().get(key);
+				if (bodyValues != null && bodyValues.size() > 0) {
+					FileItem bodyValue = bodyValues.get(0);
+					if (bodyValue.isFormField()) {
+						value = bodyValue.getString();
+					} else {
+						throw new BadParameterException(key);
+					}
+				}
+			}
+		}
+
+		return value;
+	}
+
 }

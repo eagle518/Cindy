@@ -93,7 +93,7 @@ public abstract class HibernateDatabaseMonitor implements Runnable, Closeable, I
 
 	protected abstract void onDetectedLeakedDatabaseHandle(HibernateDatabaseHandle handle, DateTime createdDate, StackTraceElement[] stackTrace);
 
-	protected abstract HibernateDatabase getHibernateDatabase();
+	public abstract HibernateDatabase getHibernateDatabase();
 
 	////////////////////////
 	// GETTERS/SETTERS

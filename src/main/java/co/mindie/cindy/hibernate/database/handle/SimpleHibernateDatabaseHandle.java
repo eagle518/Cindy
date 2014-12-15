@@ -9,18 +9,17 @@
 
 package co.mindie.cindy.hibernate.database.handle;
 
-import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.core.annotation.Wired;
 import co.mindie.cindy.hibernate.database.HibernateDatabase;
 
-@Load(creationPriority = -1)
 public class SimpleHibernateDatabaseHandle extends HibernateDatabaseHandle {
 
 	////////////////////////
 	// VARIABLES
 	////////////////
 
-	@Wired private HibernateDatabase database;
+	@Wired
+	private HibernateDatabase database;
 
 	////////////////////////
 	// CONSTRUCTORS
