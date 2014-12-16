@@ -17,24 +17,27 @@ public abstract class AbstractWorker implements Worker, Closeable, Initializable
 
     private static final Logger LOGGER = Logger.getLogger(AbstractWorker.class);
 
-    private final String WORKER_NAME;
-    private final long WAIT_DURATION_MILLIS;
-    private final Object LOCK;
+    private final String workerName;
+    private final Object lock;
 
     private boolean startOnInit;
     private boolean stopped;
     private boolean waitCompletionOnClose;
     private Thread worker;
     private TaskQueue taskQueue;
+    private TimeSpan waitDuration;
 
     ///////////////////
     // CONSTRUCTORS
     ///////////////////
 
+    public AbstractWorker(String workerName) {
+        this(workerName, null);
+    }
+
     public AbstractWorker(String workerName, TimeSpan waitDuration) {
-        this.WORKER_NAME = workerName;
-        this.WAIT_DURATION_MILLIS = waitDuration.getTotalMs();
-        this.LOCK = new Object();
+        this.workerName = workerName;
+        this.lock = new Object();
         this.taskQueue = new TaskQueue();
         this.startOnInit = true;
         this.waitCompletionOnClose = true;
@@ -55,7 +58,7 @@ public abstract class AbstractWorker implements Worker, Closeable, Initializable
     public void start() {
         this.stopped = false;
         if (this.worker == null) {
-            Thread worker = new Thread(this::work, this.WORKER_NAME + " Thread");
+            Thread worker = new Thread(this::work, this.workerName + " Thread");
             worker.setDaemon(true);
             this.worker = worker;
             worker.start();
@@ -66,30 +69,33 @@ public abstract class AbstractWorker implements Worker, Closeable, Initializable
         while (!this.stopped) {
             long t0 = DateTimeUtils.currentTimeMillis();
             try {
-                LOGGER.trace(this.WORKER_NAME + " running.");
+                LOGGER.trace(this.workerName + " running.");
                 this.run();
                 this.taskQueue.flushTasks();
-                LOGGER.trace(this.WORKER_NAME + " ran in " + (DateTimeUtils.currentTimeMillis() - t0) + " ms");
+                LOGGER.trace(this.workerName + " ran in " + (DateTimeUtils.currentTimeMillis() - t0) + " ms");
             } catch (Exception e) {
-                LOGGER.error("An error occurred while running " + this.WORKER_NAME + "\n" + StackTraceUtils.stackTraceToString(e));
+                LOGGER.error("An error occurred while running " + this.workerName + "\n" + StackTraceUtils.stackTraceToString(e));
             }
 
             try {
-                synchronized (this.LOCK) {
+                synchronized (this.lock) {
                     if (!this.stopped) {
-                        this.LOCK.wait(this.WAIT_DURATION_MILLIS);
+                        TimeSpan waitDuration = this.getWaitDuration();
+                        if (waitDuration != null) {
+                            this.lock.wait(waitDuration.getTotalMs());
+                        }
                     }
                 }
             } catch (InterruptedException e) {
-                LOGGER.error("Error while waiting the worker " + this.WORKER_NAME, e);
+                LOGGER.error("Error while waiting the worker " + this.workerName, e);
             }
         }
     }
 
     @Override
     public void wakeUp() {
-        synchronized (this.LOCK) {
-            this.LOCK.notifyAll();
+        synchronized (this.lock) {
+            this.lock.notifyAll();
         }
     }
 
@@ -110,7 +116,7 @@ public abstract class AbstractWorker implements Worker, Closeable, Initializable
 
     @Override
     public void close() {
-        LOGGER.debug(this.WORKER_NAME + " closing.");
+        LOGGER.debug(this.workerName + " closing.");
         Thread workerThread = this.worker;
         this.stop();
 
@@ -144,5 +150,13 @@ public abstract class AbstractWorker implements Worker, Closeable, Initializable
 
     public void setWaitCompletionOnClose(boolean waitCompletionOnClose) {
         this.waitCompletionOnClose = waitCompletionOnClose;
+    }
+
+    public TimeSpan getWaitDuration() {
+        return waitDuration;
+    }
+
+    public void setWaitDuration(TimeSpan waitDuration) {
+        this.waitDuration = waitDuration;
     }
 }
