@@ -40,6 +40,7 @@ public class RequestContext {
 	@Wired private List<Cancelable> cancelables;
 
 	@Wired(required = false) private IResponseWriter responseWriter;
+	private String endpointMethodName;
 
 	// //////////////////////
 	// CONSTRUCTORS
@@ -180,4 +181,11 @@ public class RequestContext {
 		return value;
 	}
 
+	public void setEndpointMethodName(String endpointMethodName) {
+		this.endpointMethodName = endpointMethodName;
+	}
+
+	public String getEndpointMethodName() {
+		return endpointMethodName;
+	}
 }

@@ -23,15 +23,32 @@ import co.mindie.cindy.controller.manager.RequestParameter;
 import co.mindie.cindy.exception.BadParameterException;
 import co.mindie.cindy.exception.CindyException;
 import co.mindie.cindy.exception.ResourceNotFoundException;
-import co.mindie.cindy.resolver.*;
+import co.mindie.cindy.resolver.ChainedResolverBuilder;
+import co.mindie.cindy.resolver.IDynamicResolver;
+import co.mindie.cindy.resolver.IResolver;
+import co.mindie.cindy.resolver.IResolverBuilder;
+import co.mindie.cindy.resolver.ResolverBuilder;
+import co.mindie.cindy.resolver.ResolverContext;
+import co.mindie.cindy.resolver.ResolverManager;
+import co.mindie.cindy.resolver.ResolverOptions;
 import co.mindie.cindy.resolver.builtin.ArrayToArrayResolver;
 import co.mindie.cindy.resolver.builtin.ArrayToListResolver;
 import co.mindie.cindy.resolver.builtin.RequestContextToStringResolver;
 import me.corsin.javatools.string.Strings;
 import org.apache.log4j.Logger;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EndpointEntry {
 
@@ -143,6 +160,8 @@ public class EndpointEntry {
 
 			initializer.init();
 		}
+
+		requestHandler.getRequestContext().setEndpointMethodName(this.getMethod().getDeclaringClass().getSimpleName() + "#" + this.getMethod().getName());
 
 		return requestHandler;
 	}
