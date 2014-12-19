@@ -1,28 +1,19 @@
-/////////////////////////////////////////////////
-// Project : exiled-masterserver
-// Package : com.kerious.exiled.masterserver.api
-// MethodAssociation.java
-//
-// Author : Simon CORSIN <simoncorsin@gmail.com>
-// File created on Jan 11, 2013 at 5:26:13 PM
-////////
-
 package co.mindie.cindy.webservice.controller.manager.entry;
 
+import co.mindie.cindy.core.component.box.ComponentBox;
+import co.mindie.cindy.core.component.initializer.ComponentInitializer;
+import co.mindie.cindy.core.component.initializer.CreatedComponent;
+import co.mindie.cindy.core.component.metadata.ComponentMetadataManager;
+import co.mindie.cindy.core.exception.CindyException;
 import co.mindie.cindy.webservice.annotation.Endpoint;
 import co.mindie.cindy.webservice.annotation.Param;
 import co.mindie.cindy.webservice.annotation.ResolverOption;
-import co.mindie.cindy.core.component.initializer.ComponentInitializer;
-import co.mindie.cindy.core.component.metadata.ComponentMetadataManager;
-import co.mindie.cindy.core.component.initializer.CreatedComponent;
-import co.mindie.cindy.core.component.box.ComponentBox;
 import co.mindie.cindy.webservice.context.RequestContext;
 import co.mindie.cindy.webservice.controller.CindyController;
 import co.mindie.cindy.webservice.controller.ParamSource;
 import co.mindie.cindy.webservice.controller.manager.IParameterNameResolver;
 import co.mindie.cindy.webservice.controller.manager.RequestParameter;
 import co.mindie.cindy.webservice.exception.BadParameterException;
-import co.mindie.cindy.core.exception.CindyException;
 import co.mindie.cindy.webservice.exception.ResourceNotFoundException;
 import co.mindie.cindy.webservice.resolver.*;
 import co.mindie.cindy.webservice.resolver.builtin.ArrayToArrayResolver;
@@ -144,6 +135,8 @@ public class EndpointEntry {
 
 			initializer.init();
 		}
+
+		requestHandler.getRequestContext().setEndpointMethodName(this.getMethod().getDeclaringClass().getSimpleName() + "#" + this.getMethod().getName());
 
 		return requestHandler;
 	}
