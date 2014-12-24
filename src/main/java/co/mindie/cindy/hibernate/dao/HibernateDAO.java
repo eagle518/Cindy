@@ -213,8 +213,7 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 
 	public long getTotalCountBetween(DateTime fromDate, DateTime toDate) {
 		return ((Number) this.createCriteria()
-				.add(Restrictions.ge(this.getCreatedDatePropertyName(), fromDate))
-				.add(Restrictions.le(this.getCreatedDatePropertyName(), toDate))
+				.add(Restrictions.between(this.getCreatedDatePropertyName(), fromDate, toDate))
 				.setProjection(Projections.rowCount())
 				.single()).longValue();
 	}
