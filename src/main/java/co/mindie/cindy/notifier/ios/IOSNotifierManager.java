@@ -44,6 +44,7 @@ public class IOSNotifierManager implements Closeable, Flushable {
 	// METHODS
 	////////////////
 
+	@Override
 	public void flush() {
 		for (IOSNotifier notifier : this.notifiers.values()) {
 			notifier.flush();
@@ -89,9 +90,7 @@ public class IOSNotifierManager implements Closeable, Flushable {
 
 	@Override
 	public void close() {
-		for (IOSNotifier notifier : this.getNotifiers()) {
-			notifier.close();
-		}
+		this.getNotifiers().forEach(IOSNotifier::close);
 	}
 
 	////////////////////////

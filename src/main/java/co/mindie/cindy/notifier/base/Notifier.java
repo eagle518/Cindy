@@ -92,6 +92,7 @@ public abstract class Notifier<T extends MobileNotification> implements BatchPro
 		}
 	}
 
+	@Override
 	public void flush() {
 		this.batchProcessor.flush();
 	}
