@@ -11,6 +11,7 @@ import co.mindie.cindy.core.component.metadata.ComponentMetadataManagerBuilder;
 import co.mindie.cindy.core.component.box.ComponentBox;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
+import org.joda.time.Duration;
 
 @Box(rejectAspects = {}, needAspects = {})
 public abstract class CindyTestEnvironment {
@@ -70,6 +71,11 @@ public abstract class CindyTestEnvironment {
 	protected static DateTime setCurrentDate(DateTime date) {
 		DateTimeUtils.setCurrentMillisFixed(date.getMillis());
 		return date;
+	}
+
+	protected static DateTime incrementCurrentDate(Duration duration) {
+		DateTime newDate = DateTime.now().plus(duration);
+		return setCurrentDate(newDate);
 	}
 
 	protected void releaseTime() {
