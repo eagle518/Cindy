@@ -14,8 +14,10 @@ import co.mindie.cindy.core.annotation.Wired;
 import co.mindie.cindy.hibernate.database.Database;
 import com.mongodb.DBCollection;
 
+import java.io.Closeable;
+
 @Aspects
-public class MongoDatabaseHandle implements IDatabaseHandle {
+public class MongoDatabaseHandle implements Closeable {
 
 	// //////////////////////
 	// VARIABLES
@@ -57,8 +59,7 @@ public class MongoDatabaseHandle implements IDatabaseHandle {
 		return this.mongoConnection;
 	}
 
-	@Override
-	public Database getDatabase() {
+	public MongoDatabase getDatabase() {
 		return this.database;
 	}
 }

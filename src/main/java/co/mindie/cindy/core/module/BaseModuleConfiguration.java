@@ -77,6 +77,10 @@ public class BaseModuleConfiguration implements ModuleConfiguration {
 		return this.get(key, Double.class);
 	}
 
+	public String getString(String key) {
+		return this.get(key, String.class);
+	}
+
 	public Float getFloat(String key) {
 		return this.get(key, Float.class);
 	}

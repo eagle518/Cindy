@@ -7,7 +7,7 @@
 // File created on Jul 29, 2014 at 6:31:22 PM
 ////////
 
-package co.mindie.cindy.webservice;
+package co.mindie.cindy.webservice.app;
 
 import co.mindie.cindy.core.component.initializer.ComponentInitializer;
 import co.mindie.cindy.core.component.metadata.ComponentMetadataManager;

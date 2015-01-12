@@ -9,8 +9,8 @@
 
 package co.mindie.cindy.webservice.controller.servlet;
 
-import co.mindie.cindy.webservice.CindyWebApp;
-import co.mindie.cindy.webservice.CindyWebAppCreator;
+import co.mindie.cindy.webservice.app.CindyWebApp;
+import co.mindie.cindy.webservice.app.CindyWebAppCreator;
 import javassist.ClassPool;
 import javassist.LoaderClassPath;
 import org.apache.log4j.Logger;

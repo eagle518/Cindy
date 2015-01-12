@@ -7,7 +7,7 @@
 // File created on Jun 3, 2014 at 6:22:22 PM
 ////////
 
-package co.mindie.cindy.webservice;
+package co.mindie.cindy.webservice.app;
 
 import co.mindie.cindy.core.annotation.*;
 import co.mindie.cindy.core.component.CreationBox;

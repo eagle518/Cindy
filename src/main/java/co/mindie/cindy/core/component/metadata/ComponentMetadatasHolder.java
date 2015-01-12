@@ -2,6 +2,7 @@ package co.mindie.cindy.core.component.metadata;
 
 import co.mindie.cindy.core.component.metadata.ComponentMetadata;
 import co.mindie.cindy.core.exception.CindyException;
+import co.mindie.cindy.core.module.Module;
 import me.corsin.javatools.reflect.ClassIndexer;
 
 import java.lang.annotation.Annotation;
@@ -19,6 +20,7 @@ public class ComponentMetadatasHolder {
 	// VARIABLES
 	////////////////
 
+	final protected List<Module> loadedModules;
 	final protected Map<Class<?>, ComponentMetadata> metadatas;
 	final protected ClassIndexer<ComponentMetadata> componentIndexer;
 	final protected Map<Class<?>, List<ComponentMetadata>> metadatasByAnnotation;
@@ -27,8 +29,9 @@ public class ComponentMetadatasHolder {
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentMetadatasHolder(Map<Class<?>, ComponentMetadata> metadatas, ClassIndexer<ComponentMetadata> componentIndexer,
+	public ComponentMetadatasHolder(List<Module> loadedModules, Map<Class<?>, ComponentMetadata> metadatas, ClassIndexer<ComponentMetadata> componentIndexer,
 									Map<Class<?>, List<ComponentMetadata>> metadatasByAnnotation) {
+		this.loadedModules = loadedModules;
 		this.metadatas = metadatas;
 		this.componentIndexer = componentIndexer;
 		this.metadatasByAnnotation = metadatasByAnnotation;
@@ -81,5 +84,9 @@ public class ComponentMetadatasHolder {
 
 	public Collection<ComponentMetadata> getLoadedComponentMetadatas() {
 		return this.metadatas.values();
+	}
+
+	public List<Module> getLoadedModules() {
+		return this.loadedModules;
 	}
 }

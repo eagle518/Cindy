@@ -13,6 +13,7 @@ import co.mindie.cindy.core.component.initializer.CreatedComponent;
 import co.mindie.cindy.core.component.box.ComponentBox;
 import co.mindie.cindy.core.component.initializer.ComponentInitializer;
 import co.mindie.cindy.core.exception.CindyException;
+import co.mindie.cindy.core.module.Module;
 import me.corsin.javatools.dynamictext.DynamicText;
 import me.corsin.javatools.reflect.ClassIndexer;
 
@@ -28,9 +29,9 @@ public class ComponentMetadataManager extends ComponentMetadatasHolder {
 	// CONSTRUCTORS
 	////////////////
 
-	public ComponentMetadataManager(Map<Class<?>, ComponentMetadata> metadatas, ClassIndexer<ComponentMetadata> componentIndexer,
+	public ComponentMetadataManager(List<Module> loadedModules, Map<Class<?>, ComponentMetadata> metadatas, ClassIndexer<ComponentMetadata> componentIndexer,
 									Map<Class<?>, List<ComponentMetadata>> metadatasByAnnotation) {
-		super(metadatas, componentIndexer, metadatasByAnnotation);
+		super(loadedModules, metadatas, componentIndexer, metadatasByAnnotation);
 
 		this.ensureIntegrity();
 	}

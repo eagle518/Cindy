@@ -1,5 +1,6 @@
 package co.mindie.cindy.task;
 
+import co.mindie.cindy.async.AsyncModule;
 import co.mindie.cindy.async.annotation.Async;
 import co.mindie.cindy.async.manager.AsyncContext;
 import co.mindie.cindy.async.manager.AsyncMode;
@@ -71,7 +72,7 @@ public class AsyncManagerTest {
 		try (ComponentBox box = ComponentBox.create(true)) {
 			ComponentMetadataManagerBuilder builder = new ComponentMetadataManagerBuilder();
 			builder.loadComponent(cls);
-			builder.loadComponent(AsyncTaskManager.class);
+			builder.loadModule(new AsyncModule());
 			T test = builder.build().createComponent(cls, box).getInstance();
 			onReady.run(test);
 		}

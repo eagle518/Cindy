@@ -11,4 +11,6 @@ public interface Module {
 
 	String[] getComponentsClasspaths();
 
+	Module[] getDependencies();
+
 }

@@ -40,7 +40,7 @@ public class ComponentMetadataManagerBuilder extends ComponentMetadatasHolder {
 	////////////////
 
 	public ComponentMetadataManagerBuilder() {
-		super(new HashMap<>(), new ClassIndexer<>(), new HashMap<>());
+		super(new ArrayList<>(), new HashMap<>(), new ClassIndexer<>(), new HashMap<>());
 
 		this.metadataModifiers = new HashSet<>();
 		this.metadataModifiersQueue = new ArrayDeque<>();
@@ -53,6 +53,15 @@ public class ComponentMetadataManagerBuilder extends ComponentMetadatasHolder {
 
 	public List<ComponentMetadata> loadModule(Module module) {
 		List<ComponentMetadata> metadataList = new ArrayList<>();
+
+
+		Module[] dependencies = module.getDependencies();
+
+		if (dependencies != null) {
+			for (Module dependency : dependencies){
+				metadataList.addAll(this.loadModule(dependency));
+			}
+		}
 
 		Class<?>[] componentClasses = module.getComponentClasses();
 		String[] componentClasspaths = module.getComponentsClasspaths();
@@ -68,6 +77,8 @@ public class ComponentMetadataManagerBuilder extends ComponentMetadatasHolder {
 				metadataList.addAll(this.loadComponents(module, classpath));
 			}
 		}
+
+		this.getLoadedModules().add(module);
 
 		return metadataList;
 	}
@@ -100,7 +111,7 @@ public class ComponentMetadataManagerBuilder extends ComponentMetadatasHolder {
 			}
 		}
 
-		return new ComponentMetadataManager(this.metadatas, this.componentIndexer, this.metadatasByAnnotation);
+		return new ComponentMetadataManager(this.loadedModules, this.metadatas, this.componentIndexer, this.metadatasByAnnotation);
 	}
 
 	public ComponentMetadata loadComponent(Class<?> cls) {

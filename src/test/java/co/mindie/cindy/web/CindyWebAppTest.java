@@ -1,6 +1,6 @@
 package co.mindie.cindy.web;
 
-import co.mindie.cindy.webservice.CindyWebApp;
+import co.mindie.cindy.webservice.app.CindyWebApp;
 import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.webservice.annotation.Singleton;
 import co.mindie.cindy.core.annotation.Wired;

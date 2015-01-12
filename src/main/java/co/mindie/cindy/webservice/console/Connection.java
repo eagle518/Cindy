@@ -9,7 +9,7 @@
 
 package co.mindie.cindy.webservice.console;
 
-import co.mindie.cindy.webservice.CindyWebApp;
+import co.mindie.cindy.webservice.app.CindyWebApp;
 import com.google.common.collect.Lists;
 import me.corsin.javatools.io.IOUtils;
 import me.corsin.javatools.task.TaskQueue;

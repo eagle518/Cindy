@@ -18,7 +18,6 @@ import co.mindie.cindy.hibernate.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.hibernate.utils.GroupByResultTransformer;
 import co.mindie.cindy.hibernate.database.HibernateDatabase;
 import co.mindie.cindy.hibernate.database.handle.HibernateDatabaseHandle;
-import co.mindie.cindy.utils.FieldProperty;
 import me.corsin.javatools.reflect.ReflectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;

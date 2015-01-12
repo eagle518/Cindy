@@ -9,7 +9,7 @@
 
 package co.mindie.cindy.webservice.console;
 
-import co.mindie.cindy.webservice.CindyWebApp;
+import co.mindie.cindy.webservice.app.CindyWebApp;
 import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.core.annotation.Wired;
 import co.mindie.cindy.webservice.configuration.Configuration;
