@@ -11,12 +11,14 @@ import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.core.annotation.Wired;
 import co.mindie.cindy.core.tools.Cancelable;
 import co.mindie.cindy.core.tools.Flushable;
+import co.mindie.cindy.webservice.controller.ParamSource;
 import co.mindie.cindy.webservice.controller.manager.HttpRequest;
 import co.mindie.cindy.webservice.controller.manager.HttpResponse;
-import co.mindie.cindy.webservice.exception.BadParameterException;
+import co.mindie.cindy.webservice.exception.ResolverException;
 import co.mindie.cindy.webservice.responsewriter.IResponseWriter;
 import org.apache.commons.fileupload.FileItem;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,28 +157,42 @@ public class RequestContext {
 		this.urlResources = urlResources;
 	}
 
-	public String getStringParameter(String key) {
-		HttpRequest httpRequest = this.getHttpRequest();
-		String[] values = httpRequest.getQueryParameters().get(key);
-		String value = null;
+	public String getStringParameter(String parameterName) {
+		return this.getStringParameter(parameterName, ParamSource.AUTO);
+	}
 
-		if (values != null && values.length > 0) {
-			value = values[0];
-		} else {
-			if (httpRequest.getBodyParameters() != null) {
-				List<FileItem> bodyValues = httpRequest.getBodyParameters().get(key);
-				if (bodyValues != null && bodyValues.size() > 0) {
-					FileItem bodyValue = bodyValues.get(0);
-					if (bodyValue.isFormField()) {
-						value = bodyValue.getString();
-					} else {
-						throw new BadParameterException(key);
+	public String getStringParameter(String parameterName, ParamSource source) {
+		String stringValue = null;
+
+		if (source == ParamSource.AUTO || source == ParamSource.URL) {
+			stringValue = this.getUrlResources().get(parameterName);
+		}
+
+		if (source == ParamSource.QUERY || (stringValue == null && source == ParamSource.AUTO)) {
+			String[] queryParameters = this.getHttpRequest().getQueryParameters().get(parameterName);
+			if (queryParameters != null && queryParameters.length > 0) {
+				stringValue = queryParameters[0];
+			}
+		}
+
+		if (source == ParamSource.BODY || (stringValue == null && source == ParamSource.AUTO)) {
+			if (this.getHttpRequest().getBodyParameters() != null) {
+				List<FileItem> items = this.getHttpRequest().getBodyParameters().get(parameterName);
+
+				if (items != null && items.size() > 0) {
+					FileItem item = items.get(0);
+					if (item.isFormField()) {
+						try {
+							stringValue = item.getString("UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							throw new ResolverException("Unable to get parameterName " + parameterName, e);
+						}
 					}
 				}
 			}
 		}
 
-		return value;
+		return stringValue;
 	}
 
 	public void setEndpointMethodName(String endpointMethodName) {

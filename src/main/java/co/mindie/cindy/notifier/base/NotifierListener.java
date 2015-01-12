@@ -14,6 +14,7 @@ import me.corsin.javatools.misc.Pair;
 import java.util.List;
 
 public interface NotifierListener<T extends MobileNotification> {
+
 	void onNotificationsSent(List<T> successfulNotification, List<Pair<T, Exception>> failedNotifications);
 
 	void onNotificationsSent(List<T> successfulNotification, List<T> failedNotifications, Exception e);

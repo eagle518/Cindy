@@ -9,11 +9,11 @@
 
 package co.mindie.cindy.notifier.base;
 
+import co.mindie.cindy.async.task.queue.TaskQueue;
 import me.corsin.javatools.batch.BatchProcessor;
 import me.corsin.javatools.batch.BatchProcessorListener;
 import me.corsin.javatools.misc.Action;
 import me.corsin.javatools.misc.Pair;
-import me.corsin.javatools.task.TaskQueue;
 import org.apache.log4j.Logger;
 
 import java.io.Closeable;

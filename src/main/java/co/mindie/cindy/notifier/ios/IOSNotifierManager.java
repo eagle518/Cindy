@@ -9,10 +9,10 @@
 
 package co.mindie.cindy.notifier.ios;
 
+import co.mindie.cindy.async.task.queue.TaskQueue;
 import co.mindie.cindy.core.exception.CindyException;
 import co.mindie.cindy.notifier.base.NotifierListener;
 import me.corsin.javatools.misc.Pair;
-import me.corsin.javatools.task.TaskQueue;
 
 import java.io.Closeable;
 import java.io.Flushable;
