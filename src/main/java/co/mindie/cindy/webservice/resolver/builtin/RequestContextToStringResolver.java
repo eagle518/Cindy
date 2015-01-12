@@ -3,6 +3,7 @@ package co.mindie.cindy.webservice.resolver.builtin;
 import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.webservice.annotation.Resolver;
 import co.mindie.cindy.webservice.context.RequestContext;
+import co.mindie.cindy.webservice.controller.ParamSource;
 import co.mindie.cindy.webservice.exception.ResolverException;
 import co.mindie.cindy.webservice.resolver.ResolverContext;
 import org.apache.commons.fileupload.FileItem;
@@ -18,8 +19,6 @@ public class RequestContextToStringResolver extends AbstractRequestContextParame
 	// VARIABLES
 	////////////////
 
-	public static String OPTION_FETCH_FROM_RESOURCE = "request_context_fetch_from_resource";
-
 	////////////////////////
 	// CONSTRUCTORS
 	////////////////
@@ -30,18 +29,22 @@ public class RequestContextToStringResolver extends AbstractRequestContextParame
 	////////////////
 
 	@Override
-	protected String doResolve(RequestContext requestContext, String parameterName, Class<?> expectedOutputType, ResolverContext resolverContext) {
+	protected String doResolve(RequestContext requestContext, String parameterName, ParamSource source, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		String stringValue = null;
 
-		if (resolverContext.getOptions().getBoolean(OPTION_FETCH_FROM_RESOURCE, false)) {
+		if (source == ParamSource.AUTO || source == ParamSource.URL) {
 			stringValue = requestContext.getUrlResources().get(parameterName);
-		} else {
+		}
+
+		if (source == ParamSource.QUERY || (stringValue == null && source == ParamSource.AUTO)) {
 			String[] queryParameters = requestContext.getHttpRequest().getQueryParameters().get(parameterName);
 			if (queryParameters != null && queryParameters.length > 0) {
 				stringValue = queryParameters[0];
 			}
+		}
 
-			if (stringValue == null && requestContext.getHttpRequest().getBodyParameters() != null) {
+		if (source == ParamSource.BODY || (stringValue == null && source == ParamSource.AUTO)) {
+			if (requestContext.getHttpRequest().getBodyParameters() != null) {
 				List<FileItem> items = requestContext.getHttpRequest().getBodyParameters().get(parameterName);
 
 				if (items != null && items.size() > 0) {

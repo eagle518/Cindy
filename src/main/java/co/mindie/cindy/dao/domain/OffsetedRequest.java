@@ -8,6 +8,7 @@ import java.util.List;
  * Trololo with offset and limit information.
  */
 public class OffsetedRequest extends AbstractListRequest {
+
 	// //////////////////////
 	// VARIABLES
 	// //////////////

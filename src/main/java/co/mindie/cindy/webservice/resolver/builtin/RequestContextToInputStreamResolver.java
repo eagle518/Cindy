@@ -3,6 +3,7 @@ package co.mindie.cindy.webservice.resolver.builtin;
 import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.webservice.annotation.Resolver;
 import co.mindie.cindy.webservice.context.RequestContext;
+import co.mindie.cindy.webservice.controller.ParamSource;
 import co.mindie.cindy.webservice.exception.ResolverException;
 import co.mindie.cindy.webservice.resolver.ResolverContext;
 import org.apache.commons.fileupload.FileItem;
@@ -29,19 +30,21 @@ public class RequestContextToInputStreamResolver extends AbstractRequestContextP
 	////////////////
 
 	@Override
-	protected InputStream doResolve(RequestContext requestContext, String parameterName, Class<?> expectedOutputType, ResolverContext resolverContext) {
+	protected InputStream doResolve(RequestContext requestContext, String parameterName, ParamSource source, Class<?> expectedOutputType, ResolverContext resolverContext) {
 		InputStream inputStream = null;
 
-		if (requestContext.getHttpRequest().getBodyParameters() != null) {
-			List<FileItem> items = requestContext.getHttpRequest().getBodyParameters().get(parameterName);
+		if (source == ParamSource.AUTO || source == ParamSource.BODY) {
+			if (requestContext.getHttpRequest().getBodyParameters() != null) {
+				List<FileItem> items = requestContext.getHttpRequest().getBodyParameters().get(parameterName);
 
-			if (items != null && items.size() > 0) {
-				FileItem item = items.get(0);
-				if (!item.isFormField()) {
-					try {
-						inputStream = item.getInputStream();
-					} catch (IOException e) {
-						throw new ResolverException("Unable to get inputStream from parameter " + parameterName, e);
+				if (items != null && items.size() > 0) {
+					FileItem item = items.get(0);
+					if (!item.isFormField()) {
+						try {
+							inputStream = item.getInputStream();
+						} catch (IOException e) {
+							throw new ResolverException("Unable to get inputStream from parameter " + parameterName, e);
+						}
 					}
 				}
 			}

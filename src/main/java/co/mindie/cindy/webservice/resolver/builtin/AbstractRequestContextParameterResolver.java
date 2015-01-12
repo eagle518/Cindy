@@ -1,6 +1,7 @@
 package co.mindie.cindy.webservice.resolver.builtin;
 
 import co.mindie.cindy.webservice.context.RequestContext;
+import co.mindie.cindy.webservice.controller.ParamSource;
 import co.mindie.cindy.webservice.resolver.IResolver;
 import co.mindie.cindy.webservice.resolver.MissingResolverOptionException;
 import co.mindie.cindy.webservice.resolver.ResolverContext;
@@ -12,6 +13,7 @@ public abstract class AbstractRequestContextParameterResolver<T> implements IRes
 	////////////////
 
 	public static String OPTION_PARAMETER_NAME = "request_context_parameter_name";
+	public static String OPTION_SOURCE = "request_context_source";
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -22,7 +24,7 @@ public abstract class AbstractRequestContextParameterResolver<T> implements IRes
 	// METHODS
 	////////////////
 
-	protected abstract T doResolve(RequestContext requestContext, String parameterName, Class<?> expectedOutputType, ResolverContext resolverContext);
+	protected abstract T doResolve(RequestContext requestContext, String parameterName, ParamSource source, Class<?> expectedOutputType, ResolverContext resolverContext);
 
 	@Override
 	public T resolve(RequestContext requestContext, Class<?> expectedOutputType, ResolverContext resolverContext) {
@@ -32,7 +34,13 @@ public abstract class AbstractRequestContextParameterResolver<T> implements IRes
 			throw new MissingResolverOptionException("PARAMETER_NAME");
 		}
 
-		return this.doResolve(requestContext, parameterName, expectedOutputType, resolverContext);
+		ParamSource source = ParamSource.valueOf(resolverContext.getOptions().get(OPTION_SOURCE));
+
+		if (source == null) {
+			throw new MissingResolverOptionException("SOURCE");
+		}
+
+		return this.doResolve(requestContext, parameterName, source, expectedOutputType, resolverContext);
 	}
 
 	////////////////////////

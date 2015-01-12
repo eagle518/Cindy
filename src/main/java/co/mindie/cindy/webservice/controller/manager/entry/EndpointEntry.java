@@ -18,6 +18,7 @@ import co.mindie.cindy.core.component.initializer.CreatedComponent;
 import co.mindie.cindy.core.component.box.ComponentBox;
 import co.mindie.cindy.webservice.context.RequestContext;
 import co.mindie.cindy.webservice.controller.CindyController;
+import co.mindie.cindy.webservice.controller.ParamSource;
 import co.mindie.cindy.webservice.controller.manager.IParameterNameResolver;
 import co.mindie.cindy.webservice.controller.manager.RequestParameter;
 import co.mindie.cindy.webservice.exception.BadParameterException;
@@ -295,17 +296,24 @@ public class EndpointEntry {
 				resolvedName = parameter.getName();
 			}
 
-			boolean shouldFetchFromResource = this.pathIdentifierForIndex.contains(resolvedName);
+			ParamSource paramSource = paramAnnotation != null ? paramAnnotation.source() : ParamSource.AUTO;
 
-			if (needsNameResolve && !shouldFetchFromResource) {
+			boolean shouldFetchFromUrl = (paramSource == ParamSource.AUTO && this.pathIdentifierForIndex.contains(resolvedName)) ||
+					paramSource == ParamSource.URL;
+
+			if (shouldFetchFromUrl) {
+				paramSource = ParamSource.URL;
+			}
+
+			if (needsNameResolve && !shouldFetchFromUrl) {
 				resolvedName = parameterNameResolver.javaParameterNameToApiName(resolvedName);
 			}
 
 			resolverOptions.add(new RequestParameterResolverOption(RequestContextToStringResolver.OPTION_PARAMETER_NAME, resolvedName));
-			resolverOptions.add(new RequestParameterResolverOption(RequestContextToStringResolver.OPTION_FETCH_FROM_RESOURCE, shouldFetchFromResource ? "true" : "false"));
+			resolverOptions.add(new RequestParameterResolverOption(RequestContextToStringResolver.OPTION_SOURCE, paramSource.toString()));
 
 			this.parameterResolverBuilders.add(this.getResolverBuilder(resolverManager, parameter, genericParameterType));
-			this.requestParameters.add(new RequestParameter(resolvedName, required, shouldFetchFromResource, resolverOptions));
+			this.requestParameters.add(new RequestParameter(resolvedName, required, shouldFetchFromUrl, resolverOptions));
 			i++;
 		}
 	}
