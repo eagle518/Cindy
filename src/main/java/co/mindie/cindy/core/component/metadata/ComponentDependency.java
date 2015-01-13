@@ -27,6 +27,7 @@ public class ComponentDependency {
 	private SearchScope searchScope;
 	private CreationBox creationBox;
 	private Wire wire;
+	private LoadInstruction loadInstruction;
 	private List<DependencyInjectedListener> dependencyInjectedListeners;
 
 	////////////////////////
@@ -91,5 +92,13 @@ public class ComponentDependency {
 
 	public void setWire(Wire wire) {
 		this.wire = wire;
+	}
+
+	public LoadInstruction getLoadInstruction() {
+		return loadInstruction;
+	}
+
+	public void setLoadInstruction(LoadInstruction loadInstruction) {
+		this.loadInstruction = loadInstruction;
 	}
 }

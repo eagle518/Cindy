@@ -458,4 +458,32 @@ public class AsyncManagerTest {
 		});
 	}
 
+	public abstract static class ArrayParameter {
+
+		@Async
+		public abstract void testAsync(Integer[] items);
+
+		protected Integer[] test(Integer[] items) {
+			return items;
+		}
+
+		@Async
+		public abstract void test2Async(Integer... items);
+
+		protected Integer[] test2(Integer... items) {
+			return items;
+		}
+
+	}
+
+
+	@Test
+	public void test_array_parameters_compile() {
+		this.useComponent(ArrayParameter.class, t -> {
+			Integer[] testParam = new Integer[] { 1, 2, 3, 4, 5};
+
+			t.testAsync(testParam);
+			t.test2Async(1, 2, 3, 4, 5);
+		});
+	}
 }

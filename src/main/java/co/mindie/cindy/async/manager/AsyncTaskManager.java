@@ -94,8 +94,17 @@ public abstract class AsyncTaskManager implements Initializable, Closeable {
 				if (!isFirst) {
 					methodImpl.append(", ");
 				}
+				if (parameter.getType().isArray()) {
+					methodImpl
+							.append(parameter.getType().getComponentType().getName())
+							.append("[]")
+					;
+				} else {
+					methodImpl.append(parameter.getType().getName());
+				}
+
+
 				methodImpl
-						.append(parameter.getType().getName())
 						.append(" ")
 						.append(parameter.getName());
 
@@ -182,6 +191,10 @@ public abstract class AsyncTaskManager implements Initializable, Closeable {
 			List<Method> asyncMethods = componentMetadata.getMethodsWithAnnotation(Async.class);
 
 			if (asyncMethods != null) {
+				// If the component is a mock, we skip it.
+				if (componentMetadata.getComponentClass().getName().contains("$$EnhancerByMockito")) {
+					continue;
+				}
 				try {
 					String newClassName = componentMetadata.getComponentClass().getName() + "$AsyncImpl";
 					Class<?> createdClass;

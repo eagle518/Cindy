@@ -143,8 +143,11 @@ public class ComponentMetadataManagerBuilder extends ComponentMetadatasHolder {
 
 				this.log("Loaded component {#0}", cls.getSimpleName());
 				for (ComponentDependency e : componentMetadata.getDependencies()) {
-					if (e.getComponentClass().getAnnotation(Load.class) != null) {
-						this.loadComponent(module, e.getComponentClass(), componentMetadata);
+					if (e.getComponentClass().getAnnotation(Load.class) != null || e.getLoadInstruction() != null) {
+						ComponentMetadata dependencyMetadata = this.loadComponent(module, e.getComponentClass(), componentMetadata);
+						if (e.getLoadInstruction() != null) {
+							dependencyMetadata.setCreationPriority(e.getLoadInstruction().getCreationPriority());
+						}
 					}
 				}
 
