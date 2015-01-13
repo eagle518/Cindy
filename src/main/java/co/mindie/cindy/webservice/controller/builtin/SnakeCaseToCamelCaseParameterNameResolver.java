@@ -10,6 +10,7 @@
 package co.mindie.cindy.webservice.controller.builtin;
 
 import co.mindie.cindy.webservice.controller.manager.IParameterNameResolver;
+import me.corsin.javatools.string.Strings;
 
 public class SnakeCaseToCamelCaseParameterNameResolver implements IParameterNameResolver {
 
@@ -31,29 +32,7 @@ public class SnakeCaseToCamelCaseParameterNameResolver implements IParameterName
 
 	@Override
 	public String javaParameterNameToApiName(String name) {
-		StringBuilder sb = new StringBuilder();
-
-		String[] names = name.split("_");
-		for (int i = 0; i < names.length; i++) {
-			String currentName = names[i];
-
-			if (i == 0) {
-				sb.append(currentName);
-			} else {
-				for (int j = 0; j < currentName.length(); j++) {
-					char c = currentName.charAt(j);
-
-					if (j == 0) {
-						c = Character.toUpperCase(c);
-					}
-
-					sb.append(c);
-				}
-			}
-		}
-
-
-		return sb.toString();
+		return Strings.snakeCaseToCamelCase(name);
 	}
 
 	////////////////////////

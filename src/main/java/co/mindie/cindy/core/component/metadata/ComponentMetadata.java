@@ -136,6 +136,12 @@ public class ComponentMetadata {
 				);
 				dependency.setWire(wire);
 
+				Load load = field.getAnnotation(Load.class);
+
+				if (load != null) {
+					dependency.setLoadInstruction(new LoadInstruction(load.creationPriority()));
+				}
+
 				this.wires.add(wire);
 			}
 		}

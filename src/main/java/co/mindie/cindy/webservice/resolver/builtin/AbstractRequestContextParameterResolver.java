@@ -34,10 +34,10 @@ public abstract class AbstractRequestContextParameterResolver<T> implements IRes
 			throw new MissingResolverOptionException("PARAMETER_NAME");
 		}
 
-		ParamSource source = ParamSource.valueOf(resolverContext.getOptions().get(OPTION_SOURCE));
-
-		if (source == null) {
-			throw new MissingResolverOptionException("SOURCE");
+		ParamSource source = ParamSource.AUTO;
+		String sourceStr = resolverContext.getOptions().get(OPTION_SOURCE);
+		if (sourceStr != null) {
+			source = ParamSource.valueOf(sourceStr);
 		}
 
 		return this.doResolve(requestContext, parameterName, source, expectedOutputType, resolverContext);

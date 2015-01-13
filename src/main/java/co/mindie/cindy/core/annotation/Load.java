@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  * loaded when searching in packages.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.FIELD})
 public @interface Load {
 
 	/**

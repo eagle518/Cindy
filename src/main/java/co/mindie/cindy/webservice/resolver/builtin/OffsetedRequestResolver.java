@@ -47,7 +47,6 @@ public class OffsetedRequestResolver extends AbstractListRequestResolver<Offsete
 		return offsetedRequest;
 	}
 
-
 	////////////////////////
 	// CUSTOMIZATION
 	////////////////
