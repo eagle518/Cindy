@@ -57,6 +57,9 @@ public class RequestHandler implements Closeable {
 
 	@Override
 	public void close() {
+		if (this.outputResolverContext != null) {
+			this.outputResolverContext.cancelBatchOperations();
+		}
 		this.componentBox.close();
 	}
 

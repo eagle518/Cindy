@@ -9,10 +9,13 @@
 
 package co.mindie.cindy.webservice.resolver;
 
+import co.mindie.cindy.core.exception.CindyException;
+import co.mindie.cindy.webservice.resolver.batch.BatchOperationResult;
+import co.mindie.cindy.webservice.resolver.batch.BatchOperator;
 import me.corsin.javatools.misc.NullArgumentException;
+import me.corsin.javatools.misc.Pair;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ResolverContext {
 
@@ -22,6 +25,8 @@ public class ResolverContext {
 
 	private ResolverOptions options;
 	private Map<Object, Object> cache;
+	private Queue<Runnable> onCompletedCallbacks;
+	private Map<BatchOperator, List<Pair<Object, BatchOperationResult>>> batchOperations;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -65,6 +70,58 @@ public class ResolverContext {
 		}
 	}
 
+	public void flushBatchOperations() {
+		try {
+			if (this.batchOperations != null) {
+				for (Map.Entry<BatchOperator, List<Pair<Object, BatchOperationResult>>> entry : this.batchOperations.entrySet()) {
+					BatchOperator batchOperator = entry.getKey();
+
+					List<Object> values = new ArrayList<>();
+					List<Pair<Object, BatchOperationResult>> resultPair = entry.getValue();
+					resultPair.forEach(f -> values.add(f.getFirst()));
+
+					List<Object> result = batchOperator.doBatchOperation(values);
+
+					if (result.size() != values.size()) {
+						throw new CindyException("BatchOperator must return a list that has the same size as the input" +
+								" list and in the same order");
+					}
+
+					for (int i = 0; i < result.size(); i++) {
+						resultPair.get(i).getSecond().onResult(result.get(i));
+					}
+				}
+			}
+		} catch (RuntimeException e) {
+			throw e;
+		} finally {
+			this.cancelBatchOperations();
+		}
+	}
+
+	public void cancelBatchOperations() {
+		if (this.batchOperations != null) {
+			this.batchOperations.clear();
+		}
+	}
+
+	public <INPUT, OUTPUT> void requestBatchOperation(BatchOperator<INPUT, OUTPUT> batchOperator,
+													  INPUT input,
+													  BatchOperationResult<OUTPUT> onResult) {
+		if (this.batchOperations == null) {
+			this.batchOperations = new HashMap<>();
+		}
+
+		List<Pair<Object, BatchOperationResult>> batchOperations = this.batchOperations.get(batchOperator);
+
+		if (batchOperations == null) {
+			batchOperations = new ArrayList<>();
+			this.batchOperations.put(batchOperator, batchOperations);
+		}
+
+		batchOperations.add(new Pair<>(input, onResult));
+	}
+
 	////////////////////////
 	// GETTERS/SETTERS
 	////////////////
@@ -72,4 +129,5 @@ public class ResolverContext {
 	public ResolverOptions getOptions() {
 		return options;
 	}
+
 }

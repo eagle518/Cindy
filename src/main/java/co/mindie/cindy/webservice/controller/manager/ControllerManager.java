@@ -24,6 +24,7 @@ import co.mindie.cindy.webservice.controller.manager.entry.EndpointPathResult;
 import co.mindie.cindy.webservice.controller.manager.entry.RequestHandler;
 import co.mindie.cindy.core.exception.CindyException;
 import co.mindie.cindy.webservice.resolver.IResolver;
+import co.mindie.cindy.webservice.resolver.ResolverContext;
 import co.mindie.cindy.webservice.resolver.ResolverManager;
 import co.mindie.cindy.webservice.responsewriter.IResponseWriter;
 import co.mindie.cindy.webservice.responsewriter.StringResponseWriter;
@@ -450,7 +451,12 @@ public class ControllerManager implements Initializable {
 				IResolver outputResolver = requestHandler.getOutputResolver();
 
 				if (outputResolver != null) {
-					response = outputResolver.resolve(response, null, requestHandler.getOutputResolverContext());
+					ResolverContext resolverContext = requestHandler.getOutputResolverContext();
+					response = outputResolver.resolve(response, null, resolverContext);
+
+					if (resolverContext != null) {
+						resolverContext.flushBatchOperations();
+					}
 				} else if (this.failOnResolverNotFound) {
 					throw new CindyException("No resolver output found for " + response.getClass().getName());
 				}
