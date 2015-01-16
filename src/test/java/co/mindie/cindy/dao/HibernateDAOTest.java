@@ -108,6 +108,19 @@ public class HibernateDAOTest extends AbstractCindyTest {
 	// //////////////
 
 	@Test
+	public void dao_autodetects_managed_class() {
+		TestDAO testDAO = new TestDAO2();
+
+		assertEquals(HibernateDAOTest.class, testDAO.getManagedClass());
+
+		// Second time should use the cached impl
+		// Result should be the same
+		testDAO = new TestDAO2();
+
+		assertEquals(HibernateDAOTest.class, testDAO.getManagedClass());
+	}
+
+	@Test
 	public void save_defines_sets_the_default_values_for_id_createDate_and_updatedDate() {
 		// GIVEN
 		DateTime now = setCurrentDateNow();
@@ -243,5 +256,13 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		protected CriteriaBuilder instantiate() {
 			return new CriteriaBuilder(this);
 		}
+	}
+
+	public static class TestDAO2 extends TestDAO<HibernateDAOTest> {
+
+	}
+
+	public static class TestDAO<T> extends HibernateDAO<T, Integer> {
+
 	}
 }

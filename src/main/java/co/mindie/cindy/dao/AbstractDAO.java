@@ -9,13 +9,22 @@
 
 package co.mindie.cindy.dao;
 
-import java.io.Serializable;
+import me.corsin.javatools.misc.NullArgumentException;
 
-public abstract class AbstractDAO<ElementType, PrimaryKey extends Serializable, DatabaseType> {
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public abstract class AbstractDAO<ElementType> {
 
 	// //////////////////////
 	// VARIABLES
 	// //////////////
+
+	private static final Map<Class<?>, Class<?>> daoClassToManagedClassCache = new HashMap<>();
 
 	private final String primaryKeyPropertyName;
 	private final String createdDatePropertyName;
@@ -26,7 +35,49 @@ public abstract class AbstractDAO<ElementType, PrimaryKey extends Serializable, 
 	// CONSTRUCTORS
 	// //////////////
 
+	public AbstractDAO(String primaryKeyPropertyName, String createdDatePropertyName, String updatedDatePropertyName) {
+		this(null, primaryKeyPropertyName, createdDatePropertyName, updatedDatePropertyName);
+	}
+
+	@SuppressWarnings("unchecked")
 	public AbstractDAO(Class<ElementType> managedClass, String primaryKeyPropertyName, String createdDatePropertyName, String updatedDatePropertyName) {
+		if (managedClass == null) {
+			synchronized (daoClassToManagedClassCache) {
+				Class<?> myCls = this.getClass();
+				managedClass = (Class<ElementType>)daoClassToManagedClassCache.get(myCls);
+
+				if (managedClass == null) {
+					List<Class<?>> classes = new ArrayList<>();
+					Class<?> currentCls = myCls;
+
+					while (currentCls != null && currentCls != AbstractDAO.class) {
+						classes.add(currentCls);
+						currentCls = currentCls.getSuperclass();
+					}
+					for (int i = classes.size() - 1; i >= 0 && managedClass == null; i--) {
+						Class<?> cls = classes.get(i);
+
+						if (cls.getGenericSuperclass() instanceof ParameterizedType) {
+							ParameterizedType type = (ParameterizedType)cls.getGenericSuperclass();
+
+							if (type.getActualTypeArguments().length > 0) {
+								Type typeArgument = type.getActualTypeArguments()[0];
+
+								if (typeArgument instanceof Class) {
+									managedClass = (Class<ElementType>)typeArgument;
+									daoClassToManagedClassCache.put(myCls, managedClass);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (managedClass == null) {
+			throw new NullArgumentException("managedClass");
+		}
+
 		this.managedClass = managedClass;
 		this.primaryKeyPropertyName = primaryKeyPropertyName;
 		this.createdDatePropertyName = createdDatePropertyName;

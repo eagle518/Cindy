@@ -13,7 +13,7 @@ import co.mindie.cindy.core.annotation.*;
 import co.mindie.cindy.core.component.metadata.*;
 import co.mindie.cindy.webservice.annotation.Controller;
 import co.mindie.cindy.webservice.annotation.Endpoint;
-import co.mindie.cindy.webservice.authentificator.RequestContextAuthentificator;
+import co.mindie.cindy.webservice.authentificator.RequestContextAuthenticator;
 import co.mindie.cindy.core.component.*;
 import co.mindie.cindy.core.component.box.ComponentBox;
 import co.mindie.cindy.webservice.context.RequestContext;
@@ -523,10 +523,10 @@ public class ControllerManager implements Initializable {
 	}
 
 	protected void authentificateRequestHandler(RequestHandler requestHandler, String[] requiredAuthorizations) throws Exception {
-		RequestContextAuthentificator authentificator = requestHandler.getRequestContextAuthentificator();
+		RequestContextAuthenticator authentificator = requestHandler.getRequestContextAuthenticator();
 
 		if (authentificator != null) {
-			authentificator.authentificate(requestHandler.getRequestContext(), requiredAuthorizations);
+			authentificator.authenticate(requestHandler.getRequestContext(), requiredAuthorizations);
 		}
 	}
 

@@ -13,11 +13,10 @@ import co.mindie.cindy.core.annotation.Wired;
 import co.mindie.cindy.dao.AbstractDAO;
 import co.mindie.cindy.dao.domain.AbstractListRequest;
 import co.mindie.cindy.dao.domain.Page;
+import co.mindie.cindy.hibernate.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.hibernate.utils.CriteriaBuilder;
 import co.mindie.cindy.hibernate.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.hibernate.utils.GroupByResultTransformer;
-import co.mindie.cindy.hibernate.database.HibernateDatabase;
-import co.mindie.cindy.hibernate.database.handle.HibernateDatabaseHandle;
 import me.corsin.javatools.reflect.ReflectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
-public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType, PrimaryKey, HibernateDatabase> implements KeyForEntityResolver<PrimaryKey, ElementType> {
+public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType> implements KeyForEntityResolver<PrimaryKey, ElementType> {
 
 	// //////////////////////
 	// VARIABLES
@@ -50,6 +49,10 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	// //////////////////////
 	// CONSTRUCTORS
 	// //////////////
+
+	public HibernateDAO() {
+		this(null);
+	}
 
 	public HibernateDAO(Class<ElementType> managedClass) {
 		this(managedClass, DEFAULT_ID_PROPERTY_NAME, DEFAULT_CREATED_DATE_PROPERTY_NAME, DEFAULT_UPDATED_DATE_PROPERTY_NAME);

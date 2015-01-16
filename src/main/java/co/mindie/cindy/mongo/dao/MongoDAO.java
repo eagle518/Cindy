@@ -10,11 +10,12 @@
 package co.mindie.cindy.mongo.dao;
 
 import co.mindie.cindy.core.annotation.Wired;
+import co.mindie.cindy.dao.AbstractDAO;
 import co.mindie.cindy.dao.domain.AbstractListRequest;
 import co.mindie.cindy.dao.domain.Direction;
-import co.mindie.cindy.dao.AbstractDAO;
-import co.mindie.cindy.mongo.*;
-import co.mindie.cindy.mongo.database.MongoDatabase;
+import co.mindie.cindy.mongo.MongoEntity;
+import co.mindie.cindy.mongo.MongoIterator;
+import co.mindie.cindy.mongo.MongoQuery;
 import co.mindie.cindy.mongo.database.MongoDatabaseHandle;
 import com.mongodb.*;
 import org.bson.types.ObjectId;
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public abstract class MongoDAO<ElementType extends MongoEntity> extends AbstractDAO<ElementType, ObjectId, MongoDatabase> {
+public abstract class MongoDAO<ElementType extends MongoEntity> extends AbstractDAO<ElementType> {
 
 	// //////////////////////
 	// VARIABLES
@@ -43,8 +44,8 @@ public abstract class MongoDAO<ElementType extends MongoEntity> extends Abstract
 	// CONSTRUCTORS
 	// //////////////
 
-	public MongoDAO(Class<ElementType> managedClass) {
-		super(managedClass, DEFAULT_ID_PROPERTY_NAME, DEFAULT_CREATED_DATE_PROPERTY_NAME, DEFAULT_UPDATED_DATE_PROPERTY_NAME);
+	public MongoDAO() {
+		super(DEFAULT_ID_PROPERTY_NAME, DEFAULT_CREATED_DATE_PROPERTY_NAME, DEFAULT_UPDATED_DATE_PROPERTY_NAME);
 	}
 
 	// //////////////////////

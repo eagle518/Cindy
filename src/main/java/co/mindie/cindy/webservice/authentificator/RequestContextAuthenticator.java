@@ -11,8 +11,8 @@ package co.mindie.cindy.webservice.authentificator;
 
 import co.mindie.cindy.webservice.context.RequestContext;
 
-public interface RequestContextAuthentificator {
+public interface RequestContextAuthenticator {
 
-	void authentificate(RequestContext context, String[] requiredAuthorizations) throws Exception;
+	void authenticate(RequestContext context, String[] requiredAuthorizations) throws Exception;
 
 }
