@@ -30,6 +30,7 @@ public class LocalHttpRequest implements HttpRequest {
 
 	private Map<String, String[]> queryParameters;
 	private Map<String, List<FileItem>> bodyParameters;
+	private Map<String, String> headers;
 	private String pathInfo;
 	private String serverUrl;
 	private String remoteAddr;
@@ -42,6 +43,7 @@ public class LocalHttpRequest implements HttpRequest {
 	public LocalHttpRequest() {
 		this.queryParameters = new HashMap<>();
 		this.bodyParameters = new HashMap<>();
+
 	}
 
 	////////////////////////
@@ -132,6 +134,23 @@ public class LocalHttpRequest implements HttpRequest {
 	@Override
 	public InputStream getBody() {
 		return null;
+	}
+
+	public Map<String, String> getHeaders() {
+		return headers;
+	}
+
+	public void setHeaders(Map<String, String> headers) {
+		this.headers = headers;
+	}
+
+	public void setHeader(String header, String value) {
+		this.headers.put(header, value);
+	}
+
+	@Override
+	public String getHeader(String headerKey) {
+		return this.headers.get(headerKey);
 	}
 
 }

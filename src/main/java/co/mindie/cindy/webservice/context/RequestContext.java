@@ -192,6 +192,10 @@ public class RequestContext {
 			}
 		}
 
+		if (source == ParamSource.HEADER || (stringValue == null && source == ParamSource.AUTO)) {
+			stringValue = this.getHttpRequest().getHeader(parameterName);
+		}
+
 		return stringValue;
 	}
 

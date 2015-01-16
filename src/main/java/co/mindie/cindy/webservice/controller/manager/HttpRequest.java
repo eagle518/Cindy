@@ -32,4 +32,6 @@ public interface HttpRequest {
 
 	String getRemoteAddr();
 
+	String getHeader(String name);
+
 }

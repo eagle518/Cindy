@@ -130,4 +130,9 @@ public class HttpRequestServletImpl implements HttpRequest {
 	public String getRemoteAddr() {
 		return this.request.getRemoteAddr();
 	}
+
+	@Override
+	public String getHeader(String headerKey) {
+		return this.request.getHeader(headerKey);
+	}
 }

@@ -23,6 +23,11 @@ public enum ParamSource {
 	/**
 	 * The parameter value will be fetched from the url
 	 */
-	URL
+	URL,
+
+	/**
+	 * The parameter value will be fetched from the headers
+	 */
+	HEADER
 
 }
