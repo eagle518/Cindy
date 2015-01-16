@@ -1,18 +1,18 @@
 /////////////////////////////////////////////////
 // Project : WSFramework
-// Package : co.mindie.wsframework.authorizer
+// Package : co.mindie.wsframework.authentificator
 // IRequestContextAuthorizer.java
 //
 // Author : Simon CORSIN <simoncorsin@gmail.com>
 // File created on Jun 11, 2014 at 2:45:12 PM
 ////////
 
-package co.mindie.cindy.webservice.authorizer;
+package co.mindie.cindy.webservice.authentificator;
 
 import co.mindie.cindy.webservice.context.RequestContext;
 
-public interface IRequestContextAuthorizer {
+public interface RequestContextAuthentificator {
 
-	void checkAuthorization(RequestContext context, String[] requiredAuthorizations) throws Exception;
+	void authentificate(RequestContext context, String[] requiredAuthorizations) throws Exception;
 
 }

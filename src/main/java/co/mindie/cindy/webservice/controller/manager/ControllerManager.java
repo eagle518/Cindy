@@ -13,7 +13,7 @@ import co.mindie.cindy.core.annotation.*;
 import co.mindie.cindy.core.component.metadata.*;
 import co.mindie.cindy.webservice.annotation.Controller;
 import co.mindie.cindy.webservice.annotation.Endpoint;
-import co.mindie.cindy.webservice.authorizer.IRequestContextAuthorizer;
+import co.mindie.cindy.webservice.authentificator.RequestContextAuthentificator;
 import co.mindie.cindy.core.component.*;
 import co.mindie.cindy.core.component.box.ComponentBox;
 import co.mindie.cindy.webservice.context.RequestContext;
@@ -68,7 +68,6 @@ public class ControllerManager implements Initializable {
 
 	@Wired(required = false) private IParameterNameResolver parameterNameResolver;
 
-	@Wired(required = false) private IRequestContextAuthorizer requestContextAuthorizer;
 	@Wired(required = false) private IRequestErrorHandler requestErrorHandler;
 	@Wired(required = false) private IResponseWriter defaultResponseWriter;
 
@@ -428,7 +427,7 @@ public class ControllerManager implements Initializable {
 		try {
 			context.willBegin();
 
-			this.checkAuthorization(context, endpointEntry.getRequiredAuthorizations());
+			this.authentificateRequestHandler(requestHandler, endpointEntry.getRequiredAuthorizations());
 
 			response = endpointEntry.invoke(requestHandler);
 			context.willEnd(null);
@@ -523,11 +522,11 @@ public class ControllerManager implements Initializable {
 //		context.setParameters(parameters);
 	}
 
-	protected void checkAuthorization(RequestContext context, String[] requiredAuthorizations) throws Exception {
-		IRequestContextAuthorizer authorizer = this.requestContextAuthorizer;
+	protected void authentificateRequestHandler(RequestHandler requestHandler, String[] requiredAuthorizations) throws Exception {
+		RequestContextAuthentificator authentificator = requestHandler.getRequestContextAuthentificator();
 
-		if (authorizer != null) {
-			authorizer.checkAuthorization(context, requiredAuthorizations);
+		if (authentificator != null) {
+			authentificator.authentificate(requestHandler.getRequestContext(), requiredAuthorizations);
 		}
 	}
 

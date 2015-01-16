@@ -14,6 +14,7 @@ import co.mindie.cindy.core.annotation.Wired;
 import co.mindie.cindy.core.annotation.Core;
 import co.mindie.cindy.core.component.Aspect;
 import co.mindie.cindy.core.component.box.ComponentBox;
+import co.mindie.cindy.webservice.authentificator.RequestContextAuthentificator;
 import co.mindie.cindy.webservice.context.RequestContext;
 import co.mindie.cindy.webservice.resolver.IResolver;
 import co.mindie.cindy.webservice.resolver.ResolverContext;
@@ -33,6 +34,9 @@ public class RequestHandler implements Closeable {
 
 	@Wired
 	private RequestContext requestContext;
+
+	@Wired(required = false)
+	private RequestContextAuthentificator requestContextAuthentificator;
 
 	private Object controller;
 
@@ -136,5 +140,9 @@ public class RequestHandler implements Closeable {
 
 	public void setOutputResolverContext(ResolverContext outputResolverContext) {
 		this.outputResolverContext = outputResolverContext;
+	}
+
+	public RequestContextAuthentificator getRequestContextAuthentificator() {
+		return requestContextAuthentificator;
 	}
 }

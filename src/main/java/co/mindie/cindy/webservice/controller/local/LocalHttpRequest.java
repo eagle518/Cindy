@@ -43,7 +43,7 @@ public class LocalHttpRequest implements HttpRequest {
 	public LocalHttpRequest() {
 		this.queryParameters = new HashMap<>();
 		this.bodyParameters = new HashMap<>();
-
+		this.headers = new HashMap<>();
 	}
 
 	////////////////////////

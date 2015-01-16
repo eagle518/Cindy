@@ -1,4 +1,4 @@
-package co.mindie.cindy.webservice.context;/////////////////////////////////////////////////
+/////////////////////////////////////////////////
 // Project : webservice
 // Package : com.ever.webservice.context
 // RequestContext.java
@@ -6,6 +6,8 @@ package co.mindie.cindy.webservice.context;/////////////////////////////////////
 // Author : Simon CORSIN <simoncorsin@gmail.com>
 // File created on Mar 4, 2013 at 3:45:44 PM
 ////////
+
+package co.mindie.cindy.webservice.context;
 
 import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.core.annotation.Wired;
