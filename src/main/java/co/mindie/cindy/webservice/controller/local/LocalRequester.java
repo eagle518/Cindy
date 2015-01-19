@@ -84,17 +84,46 @@ public class LocalRequester {
 		return this.response.getStatusCode();
 	}
 
+	public <T> T successResult(Class<T> successResponseType) throws IOException {
+		LocalResult<T, Object> result = this.result(successResponseType, null);
+
+		if (!result.isSuccess()) {
+			throw new IOException("Got an error response while asking for a success");
+		}
+
+		return result.getResponse();
+	}
+
+	public <T> T errorResult(Class<T> errorResponseType) throws IOException {
+		LocalResult<Object, T> result = this.result(null, errorResponseType);
+
+		if (result.isSuccess()) {
+			throw new IOException("Got a success response while asking for an error");
+		}
+
+		return result.getError();
+	}
+
 	public <SuccessType, ErrorType> LocalResult<SuccessType, ErrorType> result(Class<SuccessType> successResponseClass, Class<ErrorType> errorResponseClass) throws IOException {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		int responseCode = this.result(outputStream);
 
 		JsonResponseWriter responseWriter = new JsonResponseWriter();
 
+		SuccessType success = null;
+		ErrorType failure = null;
+
 		if (responseCode >= 200 && responseCode < 300) {
-			return new LocalResult<>(responseWriter.getObjectMapper().readValue(outputStream.toByteArray(), successResponseClass), null);
+			if (successResponseClass != null) {
+				success = responseWriter.getObjectMapper().readValue(outputStream.toByteArray(), successResponseClass);
+			}
 		} else {
-			return new LocalResult<>(null, responseWriter.getObjectMapper().readValue(outputStream.toByteArray(), errorResponseClass));
+			if (errorResponseClass != null) {
+				failure = responseWriter.getObjectMapper().readValue(outputStream.toByteArray(), errorResponseClass);
+			}
 		}
+
+		return new LocalResult<>(success, failure);
 	}
 
 	////////////////////////
