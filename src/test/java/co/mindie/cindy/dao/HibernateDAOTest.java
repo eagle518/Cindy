@@ -3,18 +3,15 @@ package co.mindie.cindy.dao;
 import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.core.annotation.Wired;
-import co.mindie.cindy.dao.domain.AbstractListRequest;
-import co.mindie.cindy.dao.domain.Direction;
-import co.mindie.cindy.dao.domain.OffsetedRequest;
-import co.mindie.cindy.dao.domain.Page;
-import co.mindie.cindy.dao.domain.Sort;
+import co.mindie.cindy.core.component.metadata.ComponentMetadataManagerBuilder;
+import co.mindie.cindy.core.tools.Initializable;
+import co.mindie.cindy.dao.domain.*;
 import co.mindie.cindy.hibernate.dao.HibernateDAO;
-import co.mindie.cindy.hibernate.utils.CriteriaBuilder;
-import co.mindie.cindy.hibernate.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.hibernate.database.HibernateDatabase;
 import co.mindie.cindy.hibernate.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.hibernate.utils.CindyHibernateConfiguration;
-import co.mindie.cindy.core.tools.Initializable;
+import co.mindie.cindy.hibernate.utils.CriteriaBuilder;
+import co.mindie.cindy.hibernate.utils.CriteriaBuilderFactory;
 import com.google.common.collect.Lists;
 import me.corsin.javatools.misc.SynchronizedPool;
 import org.apache.log4j.Logger;
@@ -26,12 +23,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import java.io.File;
 import java.util.List;
 
@@ -60,21 +52,23 @@ public class HibernateDAOTest extends AbstractCindyTest {
 	}
 
 	private void emptyDatabase() {
-		Session session = this.dao.getDatabaseHandle().getSession();
+		if (this.dao != null && this.dao.getDatabaseHandle() != null) {
+			Session session = this.dao.getDatabaseHandle().getSession();
 
-		this.dao.getDatabaseHandle().flush();
-		this.dao.getDatabaseHandle().beginTransaction();
+			this.dao.getDatabaseHandle().flush();
+			this.dao.getDatabaseHandle().beginTransaction();
 
-		// Remove the constraints to delete everything without any problem
-		session.createSQLQuery("SET foreign_key_checks = 0;").executeUpdate();
-		// For each table... DELETE THEM ALL!
-		for (String tableName : this.dao.getDatabaseHandle().getHibernateDatabase().getTablesNames()) {
-			session.createSQLQuery("DELETE FROM " + tableName + ";").executeUpdate();
+			// Remove the constraints to delete everything without any problem
+			session.createSQLQuery("SET foreign_key_checks = 0;").executeUpdate();
+			// For each table... DELETE THEM ALL!
+			for (String tableName : this.dao.getDatabaseHandle().getHibernateDatabase().getTablesNames()) {
+				session.createSQLQuery("DELETE FROM " + tableName + ";").executeUpdate();
+			}
+			// Put the constraints back.
+			session.createSQLQuery("SET foreign_key_checks = 1;").executeUpdate();
+
+			this.dao.getDatabaseHandle().flushAndClear();
 		}
-		// Put the constraints back.
-		session.createSQLQuery("SET foreign_key_checks = 1;").executeUpdate();
-
-		this.dao.getDatabaseHandle().flushAndClear();
 	}
 
 	@BeforeClass
@@ -204,8 +198,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		}
 	}
 
-	@Load
-	public static class FakeDAO extends HibernateDAO<FakeObject, Integer> implements Initializable {
+	public static class FakeDAO extends HibernateDAO<Integer, FakeObject> implements Initializable {
 		@Wired private FakeDatabaseHandle databaseHandle;
 
 		public FakeDAO() {
@@ -218,7 +211,15 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		}
 	}
 
-	@Load
+	@Override
+	protected void onLoad(ComponentMetadataManagerBuilder metadataManager) {
+		super.onLoad(metadataManager);
+
+		metadataManager.loadComponent(FakeDatabase.class);
+		metadataManager.loadComponent(FakeDatabaseHandle.class);
+		metadataManager.loadComponent(FakeDAO.class);
+	}
+
 	public static class FakeDatabaseHandle extends HibernateDatabaseHandle {
 		@Wired private FakeDatabase database;
 
@@ -228,7 +229,6 @@ public class HibernateDAOTest extends AbstractCindyTest {
 		}
 	}
 
-	@Load
 	public static class FakeDatabase extends HibernateDatabase {
 		@Override
 		protected org.hibernate.cfg.Configuration getHibernateConfiguration() {
@@ -262,7 +262,7 @@ public class HibernateDAOTest extends AbstractCindyTest {
 
 	}
 
-	public static class TestDAO<T> extends HibernateDAO<T, Integer> {
+	public static class TestDAO<T> extends HibernateDAO<Integer, T> {
 
 	}
 }

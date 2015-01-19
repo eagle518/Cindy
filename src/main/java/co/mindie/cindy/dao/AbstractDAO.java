@@ -10,12 +10,9 @@
 package co.mindie.cindy.dao;
 
 import me.corsin.javatools.misc.NullArgumentException;
+import me.corsin.javatools.reflect.ReflectionUtils;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractDAO<ElementType> {
@@ -47,28 +44,10 @@ public abstract class AbstractDAO<ElementType> {
 				managedClass = (Class<ElementType>)daoClassToManagedClassCache.get(myCls);
 
 				if (managedClass == null) {
-					List<Class<?>> classes = new ArrayList<>();
-					Class<?> currentCls = myCls;
+					managedClass = (Class<ElementType>) ReflectionUtils.getGenericTypeParameter(myCls, AbstractDAO.class, 0);
 
-					while (currentCls != null && currentCls != AbstractDAO.class) {
-						classes.add(currentCls);
-						currentCls = currentCls.getSuperclass();
-					}
-					for (int i = classes.size() - 1; i >= 0 && managedClass == null; i--) {
-						Class<?> cls = classes.get(i);
-
-						if (cls.getGenericSuperclass() instanceof ParameterizedType) {
-							ParameterizedType type = (ParameterizedType)cls.getGenericSuperclass();
-
-							if (type.getActualTypeArguments().length > 0) {
-								Type typeArgument = type.getActualTypeArguments()[0];
-
-								if (typeArgument instanceof Class) {
-									managedClass = (Class<ElementType>)typeArgument;
-									daoClassToManagedClassCache.put(myCls, managedClass);
-								}
-							}
-						}
+					if (managedClass != null) {
+						daoClassToManagedClassCache.put(myCls, managedClass);
 					}
 				}
 			}
@@ -87,6 +66,7 @@ public abstract class AbstractDAO<ElementType> {
 	// //////////////////////
 	// METHODS
 	// //////////////
+
 
 	// //////////////////////
 	// GETTERS/SETTERS

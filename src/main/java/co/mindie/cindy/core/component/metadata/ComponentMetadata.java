@@ -258,6 +258,10 @@ public class ComponentMetadata {
 		return (T)this.annotations.get(annotationClass);
 	}
 
+	public <T extends Annotation> void setAnnotation(Annotation annotation) {
+		this.annotations.put(annotation.annotationType(), annotation);
+	}
+
 	/**
 	 * @return The list of methods that has the given annotationClass in the Component Java Object hierarchy, or null if not found.
 	 */

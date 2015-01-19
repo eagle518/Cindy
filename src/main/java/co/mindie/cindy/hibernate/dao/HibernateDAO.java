@@ -17,6 +17,9 @@ import co.mindie.cindy.hibernate.database.handle.HibernateDatabaseHandle;
 import co.mindie.cindy.hibernate.utils.CriteriaBuilder;
 import co.mindie.cindy.hibernate.utils.CriteriaBuilderFactory;
 import co.mindie.cindy.hibernate.utils.GroupByResultTransformer;
+import co.mindie.cindy.webservice.annotation.Resolver;
+import co.mindie.cindy.webservice.resolver.IResolver;
+import co.mindie.cindy.webservice.resolver.ResolverContext;
 import me.corsin.javatools.reflect.ReflectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -33,7 +36,9 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
-public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends AbstractDAO<ElementType> implements KeyForEntityResolver<PrimaryKey, ElementType> {
+@Resolver
+public class HibernateDAO<PrimaryKey extends Serializable, ElementType> extends AbstractDAO<ElementType>
+		implements KeyForEntityResolver<PrimaryKey, ElementType>, IResolver<PrimaryKey, ElementType> {
 
 	// //////////////////////
 	// VARIABLES
@@ -298,6 +303,58 @@ public class HibernateDAO<ElementType, PrimaryKey extends Serializable> extends 
 	@Override
 	public PrimaryKey getKeyForEntity(ElementType entity) {
 		return (PrimaryKey) ReflectionUtils.getField(entity, this.getPrimaryKeyPropertyName());
+	}
+//
+//	private static void makeResolverType(ComponentMetadataManagerBuilder builder, ComponentMetadata metadata) throws Exception {
+//		Class<?> elementType = ReflectionUtils.getGenericTypeParameter(metadata.getComponentClass(), HibernateDAO.class, 0);
+//		Class<?> primaryKeyType = ReflectionUtils.getGenericTypeParameter(metadata.getComponentClass(), HibernateDAO.class, 1);
+//		Class<?> resolverType = null;
+//
+//		if (elementType != null && primaryKeyType != null) {
+//			String resolverClassName = "co.mindie.cindy.hibernate.resolver." + primaryKeyType.getSimpleName() + "To" + elementType.getSimpleName() + "Resolver";
+//
+//			try {
+//				resolverType = Class.forName(resolverClassName);
+//			} catch (ClassNotFoundException e) {
+//
+//				ClassPool pool = ClassPool.getDefault();
+//				CtClass superCls = pool.get("co.mindie.cindy.webservice.resolver.EntityFromDAOResolver");
+//
+//				CtClass ctClass = pool.makeClass(resolverClassName, superCls);
+//
+//				resolverType = ctClass.toClass();
+//			}
+//
+//			System.out.println(resolverClassName);
+//		}
+//
+//		if (resolverType != null) {
+//			ComponentMetadata resolver = builder.loadComponent(resolverType);
+//			resolver.putConfig(ResolverManager.COMPONENT_CONFIG_INPUT_CLASS, primaryKeyType);
+//			resolver.putConfig(ResolverManager.COMPONENT_CONFIG_OUTPUT_CLASS, elementType);
+//			resolver.getDependencies().stream().filter(f -> f.getWire() != null && f.getWire().getField().getName().equals("dao"))
+//					.findAny()
+//					.get().setComponentClass(metadata.getComponentClass());
+//			;
+//		}
+//	}
+//
+//	@MetadataModifier
+//	public static void generateResolvers(ComponentMetadataManagerBuilder metadataManagerBuilder) throws Exception {
+////			Class<?> resolverManagerClass = Class.forName("co.mindie.cindy.webservice.resolver.ResolverManager");
+//
+//		List<ComponentMetadata> compatibleComponents = metadataManagerBuilder.findCompatibleComponentsForClass(HibernateDAO.class);
+//
+//		if (compatibleComponents != null) {
+//			for (ComponentMetadata metadata : compatibleComponents) {
+//				makeResolverType(metadataManagerBuilder, metadata);
+//			}
+//		}
+//	}
+
+	@Override
+	public ElementType resolve(PrimaryKey primaryKey, Class<?> expectedOutputType, ResolverContext resolverContext) {
+		return this.findForKey(primaryKey);
 	}
 
 	// //////////////////////

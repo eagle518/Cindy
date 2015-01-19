@@ -21,7 +21,7 @@ public class ComponentDependency {
 	// VARIABLES
 	////////////////
 
-	final private Class<?> componentClass;
+	private Class<?> componentClass;
 	private boolean required;
 	private boolean list;
 	private SearchScope searchScope;
@@ -68,6 +68,10 @@ public class ComponentDependency {
 
 	public Class<?> getComponentClass() {
 		return this.componentClass;
+	}
+
+	public void setComponentClass(Class<?> componentClass) {
+		this.componentClass = componentClass;
 	}
 
 	public boolean isRequired() {

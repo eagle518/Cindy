@@ -17,7 +17,7 @@ import co.mindie.cindy.core.tools.Initializable;
 
 import java.io.Serializable;
 
-public abstract class SimpleHibernateDAO<ElementType, PrimaryKey extends Serializable> extends HibernateDAO<ElementType, PrimaryKey> implements Initializable{
+public abstract class SimpleHibernateDAO<PrimaryKey extends Serializable, ElementType> extends HibernateDAO<PrimaryKey, ElementType> implements Initializable{
 
 	////////////////////////
 	// VARIABLES

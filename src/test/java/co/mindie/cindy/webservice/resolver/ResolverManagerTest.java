@@ -2,20 +2,18 @@ package co.mindie.cindy.webservice.resolver;
 
 import co.mindie.cindy.AbstractCindyTest;
 import co.mindie.cindy.core.annotation.Box;
-import co.mindie.cindy.core.annotation.Wired;
 import co.mindie.cindy.core.annotation.Core;
+import co.mindie.cindy.core.annotation.Wired;
+import co.mindie.cindy.core.component.box.ComponentBox;
 import co.mindie.cindy.core.component.initializer.ComponentInitializer;
 import co.mindie.cindy.core.component.metadata.ComponentMetadataManagerBuilder;
-import co.mindie.cindy.core.component.box.ComponentBox;
 import co.mindie.cindy.core.exception.CindyException;
+import co.mindie.cindy.hibernate.dao.HibernateDAO;
 import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @Box(rejectAspects = {}, readOnly = false)
 public class ResolverManagerTest extends AbstractCindyTest {
@@ -194,10 +192,55 @@ public class ResolverManagerTest extends AbstractCindyTest {
 		assertEquals(2, value);
 	}
 
+	@Test
+	public void manager_automatically_detects_input_output() {
+		this.metadataManagerBuilder.loadComponent(CastResolver.class);
+
+		this.resolverManager.addConverter(CastResolver.class);
+
+		IResolverBuilder output = this.resolverManager.getResolverOutput(Integer.class, Double.class);
+
+		assertNotNull(output);
+
+		double value = this.resolve(10, Double.class);
+		assertEquals(10.0, value, 0);
+	}
+
+	@Test
+	public void hibernate_dao_automatically_added_as_resolver() {
+		this.metadataManagerBuilder.loadComponent(DAO.class);
+
+		this.resolverManager.addConverter(DAO.class);
+
+		IResolverBuilder output = this.resolverManager.getResolverOutput(String.class, Object.class);
+		assertNotNull(output);
+
+		String key = "Hey";
+		Object value = this.resolve(key, Object.class);
+		assertEquals(key, value);
+
+	}
+
+	public static class DAO extends HibernateDAO<String, Object> {
+
+		@Override
+		public Object findForKey(String key) {
+			return key;
+		}
+	}
+
 	public static class MyObject {
 
 		public int value;
 
+	}
+
+	public static class CastResolver implements IResolver<Integer, Double> {
+
+		@Override
+		public Double resolve(Integer integer, Class<?> expectedOutputType, ResolverContext resolverContext) {
+			return integer.doubleValue();
+		}
 	}
 
 	public static class WeirdResolver implements IResolver<Boolean, Object[]> {
@@ -233,4 +276,5 @@ public class ResolverManagerTest extends AbstractCindyTest {
 		}
 
 	}
+
 }

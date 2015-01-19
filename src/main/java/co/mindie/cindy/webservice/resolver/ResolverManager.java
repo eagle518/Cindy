@@ -9,22 +9,17 @@
 
 package co.mindie.cindy.webservice.resolver;
 
-import co.mindie.cindy.core.annotation.Load;
-import co.mindie.cindy.webservice.annotation.Resolver;
 import co.mindie.cindy.core.annotation.Core;
+import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.core.component.metadata.ComponentMetadata;
 import co.mindie.cindy.core.component.metadata.ComponentMetadataManager;
 import co.mindie.cindy.core.tools.Initializable;
+import co.mindie.cindy.webservice.annotation.Resolver;
+import co.mindie.cindy.webservice.exception.ResolverException;
+import me.corsin.javatools.reflect.ReflectionUtils;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Load(creationPriority = -1)
 public class ResolverManager implements Initializable {
@@ -34,6 +29,11 @@ public class ResolverManager implements Initializable {
 	////////////////
 
 	private static final Logger LOGGER = Logger.getLogger(ResolverManager.class);
+
+	// Kinda hacky. Didn't find a clean solution to dynamicaly provide the input and output class
+	// on generated resolver classes yet. (See HibernateDAO)
+	public static final String COMPONENT_CONFIG_INPUT_CLASS = "cindy.resolver_manager.managed_input_class";
+	public static final String COMPONENT_CONFIG_OUTPUT_CLASS = "cindy.resolver_manager.managed_output_class";
 
 	private Map<Class<?>, ResolverEntry> resolverEntriesByInputClass;
 
@@ -55,17 +55,60 @@ public class ResolverManager implements Initializable {
 	@Override
 	public void init() {
 		for (ComponentMetadata metadata : this.metadataManager.getLoadedComponentsWithAnnotation(Resolver.class)) {
-			Resolver annotation = metadata.getAnnotation(Resolver.class);
-			for (Class<?> inputClass : annotation.managedInputClasses()) {
-				for (Class<?> outputClass : annotation.managedOutputClasses()) {
-					this.addConverter(metadata.getComponentClass(), inputClass, outputClass, annotation.isDefaultForInputTypes(), metadata.getCreationPriority());
-				}
-			}
+			this.addConverter(metadata.getComponentClass());
 		}
 	}
 
 	public void removeAllConverters() {
 		this.resolverEntriesByInputClass.clear();
+	}
+
+	public void addConverter(Class<?> resolverClass) {
+		ComponentMetadata metadata = this.metadataManager.getComponentMetadata(resolverClass);
+
+		if (metadata == null) {
+			throw new IllegalArgumentException("Component " + resolverClass + " not loaded.");
+		}
+
+		Resolver annotation = metadata.getAnnotation(Resolver.class);
+		Class<?>[] managedInputClasses = annotation != null ? annotation.managedInputClasses() : new Class[0];
+		Class<?>[] managedOutputClasses = annotation != null ? annotation.managedOutputClasses() : new Class[0];
+		boolean defaultForInputTypes = annotation != null && annotation.isDefaultForInputTypes();
+
+		if (managedInputClasses.length == 0) {
+			Class<?> inputCls = (Class<?>)metadata.getConfig(COMPONENT_CONFIG_INPUT_CLASS, false);
+			if (inputCls == null) {
+				inputCls = ReflectionUtils.getGenericTypeParameter(metadata.getComponentClass(), IResolver.class, 0);
+			}
+
+			if (inputCls == null) {
+				throw new ResolverException("Unable to add resolver " + resolverClass + ": unable to detect managed input class");
+			}
+
+			managedInputClasses = new Class[] { inputCls };
+		}
+
+		if (managedOutputClasses.length == 0) {
+			Class<?> outputCls = (Class<?>)metadata.getConfig(COMPONENT_CONFIG_OUTPUT_CLASS, false);
+			if (outputCls == null) {
+				outputCls = ReflectionUtils.getGenericTypeParameter(metadata.getComponentClass(), IResolver.class, 1);
+			}
+
+			if (outputCls == null) {
+				throw new ResolverException("Unable to add resolver " + resolverClass + ": unable to detect managed output class");
+			}
+
+			managedOutputClasses = new Class[] { outputCls };
+		}
+
+//		System.out.println(Strings.getObjectDescription(managedInputClasses));
+//		System.out.println(Strings.getObjectDescription(managedOutputClasses));
+
+		for (Class<?> inputClass : managedInputClasses) {
+			for (Class<?> outputClass : managedOutputClasses) {
+				this.addConverter(metadata.getComponentClass(), inputClass, outputClass, defaultForInputTypes, metadata.getCreationPriority());
+			}
+		}
 	}
 
 	public void addConverter(Class<?> modelConverterClass, Class<?> inputClass, Class<?> outputClass, boolean isDefault, int priority) {

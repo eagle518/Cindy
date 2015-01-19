@@ -14,13 +14,27 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * A resolver takes an input and resolve it to an output.
+ * It must implements the interface IResolver.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Resolver {
 
-	Class<?>[] managedInputClasses();
+	/**
+	 * @return What are the input classes the resolver manages. If empty, the ResolverManager
+	 * will use the generic type parameter to find this value.
+	 *
+	 */
+	Class<?>[] managedInputClasses() default {};
 
-	Class<?>[] managedOutputClasses();
+	/**
+	 * @return What are the output classes the resolver manages. If empty, the ResolverManager
+	 * will use the generic type parameter to find this value.
+	 *
+	 */
+	Class<?>[] managedOutputClasses() default {};
 
 	boolean isDefaultForInputTypes() default false;
 
