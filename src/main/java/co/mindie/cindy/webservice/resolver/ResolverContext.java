@@ -82,7 +82,7 @@ public class ResolverContext {
 
 					List<Object> result = batchOperator.doBatchOperation(values);
 
-					if (result.size() != values.size()) {
+					if (result.size() != resultPair.size()) {
 						throw new CindyException("BatchOperator must return a list that has the same size as the input" +
 								" list and in the same order");
 					}

@@ -11,6 +11,7 @@ package co.mindie.cindy.webservice.context;
 
 import co.mindie.cindy.core.annotation.Load;
 import co.mindie.cindy.core.annotation.Wired;
+import co.mindie.cindy.core.component.CreationBox;
 import co.mindie.cindy.core.tools.Cancelable;
 import co.mindie.cindy.core.tools.Flushable;
 import co.mindie.cindy.webservice.controller.ParamSource;
@@ -18,6 +19,7 @@ import co.mindie.cindy.webservice.controller.manager.HttpRequest;
 import co.mindie.cindy.webservice.controller.manager.HttpResponse;
 import co.mindie.cindy.webservice.exception.ResolverException;
 import co.mindie.cindy.webservice.responsewriter.IResponseWriter;
+import co.mindie.cindy.webservice.stats.WebserviceStats;
 import org.apache.commons.fileupload.FileItem;
 
 import java.io.UnsupportedEncodingException;
@@ -41,6 +43,7 @@ public class RequestContext {
 	@Wired private List<Flushable> flushables;
 	@Wired private List<Cancelable> cancelables;
 
+	@Wired(required = false, creationBox = CreationBox.NO_CREATION) private WebserviceStats stats;
 	@Wired(required = false) private IResponseWriter responseWriter;
 	private String endpointMethodName;
 
@@ -61,7 +64,9 @@ public class RequestContext {
 	 * Called before the request get handled by the CindyController
 	 */
 	public void willBegin() {
-
+		if (this.stats != null) {
+			this.stats.notifyRequestStarted();
+		}
 	}
 
 	public void flush() {
@@ -90,7 +95,9 @@ public class RequestContext {
 	 * @param thrownException
 	 */
 	public void didEnd(Object response, Throwable thrownException) {
-
+		if (this.stats != null) {
+			this.stats.notifyRequestEnded();
+		}
 	}
 
 	/**
