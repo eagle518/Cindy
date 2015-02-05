@@ -16,8 +16,12 @@ public class WebserviceStats extends AbstractWorker {
 	////////////////
 
 	private AtomicInteger counter;
+	private AtomicInteger successCounter;
+	private AtomicInteger failedCounter;
 	private int currentRequestsPerSecond;
 	private int maxRequestsPerSecond;
+	private int successPerSecond;
+	private int failsPerSecond;
 
 	////////////////////////
 	// CONSTRUCTORS
@@ -27,6 +31,8 @@ public class WebserviceStats extends AbstractWorker {
 		super("Webservice Stats", new TimeSpan(1));
 
 		this.counter = new AtomicInteger();
+		this.successCounter = new AtomicInteger();
+		this.failedCounter = new AtomicInteger();
 	}
 
 
@@ -37,6 +43,8 @@ public class WebserviceStats extends AbstractWorker {
 	@Override
 	public void run() {
 		this.currentRequestsPerSecond = this.counter.getAndSet(0);
+		this.successPerSecond = this.successCounter.getAndSet(0);
+		this.failsPerSecond = this.failedCounter.getAndSet(0);
 
 		if (this.currentRequestsPerSecond > this.maxRequestsPerSecond) {
 			this.maxRequestsPerSecond = this.currentRequestsPerSecond;
@@ -47,8 +55,12 @@ public class WebserviceStats extends AbstractWorker {
 		this.counter.incrementAndGet();
 	}
 
-	public void notifyRequestEnded() {
-
+	public void notifyRequestEnded(boolean hasSucceed) {
+		if (hasSucceed) {
+			this.successCounter.incrementAndGet();
+		} else {
+			this.failedCounter.incrementAndGet();
+		}
 	}
 
 	////////////////////////
@@ -61,5 +73,13 @@ public class WebserviceStats extends AbstractWorker {
 
 	public int getMaxRequestsPerSecond() {
 		return maxRequestsPerSecond;
+	}
+
+	public int getFailsPerSecond() {
+		return failsPerSecond;
+	}
+
+	public int getSuccessPerSecond() {
+		return successPerSecond;
 	}
 }

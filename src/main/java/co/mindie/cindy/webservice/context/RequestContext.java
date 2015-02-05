@@ -96,7 +96,7 @@ public class RequestContext {
 	 */
 	public void didEnd(Object response, Throwable thrownException) {
 		if (this.stats != null) {
-			this.stats.notifyRequestEnded();
+			this.stats.notifyRequestEnded(thrownException == null);
 		}
 	}
 
