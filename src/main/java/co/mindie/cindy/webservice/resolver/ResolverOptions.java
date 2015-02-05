@@ -41,6 +41,12 @@ public class ResolverOptions {
 		return this.options.get(key);
 	}
 
+	public String get(String key, String defaultValue) {
+		String value = this.options.get(key);
+
+		return value != null ? value : defaultValue;
+	}
+
 	public Integer getInt(String key) {
 		String str = this.get(key);
 
