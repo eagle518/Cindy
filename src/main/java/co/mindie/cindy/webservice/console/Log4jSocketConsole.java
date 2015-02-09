@@ -69,7 +69,7 @@ public class Log4jSocketConsole extends AbstractAppender implements IConnectionL
 				throw new CindyException("Failed to init SocketConsole socket", e);
 			}
 
-			Thread thread = new Thread(Log4jSocketConsole.this::accept);
+			Thread thread = new Thread(Log4jSocketConsole.this::accept, "SocketConsole");
 
 			thread.start();
 			LOGGER.trace("Enabled Log4jSocketConsole on port " + port);

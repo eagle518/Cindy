@@ -62,7 +62,7 @@ public abstract class HibernateDatabaseMonitor implements Runnable, Closeable, I
 		if (traceSession) {
 			this.cont = true;
 
-			new Thread(this).start();
+			new Thread(this, "Hibernate Database Monitor").start();
 		}
 	}
 
