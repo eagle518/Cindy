@@ -15,6 +15,8 @@ public class WebserviceStats extends AbstractWorker {
 	// VARIABLES
 	////////////////
 
+	private static final float MEASURE_SECONDS = 10f;
+
 	private AtomicInteger counter;
 	private AtomicInteger successCounter;
 	private AtomicInteger failedCounter;
@@ -28,13 +30,12 @@ public class WebserviceStats extends AbstractWorker {
 	////////////////
 
 	public WebserviceStats() {
-		super("Webservice Stats", new TimeSpan(1));
+		super("Webservice Stats", new TimeSpan(MEASURE_SECONDS));
 
 		this.counter = new AtomicInteger();
 		this.successCounter = new AtomicInteger();
 		this.failedCounter = new AtomicInteger();
 	}
-
 
 	////////////////////////
 	// METHODS
@@ -42,9 +43,9 @@ public class WebserviceStats extends AbstractWorker {
 
 	@Override
 	public void run() {
-		this.currentRequestsPerSecond = this.counter.getAndSet(0);
-		this.successPerSecond = this.successCounter.getAndSet(0);
-		this.failsPerSecond = this.failedCounter.getAndSet(0);
+		this.currentRequestsPerSecond = Math.round(this.counter.getAndSet(0) / MEASURE_SECONDS);
+		this.successPerSecond = Math.round(this.successCounter.getAndSet(0) / MEASURE_SECONDS);
+		this.failsPerSecond = Math.round(this.failedCounter.getAndSet(0) / MEASURE_SECONDS);
 
 		if (this.currentRequestsPerSecond > this.maxRequestsPerSecond) {
 			this.maxRequestsPerSecond = this.currentRequestsPerSecond;
