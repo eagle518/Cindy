@@ -189,14 +189,14 @@ public abstract class AbstractListRequest {
 	 *
 	 * @return the offset
 	 */
-	public abstract int getOffset();
+	public abstract Integer getOffset();
 
 	/**
 	 * The number of items for each the page
 	 *
 	 * @return the number of items for this page
 	 */
-	public abstract int getLimit();
+	public abstract Integer getLimit();
 
 	/**
 	 * Returns the sorting parameters

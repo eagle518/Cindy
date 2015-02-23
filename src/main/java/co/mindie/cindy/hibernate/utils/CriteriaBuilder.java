@@ -40,6 +40,7 @@ public class CriteriaBuilder {
 		this.alias = new ArrayList<>();
 
 		this.criteriaBuilderPool = criteriaBuilderPool;
+		this.reset();
 	}
 
 	////////////////////////
@@ -75,7 +76,7 @@ public class CriteriaBuilder {
 		return this;
 	}
 
-	public void release() {
+	public void reset() {
 		this.alias.clear();
 		this.criterions.clear();
 		this.orders.clear();
@@ -85,6 +86,10 @@ public class CriteriaBuilder {
 		this.resultTransformer = null;
 		this.session = null;
 		this.returnedClass = null;
+	}
+
+	public void release() {
+		this.reset();
 
 		if (this.criteriaBuilderPool != null) {
 			this.criteriaBuilderPool.release(this);
@@ -121,7 +126,7 @@ public class CriteriaBuilder {
 		}
 	}
 
-	private Criteria getResultCriteria() {
+	protected Criteria getResultCriteria() {
 		this.ensureConfigure();
 
 		Criteria criteria = this.session.createCriteria(this.returnedClass);
@@ -167,9 +172,15 @@ public class CriteriaBuilder {
 					break;
 			}
 		});
+
+		if (abstractListRequest.getOffset() != null) {
+			criteria.setFirstResult(abstractListRequest.getOffset());
+		}
+		if (abstractListRequest.getLimit() != null) {
+			criteria.setMaxResults(abstractListRequest.getLimit());
+		}
+
 		return (List<T>) criteria
-				.setFirstResult(abstractListRequest.getOffset())
-				.setMaxResults(abstractListRequest.getLimit())
 				.list();
 	}
 

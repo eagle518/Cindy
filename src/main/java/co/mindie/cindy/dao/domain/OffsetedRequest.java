@@ -13,8 +13,8 @@ public class OffsetedRequest extends AbstractListRequest {
 	// VARIABLES
 	// //////////////
 
-	private int offset;
-	private int limit;
+	private Integer offset;
+	private Integer limit;
 
 	// //////////////////////
 	// CONSTRUCTORS
@@ -26,19 +26,19 @@ public class OffsetedRequest extends AbstractListRequest {
 		this.limit = original.getLimit();
 	}
 
-	public OffsetedRequest(int offset, int limit) {
+	public OffsetedRequest(Integer offset, Integer limit) {
 		this(offset, limit, new ArrayList<>());
 	}
 
-	public OffsetedRequest(int offset, int limit, Direction direction, String propertyName) {
+	public OffsetedRequest(Integer offset, Integer limit, Direction direction, String propertyName) {
 		this(offset, limit, new Sort(direction, propertyName));
 	}
 
-	public OffsetedRequest(int offset, int limit, Sort... sorts) {
+	public OffsetedRequest(Integer offset, Integer limit, Sort... sorts) {
 		this(offset, limit, Arrays.asList(sorts));
 	}
 
-	public OffsetedRequest(int offset, int limit, List<Sort> sorts) {
+	public OffsetedRequest(Integer offset, Integer limit, List<Sort> sorts) {
 		super(sorts);
 		this.offset = offset;
 		this.limit = limit;
@@ -97,11 +97,11 @@ public class OffsetedRequest extends AbstractListRequest {
 	 * @return the offset
 	 */
 	@Override
-	public int getOffset() {
+	public Integer getOffset() {
 		return this.offset;
 	}
 
-	public void setOffset(int offset) {
+	public void setOffset(Integer offset) {
 		this.offset = offset;
 	}
 
@@ -111,11 +111,11 @@ public class OffsetedRequest extends AbstractListRequest {
 	 * @return the number of items for this page
 	 */
 	@Override
-	public int getLimit() {
+	public Integer getLimit() {
 		return this.limit;
 	}
 
-	public void setLimit(int limit) {
+	public void setLimit(Integer limit) {
 		this.limit = limit;
 	}
 }

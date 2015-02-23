@@ -65,12 +65,12 @@ public class AbstractListRequestTest {
 		}
 
 		@Override
-		public int getOffset() {
+		public Integer getOffset() {
 			return 0;
 		}
 
 		@Override
-		public int getLimit() {
+		public Integer getLimit() {
 			return 0;
 		}
 	}

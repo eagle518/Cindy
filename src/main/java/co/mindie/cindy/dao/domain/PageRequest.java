@@ -87,12 +87,12 @@ public class PageRequest extends AbstractListRequest {
 	// //////////////
 
 	@Override
-	public int getOffset() {
+	public Integer getOffset() {
 		return (this.pageNumber - 1) * this.pageSize;
 	}
 
 	@Override
-	public int getLimit() {
+	public Integer getLimit() {
 		return this.pageSize;
 	}
 

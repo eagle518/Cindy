@@ -102,8 +102,8 @@ public class PageTest {
 
 		// THEN
 		assertEquals(SORTS, result.getSorts());
-		assertEquals(1, result.getLimit());
-		assertEquals(7, result.getOffset());
+		assertEquals(1, result.getLimit().intValue());
+		assertEquals(7, result.getOffset().intValue());
 	}
 
 	@Test
@@ -188,8 +188,8 @@ public class PageTest {
 
 		// THEN
 		assertEquals(SORTS, result.getSorts());
-		assertEquals(1, result.getLimit());
-		assertEquals(9, result.getOffset());
+		assertEquals(1, result.getLimit().intValue());
+		assertEquals(9, result.getOffset().intValue());
 	}
 
 	@Test
