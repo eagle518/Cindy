@@ -248,6 +248,10 @@ public class CriteriaBuilder {
 		return this;
 	}
 
+	public Class<?> getReturnedClass() {
+		return this.returnedClass;
+	}
+
 	////////////////////////
 	// GETTERS/SETTERS
 	////////////////
