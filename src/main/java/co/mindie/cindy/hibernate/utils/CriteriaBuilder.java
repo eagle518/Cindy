@@ -28,7 +28,7 @@ public class CriteriaBuilder {
 	private ResultTransformer resultTransformer;
 	private Pool<CriteriaBuilder> criteriaBuilderPool;
 	private Session session;
-	private Class<?> returnedClass;
+	private Class<?> criteriaClass;
 
 	public CriteriaBuilder() {
 		this(null);
@@ -47,9 +47,9 @@ public class CriteriaBuilder {
 	// CONSTRUCTORS
 	////////////////
 
-	public CriteriaBuilder configure(Session session, Class<?> returnedClass) {
+	public CriteriaBuilder configure(Session session, Class<?> criteriaClass) {
 		this.session = session;
-		this.returnedClass = returnedClass;
+		this.setCriteriaClass(criteriaClass);
 
 		return this;
 	}
@@ -85,7 +85,7 @@ public class CriteriaBuilder {
 		this.projection = null;
 		this.resultTransformer = null;
 		this.session = null;
-		this.returnedClass = null;
+		this.criteriaClass = null;
 	}
 
 	public void release() {
@@ -97,13 +97,13 @@ public class CriteriaBuilder {
 	}
 
 	private void ensureConfigure() {
-		if (this.session == null || this.returnedClass == null) {
-			throw new RuntimeException("CriteriaBuilder wasn't properly configured. Missing session or returnedClass");
+		if (this.session == null || this.criteriaClass == null) {
+			throw new RuntimeException("CriteriaBuilder wasn't properly configured. Missing session or criteriaClass");
 		}
 	}
 
 	protected Criteria getCountCriteria() {
-		Criteria criteria = this.session.createCriteria(this.returnedClass).setProjection(Projections.rowCount());
+		Criteria criteria = this.session.createCriteria(this.criteriaClass).setProjection(Projections.rowCount());
 		for (Alias alias : this.alias) {
 			criteria.createAlias(alias.propertyName, alias.alias);
 		}
@@ -129,7 +129,7 @@ public class CriteriaBuilder {
 	protected Criteria getResultCriteria() {
 		this.ensureConfigure();
 
-		Criteria criteria = this.session.createCriteria(this.returnedClass);
+		Criteria criteria = this.session.createCriteria(this.criteriaClass);
 
 		for (Alias alias : this.alias) {
 			criteria.createAlias(alias.propertyName, alias.alias);
@@ -228,14 +228,14 @@ public class CriteriaBuilder {
 	private void generateProjectionForGroupBy(String groupByProperty) {
 		ProjectionList projectionList = Projections.projectionList();
 
-		for (Field field : this.returnedClass.getDeclaredFields()) {
+		for (Field field : this.criteriaClass.getDeclaredFields()) {
 			projectionList.add(Projections.property(field.getName()));
 		}
 
 		projectionList.add(Projections.groupProperty(groupByProperty));
 
 		this.setProjection(projectionList);
-		this.setResultTransformer(new GroupByResultTransformer(this.returnedClass));
+		this.setResultTransformer(new GroupByResultTransformer(this.criteriaClass));
 	}
 
 	public Pool<CriteriaBuilder> getPool() {
@@ -248,8 +248,12 @@ public class CriteriaBuilder {
 		return this;
 	}
 
-	public Class<?> getReturnedClass() {
-		return this.returnedClass;
+	public Class<?> getCriteriaClass() {
+		return this.criteriaClass;
+	}
+
+	public void setCriteriaClass(Class<?> criteriaClass) {
+		this.criteriaClass = criteriaClass;
 	}
 
 	////////////////////////
