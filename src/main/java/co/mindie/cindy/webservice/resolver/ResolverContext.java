@@ -15,9 +15,10 @@ import co.mindie.cindy.webservice.resolver.batch.BatchOperator;
 import me.corsin.javatools.misc.NullArgumentException;
 import me.corsin.javatools.misc.Pair;
 
+import java.io.Closeable;
 import java.util.*;
 
-public class ResolverContext {
+public class ResolverContext implements Closeable {
 
 	////////////////////////
 	// VARIABLES
@@ -26,6 +27,7 @@ public class ResolverContext {
 	private ResolverOptions options;
 	private Map<Object, Object> cache;
 	private Queue<Runnable> onCompletedCallbacks;
+	private List<ResolverContext> subResolverContexts;
 	private Map<BatchOperator, List<Pair<Object, BatchOperationResult>>> batchOperations;
 
 	////////////////////////
@@ -42,11 +44,20 @@ public class ResolverContext {
 		}
 
 		this.options = resolverOptions;
+		this.subResolverContexts = new ArrayList<>();
 	}
 
 	////////////////////////
 	// METHODS
 	////////////////
+
+	public ResolverContext subResolverContext(ResolverOptions resolverOptions) {
+		ResolverContext sub = new ResolverContext(resolverOptions);
+
+		this.subResolverContexts.add(sub);
+
+		return sub;
+	}
 
 	public void putCache(Object id, Object object) {
 		if (this.cache == null) {
@@ -70,8 +81,14 @@ public class ResolverContext {
 		}
 	}
 
+	@Override
+	public void close() {
+		this.flushBatchOperations();
+	}
+
 	public void flushBatchOperations() {
 		try {
+			this.subResolverContexts.forEach(ResolverContext::flushBatchOperations);
 			if (this.batchOperations != null) {
 				for (Map.Entry<BatchOperator, List<Pair<Object, BatchOperationResult>>> entry : this.batchOperations.entrySet()) {
 					BatchOperator batchOperator = entry.getKey();
