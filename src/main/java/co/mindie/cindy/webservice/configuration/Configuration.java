@@ -160,6 +160,18 @@ public class Configuration implements Initializable {
 		return value != null ? Float.valueOf(value) : null;
 	}
 
+	public String[] getArray(String key) {
+		String value = this.get(key);
+
+		return value != null ? value.split(",") : null;
+	}
+
+	public String[] getArray(String key, String[] defValue) {
+		String[] value = this.getArray(key);
+
+		return value != null ? value : defValue;
+	}
+
 	public String getConfigurationFilePath() {
 		return this.configurationFilePath;
 	}

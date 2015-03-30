@@ -10,19 +10,13 @@
 package co.mindie.cindy.webservice.app;
 
 import co.mindie.cindy.core.annotation.*;
-import co.mindie.cindy.core.component.CreationBox;
-import co.mindie.cindy.core.component.SearchScope;
-import co.mindie.cindy.core.component.metadata.ComponentMetadata;
-import co.mindie.cindy.core.component.metadata.ComponentMetadataManagerBuilder;
-import co.mindie.cindy.webservice.annotation.Singleton;
-import co.mindie.cindy.core.component.*;
+import co.mindie.cindy.core.component.Aspect;
 import co.mindie.cindy.core.component.box.ComponentBox;
+import co.mindie.cindy.core.tools.Initializable;
+import co.mindie.cindy.core.tools.Pausable;
 import co.mindie.cindy.webservice.configuration.Configuration;
 import co.mindie.cindy.webservice.controller.manager.ControllerManager;
 import co.mindie.cindy.webservice.resolver.ResolverManager;
-import co.mindie.cindy.core.tools.Initializable;
-import co.mindie.cindy.core.tools.Pausable;
-import me.corsin.javatools.array.ArrayUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
 
@@ -32,7 +26,7 @@ import java.util.List;
 @Load(creationPriority = -1)
 @Aspects(aspects = {Aspect.SINGLETON, Aspect.THREAD_SAFE})
 @Box(needAspects = {Aspect.SINGLETON, Aspect.THREAD_SAFE}, rejectAspects = {})
-public class CindyWebApp implements Pausable, Closeable, Initializable {
+public class CindyWebApp extends SingletonManager implements Pausable, Closeable, Initializable {
 
 	// //////////////////////
 	// VARIABLES
@@ -81,24 +75,6 @@ public class CindyWebApp implements Pausable, Closeable, Initializable {
 
 		if (this.rootLogAppender != null) {
 			Logger.getRootLogger().removeAppender(this.rootLogAppender);
-		}
-	}
-
-	@MetadataModifier
-	public static void injectSingletons(ComponentMetadataManagerBuilder componentMetadataManagerBuilder) {
-		for (ComponentMetadata appMetadata : componentMetadataManagerBuilder.findCompatibleComponentsForClass(CindyWebApp.class)) {
-			for (ComponentMetadata metadata : componentMetadataManagerBuilder.getLoadedComponentsWithAnnotation(Singleton.class)) {
-				if (!ArrayUtils.arrayContains(metadata.getAspects(), Aspect.SINGLETON)) {
-					metadata.setAspects(ArrayUtils.addItem(metadata.getAspects(), Aspect.SINGLETON));
-				}
-				if (!ArrayUtils.arrayContains(metadata.getAspects(), Aspect.THREAD_SAFE)) {
-					metadata.setAspects(ArrayUtils.addItem(metadata.getAspects(), Aspect.THREAD_SAFE));
-				}
-
-				if (!appMetadata.hasDependency(metadata.getComponentClass())) {
-					appMetadata.addDependency(metadata.getComponentClass(), true, false, SearchScope.GLOBAL, CreationBox.CURRENT_BOX);
-				}
-			}
 		}
 	}
 

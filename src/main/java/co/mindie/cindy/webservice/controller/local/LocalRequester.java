@@ -85,10 +85,14 @@ public class LocalRequester {
 	}
 
 	public <T> T successResult(Class<T> successResponseType) throws IOException {
-		LocalResult<T, Object> result = this.result(successResponseType, null);
+		return this.successResult(successResponseType, null);
+	}
+
+	public <T, T2> T successResult(Class<T> successResponseType, Class<T2> errorType) throws IOException {
+		LocalResult<T, T2> result = this.result(successResponseType, errorType);
 
 		if (!result.isSuccess()) {
-			throw new IOException("Got an error response while asking for a success");
+			throw new IOException("Got an error response while asking for a success: " + result.getError());
 		}
 
 		return result.getResponse();

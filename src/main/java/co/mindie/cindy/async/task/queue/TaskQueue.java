@@ -38,6 +38,7 @@ public class TaskQueue implements Closeable {
 	// This variable is notified when it reaches zero
 	private Object tasksReachesZero;
 	private int runningTasks;
+	private int maxPendingTasks;
 	private boolean closed;
 
 	////////////////////////
@@ -48,6 +49,7 @@ public class TaskQueue implements Closeable {
 		this.tasks = new ArrayDeque<Runnable>();
 		this.tasksReachesZero = new Object();
 		this.runningTasks = 0;
+		this.maxPendingTasks = Integer.MAX_VALUE;
 	}
 
 	////////////////////////
@@ -59,9 +61,7 @@ public class TaskQueue implements Closeable {
 		synchronized (this.tasks) {
 			if (!this.tasks.isEmpty()) {
 				task = this.tasks.poll();
-				if (this.tasks.isEmpty()) {
-					this.tasks.notifyAll();
-				}
+				this.tasks.notifyAll();
 			}
 		}
 		return task;
@@ -139,6 +139,12 @@ public class TaskQueue implements Closeable {
 	 */
 	public <T extends Runnable> T executeAsync(T runnable) {
 		synchronized (this.tasks) {
+			try {
+				while (this.tasks.size() >= this.maxPendingTasks) {
+					this.tasks.wait();
+				}
+			} catch (InterruptedException e) {}
+
 			this.tasks.add(runnable);
 			// Notify that a task has been added
 			this.tasks.notifyAll();
@@ -258,6 +264,22 @@ public class TaskQueue implements Closeable {
 	}
 
 	/**
+	 * Wait that the number of pending tasks get below a threshold
+	 * @param threshold
+	 */
+	public void waitUntilPendingTasksGetBelow(int threshold) {
+		synchronized (this.tasks) {
+			try {
+				while (this.tasks.size() >= threshold) {
+					this.tasks.wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
 	 * @return the currentTaskQueue if the current Thread was created by one of the ThreadedTaskQueue subclass
 	 */
 	public static TaskQueue currentTaskQueue() {
@@ -280,6 +302,10 @@ public class TaskQueue implements Closeable {
 		return !this.tasks.isEmpty();
 	}
 
+	public int getPendingTasks() {
+		return this.tasks.size();
+	}
+
 	public int getRunningTasks() {
 		return this.runningTasks;
 	}
@@ -295,4 +321,14 @@ public class TaskQueue implements Closeable {
 	public static TaskQueue getMainTaskQueue() {
 		return mainTaskQueue;
 	}
+
+	public int getMaxPendingTasks() {
+		return maxPendingTasks;
+	}
+
+	public void setMaxPendingTasks(int maxPendingTasks) {
+		this.maxPendingTasks = maxPendingTasks;
+	}
 }
+
+
